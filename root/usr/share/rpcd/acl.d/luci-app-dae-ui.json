@@ -16,7 +16,8 @@
           "native_api_status",
           "include_status",
           "get_managed_section",
-          "geodata_status"
+          "geodata_status",
+          "preview_managed_section"
         ],
         "uci": [
           "get"
@@ -34,7 +35,8 @@
           "create_config_file",
           "restore_backup",
           "clear_log",
-          "save_managed_section"
+          "save_managed_section",
+          "update_geodata"
         ],
         "uci": [
           "set",
