@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0 - 2026-09-28
+
+- Added visual node/subscription cards with protocol detection for common one-line entries.
+- Added policy-group cards, routing rule table and DNS upstream cards while preserving complex source blocks.
+- Added staged diff preview before managed-section writes.
+- Expanded Overview with process CPU, process uptime, interface inventory and default-route information.
+- Added verified GeoData updater using the versions and SHA256 values pinned by dae upstream.
+- GeoData update flow downloads to `/tmp`, verifies SHA256, backs up existing files and atomically installs replacements.
+- Added `curl` package dependency for verified GeoData downloads.
+- Expanded rpcd ACLs for diff preview and GeoData update actions.
+
 ## 0.3.0 - 2026-09-28
 
 - Added safe managed config sections under `config.d/dae-ui-*.dae`.
