@@ -113,7 +113,7 @@ function config_files(s) {
 	let cmd = 'find ' + shell_quote(base) + " -maxdepth 3 -type f -name '*.dae' 2>/dev/null | sort";
 	let r = run(cmd);
 	let out = [];
-	for (let line in split(trim(r.output), '\n')) {
+	for (let idx, line in split(trim(r.output), '\n')) {
 		if (!line) continue;
 		let rel = substr(line, length(base) + 1);
 		if (!safe_relative(rel)) continue;
@@ -354,9 +354,9 @@ return {
 			call: function() {
 				let s = settings();
 				let all = [];
-				for (let f in config_files(s)) {
+				for (let fidx, f in config_files(s)) {
 					let sections = section_extract(readfile(f.full_path) || '', f.path);
-					for (let sec in sections) push(all, sec);
+					for (let sidx, sec in sections) push(all, sec);
 				}
 				return { ok: true, sections: all };
 			}
@@ -368,7 +368,7 @@ return {
 				let base = config_base(s);
 				let r = run('find ' + shell_quote(base) + " -maxdepth 3 -type f -name '*.dae.backup.*' 2>/dev/null | sort -r");
 				let items = [];
-				for (let line in split(trim(r.output), '\n')) {
+				for (let idx, line in split(trim(r.output), '\n')) {
 					if (!line) continue;
 					let rel = substr(line, length(base) + 1);
 					let st = stat(line);
