@@ -15,7 +15,7 @@ return view.extend({
 					E('div',{'class':'table'},[
 						E('div',{'class':'tr'},[
 							E('div',{'class':'td left','style':'width:180px;font-weight:600'},'geoip.dat'),
-							E('div',{'class':'td left'},dae.badge(x.geoip?_('Present'):_('Missing'),!!x.geoip)+' '),
+							E('div',{'class':'td left'},dae.badge(x.geoip?_('Present'):_('Missing'),!!x.geoip)),
 							E('div',{'class':'td left'},x.geoip?String(x.geoip_size||0)+' B':'-')
 						]),
 						E('div',{'class':'tr'},[
