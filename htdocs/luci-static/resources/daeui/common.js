@@ -4,6 +4,7 @@
 'require ui';
 
 var callStatus = rpc.declare({ object: 'luci.daeui', method: 'status', expect: {} });
+var callRuntimeStats = rpc.declare({ object: 'luci.daeui', method: 'runtime_stats', expect: {} });
 var callService = rpc.declare({ object: 'luci.daeui', method: 'service', params: [ 'action' ], expect: {} });
 var callGetConfig = rpc.declare({ object: 'luci.daeui', method: 'get_config', expect: {} });
 var callSaveConfig = rpc.declare({ object: 'luci.daeui', method: 'save_config', params: [ 'content' ], expect: {} });
@@ -45,6 +46,7 @@ function bytesFromKiB(kib) {
 
 return baseclass.extend({
 	callStatus: callStatus,
+	callRuntimeStats: callRuntimeStats,
 	callService: callService,
 	callGetConfig: callGetConfig,
 	callSaveConfig: callSaveConfig,
