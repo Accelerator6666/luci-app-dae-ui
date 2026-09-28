@@ -24,7 +24,7 @@ return view.extend({
 				var tags=Object.keys(c).map(function(k){ return k+' ×'+c[k]; }).join(' · ');
 				return E('div', { 'class': 'cbi-section', 'style': 'margin-left:'+(f.main?'0':'24px') }, [
 					E('div', { 'style':'display:flex;justify-content:space-between;gap:12px' }, [
-						E('code', {}, (f.main?'★ ':'↳ ')+f.path),
+						E('a', { 'href':dae.configUrl(f.path, 0) }, E('code', {}, (f.main?'★ ':'↳ ')+f.path)),
 						E('span', {}, String(f.size||0)+' B')
 					]),
 					E('div', { 'class':'cbi-map-descr' }, tags || _('No recognized top-level DAE sections'))
