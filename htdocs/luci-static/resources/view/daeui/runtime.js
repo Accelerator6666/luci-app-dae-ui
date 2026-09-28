@@ -168,6 +168,7 @@ return view.extend({
 		var dnsCache = capState(native, 'dns_cache');
 		var dnsLog = capState(native, 'dns_log');
 		var dnsQuery = capState(native, 'dns_query');
+		var rules = capState(native, 'rules');
 
 		return E([], [
 			E('h2', {}, _('DAE Runtime')),
@@ -195,7 +196,8 @@ return view.extend({
 				capabilityRow(_('Routing trace'), _('Native API'), trace),
 				capabilityRow(_('DNS cache telemetry'), _('Native API'), dnsCache),
 				capabilityRow(_('DNS query log telemetry'), _('Native API'), dnsLog),
-				capabilityRow(_('Diagnostic DNS query'), _('Native API'), dnsQuery)
+				capabilityRow(_('Diagnostic DNS query'), _('Native API'), dnsQuery),
+				capabilityRow(_('Routing rule dictionary'), _('Native API'), rules)
 			]),
 			E('h3', {}, _('Native runtime pages')),
 			E('div', {}, [
@@ -204,7 +206,8 @@ return view.extend({
 				resourceButton(_('Runtime Policies'), 'runtime-policies', native.resources && native.resources.groups === true),
 				resourceButton(_('Flows'), 'flows', native.resources && native.resources.flows === true),
 				resourceButton(_('DNS Runtime'), 'dns-runtime', native.resources && (native.resources.dns_cache === true || native.resources.dns_log === true)),
-				resourceButton(_('Native Diagnostics'), 'native-tools', native.resources && (native.resources.routing_trace === true || native.resources.dns_query === true))
+				resourceButton(_('Native Diagnostics'), 'native-tools', native.resources && (native.resources.routing_trace === true || native.resources.dns_query === true)),
+				resourceButton(_('Native Rules'), 'native-rules', native.resources && native.resources.rules === true)
 			].filter(Boolean)),
 			!(native.resources && (
 				native.resources.connections === true ||
@@ -214,7 +217,8 @@ return view.extend({
 				native.resources.dns_cache === true ||
 				native.resources.dns_log === true ||
 				native.resources.routing_trace === true ||
-				native.resources.dns_query === true
+				native.resources.dns_query === true ||
+				native.resources.rules === true
 			)) ? E('div', { 'class':'alert-message notice' }, _('No read-only Native API runtime page is currently available.')) : null,
 			E('div', { 'class': native.contract_ready ? 'alert-message success' : 'alert-message notice' },
 				native.contract_ready
