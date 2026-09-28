@@ -12,7 +12,7 @@ This package must be useful **today** with normal dae installations. It therefor
 
 When dae implements the shared daeuniverse native API contract, the Native API page becomes the integration point for connections, DNS telemetry, policy selection, route traces, activity history and other runtime resources.
 
-## v0.6.0
+## v0.7.0
 
 - Live Overview with process, memory, version, config validation, discovered config-file count and eBPF interface state.
 - Runtime Dashboard with 2-second polling for process CPU, memory, process uptime, socket FDs and `dae0`/`dae0peer` interface counters.
@@ -36,11 +36,21 @@ When dae implements the shared daeuniverse native API contract, the Native API p
 - GeoData status detection plus a verified updater that downloads dae-upstream pinned versions, validates SHA256, backs up existing files and atomically replaces them.
 - Diagnostics page for process, validation, `dae0` and default route.
 - Live log page with refresh, pause and clear.
-- Native API discovery page that probes `/api` and `/api/v1/capabilities` locally without replaying or exposing the configured secret.
+- Native API discovery page that probes `/api` and `/api/v1/capabilities` locally without extracting `native_api.secret` from dae configuration.
 - Native runtime pages remain read-only: no connection close, group selection, probe start, DNS flush/delete, routing trace POST or other mutation is issued.
 - Runtime capability matrix that clearly separates local telemetry from Native-API-only resources such as detailed connections, node probes, policy runtime selection, flows, routing trace and DNS telemetry.
 - Capability-driven hidden runtime pages for Connections, Nodes & Latency, Runtime Policies, Flows and DNS Runtime. Runtime only exposes entry buttons when `/api/v1/capabilities` reports the corresponding resource as available.
 - A whitelisted read-only Native API gateway: the LuCI frontend can request only known GET resources and cannot supply arbitrary URLs or invoke Native API mutations.
+- Optional Native API token mode:
+  - the token is entered once in LuCI;
+  - stored outside UCI at `/etc/dae-ui/native-api.token`;
+  - directory mode 0700 and token mode 0600;
+  - never returned by rpcd to browser JavaScript;
+  - never copied from `native_api.secret` automatically;
+  - used only by server-side curl through a temporary root-only curl config;
+  - removed when the package is uninstalled.
+- Native Connections, Nodes, Flows and DNS Runtime now provide local search, filtering, sortable columns and 25/50/100/200-row client-side paging.
+- The backend request whitelist supports the contract's safe read query fields such as connection type/source, node group/cursor, flow network/state/cursor, and DNS name/type/source/cursor. Current v0.7 UI fetches a bounded first server page (up to 1000 records; DNS log 500) and clearly reports when another server cursor page exists.
 - Configurable dae binary, init script, config path and log path through UCI.
 
 ## Install for development
@@ -56,12 +66,16 @@ Copy the project into an OpenWrt build tree as a package, or install the package
 
 They can be changed under **Services → DAE → Settings**.
 
-## Planned v0.7
+## Planned v0.8
 
-- Optional authenticated Native API profile support without storing plaintext secrets in LuCI config.
-- Read-only pagination/search for large Connections, Nodes, Flows and DNS datasets.
+- Incremental server-cursor loading for Nodes, Flows, DNS cache and DNS log while preserving local search/sort state.
 - Better parser diagnostics and click-through source navigation.
 - GeoData pin refresh automation tied to dae upstream changes.
+- Optional authenticated read-only routing trace and DNS query tools with explicit request previews.
+
+## Native API token security
+
+The optional Native API token is deliberately separate from normal UCI settings. `/etc/config/dae-ui` contains paths and UI settings only; the token lives in a root-only file. The UI can replace or remove it but cannot read it back. The rpcd gateway continues to allow only a fixed GET resource list and typed query parameters even after authentication is configured.
 
 ## License
 
