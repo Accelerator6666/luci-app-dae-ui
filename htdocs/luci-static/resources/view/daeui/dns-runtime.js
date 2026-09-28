@@ -1,7 +1,6 @@
 'use strict';
 'require view';
 'require poll';
-'require dom';
 'require daeui.common as dae';
 'require daeui.native as native';
 
@@ -74,12 +73,10 @@ function logGrid(records) {
 	});
 }
 
-function cacheMeta(data) {
+function cacheMeta(data, loaded) {
 	data=data||{};
-	var entries=data.entries||[];
-	var parts=[_('Loaded: ')+entries.length];
+	var parts=[_('Loaded: ')+loaded];
 	if(data.total!==undefined) parts.push(_('Total: ')+data.total);
-	if(data.next_cursor) parts.push(_('more server pages available'));
 	return parts.join(' · ');
 }
 
@@ -87,12 +84,10 @@ function logRecords(data) {
 	return (data && (data.records || data.entries || data.logs)) || [];
 }
 
-function logMeta(data) {
+function logMeta(data, loaded) {
 	data=data||{};
-	var records=logRecords(data);
-	var parts=[_('Loaded: ')+records.length];
+	var parts=[_('Loaded: ')+loaded];
 	if(data.total!==undefined) parts.push(_('Total: ')+data.total);
-	if(data.next_cursor) parts.push(_('older server page available'));
 	return parts.join(' · ');
 }
 
@@ -102,25 +97,22 @@ return view.extend({
 			var hasCache=status.resources&&status.resources.dns_cache===true;
 			var hasLog=status.resources&&status.resources.dns_log===true;
 			return Promise.all([
-				hasCache?dae.callNativeApiGet('dns_cache',{limit:1000}).then(native.parse):Promise.resolve(null),
-				hasLog?dae.callNativeApiGet('dns_log',{limit:500}).then(native.parse):Promise.resolve(null)
+				hasCache?dae.callNativeApiGet('dns_cache',{limit:200}).then(native.parse):Promise.resolve(null),
+				hasLog?dae.callNativeApiGet('dns_log',{limit:200}).then(native.parse):Promise.resolve(null)
 			]).then(function(v){return {status:status,cache:v[0],log:v[1]};});
 		});
 	},
 
 	refresh:function(){
+		var cacheFrozen=this.cacheLoader&&this.cacheLoader.frozen();
+		var logFrozen=this.logLoader&&this.logLoader.frozen();
+
 		return Promise.all([
-			this.hasCache?dae.callNativeApiGet('dns_cache',{limit:1000}).then(native.parse):Promise.resolve(null),
-			this.hasLog?dae.callNativeApiGet('dns_log',{limit:500}).then(native.parse):Promise.resolve(null)
+			this.hasCache&&!cacheFrozen?dae.callNativeApiGet('dns_cache',{limit:200}).then(native.parse):Promise.resolve(null),
+			this.hasLog&&!logFrozen?dae.callNativeApiGet('dns_log',{limit:200}).then(native.parse):Promise.resolve(null)
 		]).then(function(v){
-			if(this.hasCache&&v[0]&&v[0].ok){
-				if(this.cacheGrid) this.cacheGrid.setRows((v[0].data&&v[0].data.entries)||[]);
-				var cm=document.getElementById('native-dns-cache-meta'); if(cm) cm.textContent=cacheMeta(v[0].data);
-			}
-			if(this.hasLog&&v[1]&&v[1].ok){
-				if(this.logGrid) this.logGrid.setRows(logRecords(v[1].data));
-				var lm=document.getElementById('native-dns-log-meta'); if(lm) lm.textContent=logMeta(v[1].data);
-			}
+			if(v[0]&&v[0].ok&&this.cacheLoader) this.cacheLoader.replaceLive(v[0].data||{});
+			if(v[1]&&v[1].ok&&this.logLoader) this.logLoader.replaceLive(v[1].data||{});
 		}.bind(this));
 	},
 
@@ -129,38 +121,57 @@ return view.extend({
 		this.hasCache=!!(status.resources&&status.resources.dns_cache===true);
 		this.hasLog=!!(status.resources&&status.resources.dns_log===true);
 
-		if(this.hasCache&&data.cache&&data.cache.ok)
-			this.cacheGrid=cacheGrid((data.cache.data&&data.cache.data.entries)||[]);
-		if(this.hasLog&&data.log&&data.log.ok)
-			this.logGrid=logGrid(logRecords(data.log.data));
+		var cacheNode, logNode;
+
+		if(this.hasCache) {
+			if(data.cache&&data.cache.ok) {
+				var cacheInitial=data.cache.data||{};
+				this.cacheGrid=cacheGrid(cacheInitial.entries||[]);
+				var cacheInfo=E('div',{'id':'native-dns-cache-meta','class':'cbi-map-descr'},cacheMeta(cacheInitial,(cacheInitial.entries||[]).length));
+				this.cacheLoader=native.cursorLoader('dns_cache',cacheInitial,{
+					grid:this.cacheGrid,
+					rowsKey:'entries',
+					query:{limit:200},
+					maxRows:5000,
+					onData:function(page,rows){cacheInfo.textContent=cacheMeta(page,rows.length);}
+				});
+				cacheNode=E([], [cacheInfo,this.cacheLoader.node,this.cacheGrid.node]);
+			} else {
+				cacheNode=native.errorBox(data.cache);
+			}
+		} else {
+			cacheNode=native.unavailable(status,'dns_cache');
+		}
+
+		if(this.hasLog) {
+			if(data.log&&data.log.ok) {
+				var logInitial=data.log.data||{};
+				this.logGrid=logGrid(logRecords(logInitial));
+				var logInfo=E('div',{'id':'native-dns-log-meta','class':'cbi-map-descr'},logMeta(logInitial,logRecords(logInitial).length));
+				this.logLoader=native.cursorLoader('dns_log',logInitial,{
+					grid:this.logGrid,
+					extract:logRecords,
+					query:{limit:200},
+					maxRows:5000,
+					onData:function(page,rows){logInfo.textContent=logMeta(page,rows.length);}
+				});
+				logNode=E([], [logInfo,this.logLoader.node,this.logGrid.node]);
+			} else {
+				logNode=native.errorBox(data.log);
+			}
+		} else {
+			logNode=native.unavailable(status,'dns_log');
+		}
 
 		if(this.hasCache||this.hasLog) poll.add(L.bind(this.refresh,this),10);
 
 		return E([],[
 			E('h2',{},_('DNS Runtime')),
-			E('div',{'class':'cbi-map-descr'},_('Read-only DNS cache and log resources. Search, filters, sorting and local paging operate on the current backend page; no cache mutation or DNS query action is sent.')),
-
+			E('div',{'class':'cbi-map-descr'},_('Read-only DNS cache and log resources. Loading another server cursor page freezes that dataset snapshot until you explicitly restart it.')),
 			E('h3',{},_('DNS Cache')),
-			this.hasCache
-				? (data.cache&&data.cache.ok
-					? E([],[
-						E('div',{'id':'native-dns-cache-meta','class':'cbi-map-descr'},cacheMeta(data.cache.data)),
-						data.cache.data&&data.cache.data.next_cursor?E('div',{'class':'alert-message notice'},_('The cache has another server cursor page beyond the current 1000-entry snapshot.')):null,
-						E('div',{'id':'native-dns-cache'},this.cacheGrid.node)
-					])
-					: native.errorBox(data.cache))
-				: native.unavailable(status,'dns_cache'),
-
+			cacheNode,
 			E('h3',{},_('DNS Log')),
-			this.hasLog
-				? (data.log&&data.log.ok
-					? E([],[
-						E('div',{'id':'native-dns-log-meta','class':'cbi-map-descr'},logMeta(data.log.data)),
-						data.log.data&&data.log.data.next_cursor?E('div',{'class':'alert-message notice'},_('Older DNS log records remain on another server cursor page.')):null,
-						E('div',{'id':'native-dns-log'},this.logGrid.node)
-					])
-					: native.errorBox(data.log))
-				: native.unavailable(status,'dns_log')
+			logNode
 		]);
 	},
 
