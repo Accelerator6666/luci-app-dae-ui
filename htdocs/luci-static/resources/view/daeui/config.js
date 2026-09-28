@@ -13,8 +13,7 @@ return view.extend({
 		return (apply ? dae.callApplyConfig(content) : dae.callSaveConfig(content)).then(function(res) {
 			ui.hideModal();
 			var msg = (res && (res.message || res.error)) || _('Operation finished.');
-			if (res && res.output) msg += '
-' + res.output;
+			if (res && res.output) msg += '\\n' + res.output;
 			dae.notify(msg, res && res.ok ? 'info' : 'error');
 		});
 	},
