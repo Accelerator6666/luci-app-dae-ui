@@ -19,7 +19,8 @@
           "geodata_status",
           "preview_managed_section",
           "runtime_stats",
-          "native_api_get"
+          "native_api_get",
+          "native_auth_status"
         ],
         "uci": [
           "get"
@@ -38,7 +39,9 @@
           "restore_backup",
           "clear_log",
           "save_managed_section",
-          "update_geodata"
+          "update_geodata",
+          "set_native_token",
+          "clear_native_token"
         ],
         "uci": [
           "set",
