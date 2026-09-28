@@ -1253,6 +1253,7 @@ return {
 				let link = run('ip -brief link show dae0 2>/dev/null; ip -brief link show dae0peer 2>/dev/null');
 				return {
 					ok: p > 0 && v.rc == 0,
+					diagnostics: validation_diagnostics(s, v.output),
 					checks: [
 						{ name: 'dae process', state: p > 0 ? 'PASS' : 'FAIL', detail: p ? 'PID ' + p : 'not running' },
 						{ name: 'configuration', state: v.rc == 0 ? 'PASS' : 'FAIL', detail: trim(v.output) },
