@@ -547,15 +547,79 @@ function native_probe_url(listen) {
 	return '';
 }
 
-function http_probe(url) {
+function native_token_path() {
+	return '/etc/dae-ui/native-api.token';
+}
+
+function native_token() {
+	return readfile(native_token_path()) || '';
+}
+
+function valid_native_token(token) {
+	if (!token || length(token) > 512) return false;
+	if (index(token, '\n') >= 0 || index(token, '\r') >= 0) return false;
+	return true;
+}
+
+function set_native_token(token) {
+	if (!valid_native_token(token))
+		return { ok: false, error: 'Token must be 1-512 characters and contain no line breaks' };
+	let dir = dirname(native_token_path());
+	let prep = run('mkdir -p ' + shell_quote(dir) + ' && chmod 700 ' + shell_quote(dir));
+	if (prep.rc != 0) return { ok: false, error: 'Unable to prepare private token directory', output: prep.output };
+	let w = write_atomic(native_token_path(), token);
+	if (!w.ok) return w;
+	run('chmod 600 ' + shell_quote(native_token_path()));
+	return { ok: true, configured: true, message: 'Native API token stored in a root-only file' };
+}
+
+function clear_native_token() {
+	let r = run('rm -f ' + shell_quote(native_token_path()));
+	return { ok: r.rc == 0, configured: false, message: r.rc == 0 ? 'Native API token removed' : '' };
+}
+
+function curl_config_escape(s) {
+	s = replace(s || '', /\\/g, '\\\\');
+	s = replace(s, /"/g, '\\"');
+	return s;
+}
+
+function http_probe(url, authenticated, query) {
 	if (!url) return { attempted: false, status: 0, body: '', headers: '' };
+
 	let tag = '/tmp/dae-ui-http-' + pid() + '-' + stamp();
 	let body = tag + '.body';
 	let headers = tag + '.headers';
-	let r = run('curl --connect-timeout 1 --max-time 2 --silent --show-error -D ' + shell_quote(headers) + ' -o ' + shell_quote(body) + " -w '%{http_code}' " + shell_quote(url));
+	let cfg = tag + '.curl';
+	let authopt = '';
+	let token = authenticated ? native_token() : '';
+
+	if (token) {
+		if (!valid_native_token(token))
+			return { attempted: false, status: 0, body: '', headers: '', rc: 1, error: 'Stored token is invalid' };
+		if (!writefile(cfg, 'header = "Authorization: Bearer ' + curl_config_escape(token) + '"\n'))
+			return { attempted: false, status: 0, body: '', headers: '', rc: 1, error: 'Unable to prepare private curl config' };
+		run('chmod 600 ' + shell_quote(cfg));
+		authopt = ' --config ' + shell_quote(cfg);
+	}
+
+	let qopt = '';
+	for (let idx, item in (query || []))
+		qopt += ' --data-urlencode ' + shell_quote(item.name + '=' + item.value);
+
+	let r = run('curl --connect-timeout 1 --max-time 3 --silent --show-error' + authopt +
+		' -D ' + shell_quote(headers) + ' -o ' + shell_quote(body) +
+		" -w '%{http_code}'" + (length(query || []) ? ' --get' : '') + qopt + ' ' + shell_quote(url));
+
 	let status = match(trim(r.output), /^[0-9]{3}$/) ? +trim(r.output) : 0;
-	let out = { attempted: true, status: status, body: readfile(body) || '', headers: readfile(headers) || '', rc: r.rc };
-	run('rm -f ' + shell_quote(body) + ' ' + shell_quote(headers));
+	let out = {
+		attempted: true,
+		status: status,
+		body: readfile(body) || '',
+		headers: readfile(headers) || '',
+		rc: r.rc
+	};
+	run('rm -f ' + shell_quote(body) + ' ' + shell_quote(headers) + ' ' + shell_quote(cfg));
 	return out;
 }
 
@@ -563,28 +627,97 @@ function capability_available(body, key) {
 	let needle = '"' + key + '"';
 	let pos = index(body || '', needle);
 	if (pos < 0) return null;
-	let chunk = substr(body, pos, 400);
+	let chunk = substr(body, pos, 500);
 	if (match(chunk, /"available"\s*:\s*true/)) return true;
 	if (match(chunk, /"available"\s*:\s*false/)) return false;
 	return null;
 }
 
+function safe_query_text(value, maxlen) {
+	let s = value || '';
+	if (!s || length(s) > maxlen || index(s, '\n') >= 0 || index(s, '\r') >= 0)
+		return '';
+	return s;
+}
+
+function query_add(out, name, value) {
+	if (value === null || value === '' || value === false) return;
+	push(out, { name: name, value: '' + value });
+}
 
 function native_resource_path(kind) {
 	let paths = {
 		runtime: '/api/v1/runtime',
 		runtime_outbounds: '/api/v1/runtime/outbounds',
-		nodes: '/api/v1/nodes?limit=200',
+		nodes: '/api/v1/nodes',
 		groups: '/api/v1/groups',
-		connections: '/api/v1/connections?detail=full&limit=200',
-		flows: '/api/v1/flows?limit=200',
-		dns_cache: '/api/v1/dns/cache?limit=200',
-		dns_log: '/api/v1/dns/log?limit=200'
+		connections: '/api/v1/connections',
+		flows: '/api/v1/flows',
+		dns_cache: '/api/v1/dns/cache',
+		dns_log: '/api/v1/dns/log'
 	};
 	return paths[kind] || '';
 }
 
-function native_api_get(s, kind) {
+function native_resource_query(kind, args) {
+	let out = [];
+	let limit = +(args.limit || 0);
+	if (limit < 1 || limit > 1000)
+		limit = kind == 'dns_log' ? 500 : 1000;
+
+	if (kind == 'connections') {
+		query_add(out, 'detail', 'full');
+		query_add(out, 'limit', limit);
+		if (args.type == 'tcp' || args.type == 'udp' || args.type == 'all')
+			query_add(out, 'type', args.type);
+		let src = safe_query_text(args.src, 128);
+		if (src) query_add(out, 'src', src);
+	} else if (kind == 'nodes') {
+		query_add(out, 'limit', limit);
+		let group_id = safe_query_text(args.group_id, 256);
+		let cursor = safe_query_text(args.cursor, 4096);
+		if (group_id) query_add(out, 'group_id', group_id);
+		if (cursor) query_add(out, 'cursor', cursor);
+	} else if (kind == 'flows') {
+		query_add(out, 'detail', 'full');
+		query_add(out, 'limit', limit);
+		if (args.network == 'tcp' || args.network == 'udp' || args.network == 'all')
+			query_add(out, 'network', args.network);
+		let state = safe_query_text(args.state, 48);
+		let connection_id = safe_query_text(args.connection_id, 256);
+		let cursor = safe_query_text(args.cursor, 4096);
+		if (state) query_add(out, 'state', state);
+		if (connection_id) query_add(out, 'connection_id', connection_id);
+		if (cursor) query_add(out, 'cursor', cursor);
+	} else if (kind == 'dns_cache') {
+		query_add(out, 'detail', 'full');
+		query_add(out, 'limit', limit);
+		let name = safe_query_text(args.name, 255);
+		let domain = safe_query_text(args.domain, 255);
+		let record_type = safe_query_text(args.record_type, 32);
+		let cursor = safe_query_text(args.cursor, 4096);
+		if (name) query_add(out, 'name', name);
+		if (domain) query_add(out, 'domain', domain);
+		if (record_type) query_add(out, 'type', record_type);
+		if (args.include_expired) query_add(out, 'include_expired', 'true');
+		if (cursor) query_add(out, 'cursor', cursor);
+	} else if (kind == 'dns_log') {
+		query_add(out, 'limit', limit);
+		let name = safe_query_text(args.name, 255);
+		let record_type = safe_query_text(args.record_type, 32);
+		let src = safe_query_text(args.src, 128);
+		let cursor = safe_query_text(args.cursor, 4096);
+		if (name) query_add(out, 'name', name);
+		if (record_type) query_add(out, 'type', record_type);
+		if (src) query_add(out, 'src', src);
+		if (cursor) query_add(out, 'cursor', cursor);
+	}
+
+	return out;
+}
+
+function native_api_get(s, args) {
+	let kind = args.resource || '';
 	let path = native_resource_path(kind);
 	if (!path) return { ok: false, status: 0, error: 'Unsupported Native API resource' };
 
@@ -592,20 +725,27 @@ function native_api_get(s, kind) {
 	let base = native_probe_url(cfg.listen);
 	if (!base) return { ok: false, status: 0, error: 'Native API listener is not locally probeable' };
 
-	let r = http_probe(base + path);
+	let r = http_probe(base + path, true, native_resource_query(kind, args));
 	return {
 		ok: r.status == 200,
 		status: r.status,
 		body: r.body || '',
 		auth_required: r.status == 401,
-		error: r.status == 200 ? '' : (r.status ? 'Native API returned HTTP ' + r.status : 'Native API request failed')
+		error: r.status == 200 ? '' : (r.status ? 'Native API returned HTTP ' + r.status : (r.error || 'Native API request failed'))
 	};
 }
 
 function native_api_status(s) {
 	let cfg = native_api_config(s);
 	let base = native_probe_url(cfg.listen);
-	let discovery = http_probe(base ? base + '/api' : '');
+	let token = native_token();
+	let auth_configured = !!token;
+
+	let discovery_public = http_probe(base ? base + '/api' : '', false, []);
+	let discovery = discovery_public;
+	if (discovery_public.status == 401 && auth_configured)
+		discovery = http_probe(base + '/api', true, []);
+
 	let api_major = 0;
 	let name = '';
 	let base_path = '';
@@ -617,10 +757,11 @@ function native_api_status(s) {
 		name = nm ? nm[1] : '';
 		base_path = bm ? bm[1] : '';
 	}
-	let challenged = discovery.status == 401 && !!match(discovery.headers, /WWW-Authenticate:\s*Bearer/i);
+
+	let challenged = discovery_public.status == 401 && !!match(discovery_public.headers, /WWW-Authenticate:\s*Bearer/i);
 	let compatible = (discovery.status == 200 && api_major == 1) || challenged;
 
-	let cap = http_probe(base ? base + '/api/v1/capabilities' : '');
+	let cap = http_probe(base ? base + '/api/v1/capabilities' : '', true, []);
 	let cap_body = cap.status == 200 ? cap.body : '';
 
 	return {
@@ -629,10 +770,13 @@ function native_api_status(s) {
 		listen: cfg.listen,
 		probe_base: base,
 		discovery_status: discovery.status,
+		discovery_public_status: discovery_public.status,
 		api_major: api_major,
 		name: name,
 		base_path: base_path,
 		auth_challenge: challenged,
+		auth_configured: auth_configured,
+		auth_accepted: auth_configured && cap.status == 200,
 		contract_ready: compatible,
 		capabilities_status: cap.status,
 		resources: {
@@ -966,9 +1110,47 @@ return {
 
 
 		native_api_get: {
-			args: { resource: 'string' },
+			args: {
+				resource: 'string',
+				limit: 'int',
+				cursor: 'string',
+				type: 'string',
+				src: 'string',
+				network: 'string',
+				state: 'string',
+				group_id: 'string',
+				connection_id: 'string',
+				name: 'string',
+				domain: 'string',
+				record_type: 'string',
+				include_expired: 'bool'
+			},
 			call: function(req) {
-				return native_api_get(settings(), req.args.resource || '');
+				return native_api_get(settings(), req.args);
+			}
+		},
+
+		native_auth_status: {
+			call: function() {
+				return { configured: !!native_token() };
+			}
+		},
+
+		set_native_token: {
+			args: { token: 'string' },
+			call: function(req) {
+				let r = set_native_token(req.args.token || '');
+				if (!r.ok) return r;
+				let status = native_api_status(settings());
+				r.capabilities_status = status.capabilities_status;
+				r.accepted = status.capabilities_status == 200;
+				return r;
+			}
+		},
+
+		clear_native_token: {
+			call: function() {
+				return clear_native_token();
 			}
 		},
 
