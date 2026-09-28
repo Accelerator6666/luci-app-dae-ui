@@ -22,7 +22,8 @@
           "native_api_get",
           "native_auth_status",
           "native_dns_query",
-          "native_routing_trace"
+          "native_routing_trace",
+          "native_operation_get"
         ],
         "uci": [
           "get"
@@ -43,7 +44,8 @@
           "save_managed_section",
           "update_geodata",
           "set_native_token",
-          "clear_native_token"
+          "clear_native_token",
+          "native_probe_start"
         ],
         "uci": [
           "set",
