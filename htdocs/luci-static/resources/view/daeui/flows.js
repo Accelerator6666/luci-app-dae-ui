@@ -1,7 +1,6 @@
 'use strict';
 'require view';
 'require poll';
-'require dom';
 'require daeui.common as dae';
 'require daeui.native as native';
 
@@ -50,32 +49,24 @@ function buildGrid(rows) {
 	});
 }
 
-function meta(data) {
+function meta(data, loaded) {
 	data = data || {};
-	var flows = data.flows || [];
-	var parts = [ _('Loaded: ') + flows.length ];
+	var parts = [ _('Loaded: ') + loaded ];
 	if (data.total !== undefined) parts.push(_('Total: ') + data.total);
 	if (data.dropped_records !== undefined) parts.push(_('Dropped records: ') + data.dropped_records);
-	if (data.next_cursor) parts.push(_('more server pages available'));
 	return parts.join(' · ');
 }
 
 return view.extend({
 	load:function(){
-		return native.loadResource('flows', { limit:1000 });
+		return native.loadResource('flows', { limit:200 });
 	},
 
 	refresh:function(){
-		return dae.callNativeApiGet('flows', { limit:1000 }).then(function(res){
+		if (this.loader && this.loader.frozen()) return Promise.resolve();
+		return dae.callNativeApiGet('flows', { limit:200 }).then(function(res){
 			var parsed=native.parse(res);
-			var info=document.getElementById('native-flows-meta');
-			if(!parsed.ok){
-				var box=document.getElementById('native-flows');
-				if(box) dom.content(box,native.errorBox(parsed));
-				return;
-			}
-			if(info) info.textContent=meta(parsed.data);
-			if(this.grid) this.grid.setRows((parsed.data&&parsed.data.flows)||[]);
+			if(parsed.ok && this.loader) this.loader.replaceLive(parsed.data || {});
 		}.bind(this));
 	},
 
@@ -89,17 +80,25 @@ return view.extend({
 		if(!data.resource||!data.resource.ok)
 			return E([], [ E('h2',{},_('Native Flows')), native.errorBox(data.resource) ]);
 
-		this.grid=buildGrid((data.resource.data&&data.resource.data.flows)||[]);
+		var initial=data.resource.data||{};
+		this.grid=buildGrid(initial.flows||[]);
+		var info=E('div',{'id':'native-flows-meta','class':'cbi-map-descr'},meta(initial,(initial.flows||[]).length));
+		this.loader=native.cursorLoader('flows',initial,{
+			grid:this.grid,
+			rowsKey:'flows',
+			query:{limit:200},
+			maxRows:5000,
+			onData:function(page,rows){info.textContent=meta(page,rows.length);}
+		});
+
 		poll.add(L.bind(this.refresh,this),5);
 
 		return E([],[
 			E('h2',{},_('Native Flows')),
-			E('div',{'class':'cbi-map-descr'},_('Read-only retained flow summaries. Search, filters, sorting and local paging apply to the current server page of up to 1000 flows.')),
-			E('div',{'id':'native-flows-meta','class':'cbi-map-descr'},meta(data.resource.data)),
-			data.resource.data&&data.resource.data.next_cursor
-				? E('div',{'class':'alert-message notice'},_('The backend reports another cursor page. The current page remains stable for local sorting/filtering; no write or trace request is issued.'))
-				: null,
-			E('div',{'id':'native-flows'},this.grid.node)
+			E('div',{'class':'cbi-map-descr'},_('Read-only retained flow summaries. Loading a next_cursor page freezes the current backend snapshot; restart it explicitly to return to live polling.')),
+			info,
+			this.loader.node,
+			this.grid.node
 		]);
 	},
 
