@@ -16,9 +16,12 @@ function resourceRows(data) {
 		[ 'runtime', _('Runtime') ],
 		[ 'runtime_memory', _('Runtime memory') ],
 		[ 'runtime_outbounds', _('Runtime outbounds / policy') ],
+		[ 'config', _('Effective config sources') ],
 		[ 'nodes', _('Nodes') ],
 		[ 'groups', _('Groups') ],
 		[ 'probes', _('Node probes / latency') ],
+		[ 'operations', _('Operations') ],
+		[ 'rules', _('Routing rules') ],
 		[ 'connections', _('Connections') ],
 		[ 'flows', _('Flows') ],
 		[ 'routing_trace', _('Routing trace') ],
@@ -155,7 +158,7 @@ return view.extend({
 				: null,
 
 			E('p', {}, _(
-				'Detailed Connections, node latency, runtime policy selection, flows and DNS telemetry are enabled only when the Native API explicitly reports those resources.'
+				'Detailed Connections, node latency, routing rules, runtime policy selection, flows and DNS telemetry are enabled only when the Native API explicitly reports those resources.'
 			))
 		]);
 	},
