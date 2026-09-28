@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.9.0 - 2026-09-29
+
+- Added read-only Native routing rule dictionary support through the fixed GET `/api/v1/rules` resource.
+- Added Native config read support only for source-ID mapping used by the rule dictionary.
+- Rule source navigation follows the contract: join `source_id` to Native config sources first, then link to the local editor only when the resulting relative path exactly matches a locally discovered `.dae` file; the redacted/display-only rule `file` field is never used as a file-access path.
+- Added capability reporting for `config`, `rules` and `operations`.
+- Added a hidden capability-driven Native Rules page with search, filtering, sorting, generation ID and fallback metadata.
+- Added explicit single-node TCP connect probes when both `probes` and `operations` capabilities are available.
+- Node probes never run automatically: each request requires a button click and confirmation.
+- rpcd constructs a fixed node-target `tcp_connect` probe request; callers cannot provide arbitrary probe JSON or arbitrary operation URLs.
+- Added safe operation polling restricted to returned operation IDs, with Retry-After-aware polling and a 60-second UI timeout.
+- Probe results expose backend-reported health state, latency, resolved leaf node, transport/IP version, health update status and errors.
+- No group-selection mutation, connection closing, DNS cache mutation, config mutation or general-purpose Native API POST proxy was added.
+
 ## 0.8.0 - 2026-09-29
 
 - Added snapshot-safe incremental Native API cursor loading for Nodes, Flows, DNS cache and DNS log.
