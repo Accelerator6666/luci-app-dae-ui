@@ -10,6 +10,13 @@ var callSaveConfig = rpc.declare({ object: 'luci.daeui', method: 'save_config', 
 var callApplyConfig = rpc.declare({ object: 'luci.daeui', method: 'apply_config', params: [ 'content' ], expect: {} });
 var callRestoreLast = rpc.declare({ object: 'luci.daeui', method: 'restore_last', expect: {} });
 var callGetSections = rpc.declare({ object: 'luci.daeui', method: 'get_sections', expect: {} });
+var callListConfigFiles = rpc.declare({ object: 'luci.daeui', method: 'list_config_files', expect: {} });
+var callGetConfigFile = rpc.declare({ object: 'luci.daeui', method: 'get_config_file', params: [ 'path' ], expect: {} });
+var callSaveConfigFile = rpc.declare({ object: 'luci.daeui', method: 'save_config_file', params: [ 'path', 'content', 'apply' ], expect: {} });
+var callCreateConfigFile = rpc.declare({ object: 'luci.daeui', method: 'create_config_file', params: [ 'name', 'content', 'apply' ], expect: {} });
+var callListBackups = rpc.declare({ object: 'luci.daeui', method: 'list_backups', expect: {} });
+var callDiffBackup = rpc.declare({ object: 'luci.daeui', method: 'diff_backup', params: [ 'path' ], expect: {} });
+var callRestoreBackup = rpc.declare({ object: 'luci.daeui', method: 'restore_backup', params: [ 'path', 'apply' ], expect: {} });
 var callGetLog = rpc.declare({ object: 'luci.daeui', method: 'get_log', params: [ 'limit' ], expect: {} });
 var callClearLog = rpc.declare({ object: 'luci.daeui', method: 'clear_log', expect: {} });
 var callDiagnose = rpc.declare({ object: 'luci.daeui', method: 'diagnose', expect: {} });
@@ -38,6 +45,13 @@ return baseclass.extend({
 	callApplyConfig: callApplyConfig,
 	callRestoreLast: callRestoreLast,
 	callGetSections: callGetSections,
+	callListConfigFiles: callListConfigFiles,
+	callGetConfigFile: callGetConfigFile,
+	callSaveConfigFile: callSaveConfigFile,
+	callCreateConfigFile: callCreateConfigFile,
+	callListBackups: callListBackups,
+	callDiffBackup: callDiffBackup,
+	callRestoreBackup: callRestoreBackup,
 	callGetLog: callGetLog,
 	callClearLog: callClearLog,
 	callDiagnose: callDiagnose,
