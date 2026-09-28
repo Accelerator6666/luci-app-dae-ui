@@ -12,9 +12,10 @@ This package must be useful **today** with normal dae installations. It therefor
 
 When dae implements the shared daeuniverse native API contract, the Native API page becomes the integration point for connections, DNS telemetry, policy selection, route traces, activity history and other runtime resources.
 
-## v0.4.0
+## v0.5.0
 
 - Live Overview with process, memory, version, config validation, discovered config-file count and eBPF interface state.
+- Runtime Dashboard with 2-second polling for process CPU, memory, process uptime, socket FDs and `dae0`/`dae0peer` interface counters.
 - Start / stop / restart / hot reload / suspend controls.
 - Local CodeMirror DAE editor with line numbers, DAE syntax highlighting, bracket matching, auto-close and folding.
 - Include-aware multi-file configuration manager for `.dae` files under the active config directory.
@@ -30,12 +31,13 @@ When dae implements the shared daeuniverse native API contract, the Native API p
 - Quick staging forms for nodes, subscriptions, policy groups and routing rules; DNS gets a safe split-DNS template plus raw staged editing.
 - Best-effort cards for nodes/subscriptions/policies, a routing summary table and DNS upstream cards; complex syntax always remains visible in source blocks.
 - Staged diff preview before managed-section writes.
-- Overview now includes process CPU, process uptime, discovered interfaces and the current default route.
+- Overview includes process uptime, discovered interfaces and the current default route; live CPU moved to Runtime where it is calculated from process CPU-tick deltas between polls.
 - Config Sources page showing discovered files and recognized section ownership.
 - GeoData status detection plus a verified updater that downloads dae-upstream pinned versions, validates SHA256, backs up existing files and atomically replaces them.
 - Diagnostics page for process, validation, `dae0` and default route.
 - Live log page with refresh, pause and clear.
-- Native API readiness page, deliberately capability-driven.
+- Native API discovery page that probes `/api` and `/api/v1/capabilities` locally without replaying or exposing the configured secret.
+- Runtime capability matrix that clearly separates local telemetry from Native-API-only resources such as detailed connections, node probes, policy runtime selection, flows, routing trace and DNS telemetry.
 - Configurable dae binary, init script, config path and log path through UCI.
 
 ## Install for development
@@ -51,12 +53,12 @@ Copy the project into an OpenWrt build tree as a package, or install the package
 
 They can be changed under **Services → DAE → Settings**.
 
-## Planned v0.5
+## Planned v0.6
 
-- Richer structured editors for existing user-owned blocks without rewriting unknown syntax.
+- Optional authenticated Native API profile support without storing plaintext secrets in LuCI config.
+- Read-only detailed Connections / Nodes / Policies pages when the backend explicitly reports those resources.
 - Better parser diagnostics and click-through source navigation.
 - GeoData pin refresh automation tied to dae upstream changes.
-- Native API capability discovery and optional Doona-style runtime pages when dae exposes the required contract.
 
 ## License
 
