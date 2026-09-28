@@ -15,7 +15,14 @@ return view.extend({
 				if (!items.length) return null;
 				return E('div', { 'class': 'cbi-section' }, [
 					E('h3', {}, name),
-					items.map(function(x) { return E('pre', { 'style': 'white-space:pre-wrap;overflow:auto;max-height:380px' }, x.content); })
+					items.map(function(x) {
+						return E('div', {}, [
+							E('div', { 'class':'cbi-map-descr' }, x.source
+								? E('a', { 'href':dae.configUrl(x.source, 0) }, E('code', {}, x.source))
+								: '-'),
+							E('pre', { 'style':'white-space:pre-wrap;overflow:auto;max-height:380px' }, x.content)
+						]);
+					})
 				]);
 			})
 		]);
