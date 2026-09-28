@@ -37,6 +37,23 @@ function appendLine(id, text) {
 	ta.dispatchEvent(new Event('input'));
 }
 
+function preview(kind, id) {
+	var ta = document.getElementById(id);
+	if (!ta) return Promise.resolve();
+	ui.showModal(_('Staged diff'), [ E('p', { 'class': 'spinning' }, _('Preparing diff preview…')) ]);
+	return dae.callPreviewManagedSection(kind, ta.value || '').then(function(res) {
+		if (!res || !res.ok) {
+			ui.hideModal();
+			dae.notify((res && res.error) || _('Unable to generate diff.'), 'error');
+			return;
+		}
+		ui.showModal(_('Staged diff: ') + (res.path || kind), [
+			E('pre', { 'style': 'white-space:pre-wrap;max-height:70vh;overflow:auto;min-width:60vw' }, res.identical ? _('No differences.') : (res.output || _('No diff output.'))),
+			E('div', { 'class': 'right' }, E('button', { 'class': 'btn', 'click': ui.hideModal }, _('Close')))
+		]);
+	});
+}
+
 function save(kind, id, apply) {
 	var ta = document.getElementById(id);
 	if (!ta) return Promise.resolve();
@@ -65,6 +82,11 @@ function editor(kind, managed, help, quick) {
 		}, body),
 		E('div', { 'class': 'cbi-page-actions' }, [
 			E('button', {
+				'class': 'btn cbi-button',
+				'disabled': managed && managed.include_enabled ? null : '',
+				'click': function() { return preview(kind, id); }
+			}, _('Preview diff')), ' ',
+			E('button', {
 				'class': 'btn cbi-button cbi-button-save',
 				'disabled': managed && managed.include_enabled ? null : '',
 				'click': function() { return save(kind, id, false); }
@@ -91,6 +113,7 @@ return baseclass.extend({
 	existingSections: existingSections,
 	includeBanner: includeBanner,
 	appendLine: appendLine,
+	preview: preview,
 	save: save,
 	editor: editor
 });
