@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.10.0 - 2026-09-29
+
+- Native API status now parses and exposes the advertised probe targets, kinds, purposes, transports, IP versions and job limits.
+- Node Probe is capability-driven instead of fixed to one request: the UI offers only advertised probe kinds/transports/IP families, while rpcd independently revalidates the same constraints before submission.
+- tcp_connect and HTTP probes are restricted to TCP; DNS probes use the selected advertised transport and the purpose is derived server-side from the probe kind.
+- Added safe fixed-path reads for individual group and retained flow details.
+- Added explicit Group Probe support for direct members. The UI reads the group's own probe transport capability and splits direct members into sequential explicit-member batches sized by max_members_per_job and max_results_per_job.
+- Group probe batches are submitted one at a time only after the prior operation finishes; partial completed results are preserved if a later batch fails.
+- Probe member IDs are validated by exact membership in the just-read group detail rather than by URL-path syntax.
+- Added generation-safe Flow → Rule resolution. A flow summary rule ID is joined only after retained flow detail proves a traffic route step with the same rule ID and a generation matching the current complete rule dictionary.
+- Missing retained route evidence, stale generations and absent dictionary rules are surfaced as non-links rather than guessed associations.
+- Native Rules accepts generation-qualified links and refuses to present them as resolved when the requested generation differs from the currently loaded dictionary.
+- Native API Discovery now displays probe contract fields and principal job-size limits.
+- No arbitrary probe body, arbitrary operation URL, group selection, connection closing, DNS cache mutation or general-purpose Native API write proxy was added.
+
 ## 0.9.0 - 2026-09-29
 
 - Added read-only Native routing rule dictionary support through the fixed GET `/api/v1/rules` resource.
