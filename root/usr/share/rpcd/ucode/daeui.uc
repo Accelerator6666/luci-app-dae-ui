@@ -569,6 +569,39 @@ function capability_available(body, key) {
 	return null;
 }
 
+
+function native_resource_path(kind) {
+	let paths = {
+		runtime: '/api/v1/runtime',
+		runtime_outbounds: '/api/v1/runtime/outbounds',
+		nodes: '/api/v1/nodes?limit=200',
+		groups: '/api/v1/groups',
+		connections: '/api/v1/connections?detail=full&limit=200',
+		flows: '/api/v1/flows?limit=200',
+		dns_cache: '/api/v1/dns/cache?limit=200',
+		dns_log: '/api/v1/dns/log?limit=200'
+	};
+	return paths[kind] || '';
+}
+
+function native_api_get(s, kind) {
+	let path = native_resource_path(kind);
+	if (!path) return { ok: false, status: 0, error: 'Unsupported Native API resource' };
+
+	let cfg = native_api_config(s);
+	let base = native_probe_url(cfg.listen);
+	if (!base) return { ok: false, status: 0, error: 'Native API listener is not locally probeable' };
+
+	let r = http_probe(base + path);
+	return {
+		ok: r.status == 200,
+		status: r.status,
+		body: r.body || '',
+		auth_required: r.status == 401,
+		error: r.status == 200 ? '' : (r.status ? 'Native API returned HTTP ' + r.status : 'Native API request failed')
+	};
+}
+
 function native_api_status(s) {
 	let cfg = native_api_config(s);
 	let base = native_probe_url(cfg.listen);
@@ -928,6 +961,14 @@ return {
 						{ name: 'default route', state: trim(route.output) ? 'PASS' : 'WARN', detail: trim(route.output) }
 					]
 				};
+			}
+		},
+
+
+		native_api_get: {
+			args: { resource: 'string' },
+			call: function(req) {
+				return native_api_get(settings(), req.args.resource || '');
 			}
 		},
 
