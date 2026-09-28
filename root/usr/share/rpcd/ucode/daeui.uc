@@ -200,6 +200,437 @@ function save_one_file(s, rel, content, apply) {
 	return { ok: true, backup: b, message: apply ? 'Configuration validated and hot-reloaded' : 'Configuration saved and validated' };
 }
 
+
+function include_status(s) {
+	let content = readfile(s.config) || '';
+	let clean = [];
+	for (let idx, line in split(content, '\n')) {
+		if (match(line, /^\s*#/)) continue;
+		push(clean, line);
+	}
+	let joined = join('\n', clean);
+	let enabled = !!match(joined, /include\s*\{[\s\S]*config\.d\/\*\.dae[\s\S]*\}/);
+	return { enabled: enabled, pattern: enabled ? 'config.d/*.dae' : '' };
+}
+
+function managed_spec(kind) {
+	let map = {
+		nodes: { file: 'config.d/dae-ui-nodes.dae', section: 'node' },
+		subscriptions: { file: 'config.d/dae-ui-subscriptions.dae', section: 'subscription' },
+		groups: { file: 'config.d/dae-ui-groups.dae', section: 'group' },
+		routing: { file: 'config.d/dae-ui-routing.dae', section: 'routing' },
+		dns: { file: 'config.d/dae-ui-dns.dae', section: 'dns' }
+	};
+	return map[kind] || null;
+}
+
+function managed_content(section, body) {
+	let lines = [];
+	push(lines, '# Managed by luci-app-dae-ui. Manual edits are allowed, but keep this file valid DAE syntax.');
+	push(lines, section + ' {');
+	for (let idx, line in split(body || '', '\n'))
+		push(lines, '    ' + line);
+	push(lines, '}');
+	push(lines, '');
+	return join('\n', lines);
+}
+
+function get_managed(s, kind) {
+	let spec = managed_spec(kind);
+	if (!spec) return { ok: false, error: 'Unsupported managed section' };
+	let inc = include_status(s);
+	let path = resolve_config_file(s, spec.file, false);
+	if (!path) return { ok: false, error: 'Invalid managed path' };
+	let content = stat(path) ? (readfile(path) || '') : '';
+	let body = '';
+	if (content) {
+		let m = match(content, new RegExp(spec.section + '\\s*\\{([\\s\\S]*)\\}\\s*
+	let content = readfile(cfg) || '';
+	let has = !!match(content, /native_api\s*\{/);
+	let listen = '';
+	let enabled = false;
+	if (has) {
+		let b = match(content, /native_api\s*\{([^}]*)\}/);
+		if (b) {
+			let lm = match(b[1], /listen\s*:\s*['"]?([^'"\s]+)['"]?/);
+			let em = match(b[1], /enabled\s*:\s*(true|false)/);
+			listen = lm ? lm[1] : '';
+			enabled = em ? em[1] == 'true' : true;
+		}
+	}
+	return { detected: has, enabled: enabled, listen: listen, contract_ready: false };
+}
+
+return {
+	'luci.daeui': {
+		status: {
+			call: function() {
+				let s = settings();
+				let p = pid();
+				let vr = stat(s.config) ? validate(s.binary, s.config) : { rc: 1, output: 'Config file missing' };
+				return {
+					running: p > 0,
+					pid: p,
+					memory_kb: mem_kb(p),
+					version: version(s.binary),
+					binary: s.binary,
+					config_file: s.config,
+					config_exists: !!stat(s.config),
+					config_valid: vr.rc == 0,
+					validate_output: vr.output,
+					dae0: iface_exists('dae0'),
+					dae0peer: iface_exists('dae0peer'),
+					last_backup: latest_backup(s.config),
+					config_files: length(config_files(s))
+				};
+			}
+		},
+
+		service: {
+			args: { action: 'string' },
+			call: function(req) {
+				let s = settings();
+				let action = req.args.action || '';
+				let allowed = { start: true, stop: true, restart: true, reload: true, enable: true, disable: true, suspend: true };
+				if (!allowed[action])
+					return { ok: false, error: 'Unsupported action' };
+				let cmd;
+				if (action == 'reload') cmd = shell_quote(s.binary) + ' reload';
+				else if (action == 'suspend') cmd = shell_quote(s.binary) + ' suspend';
+				else cmd = shell_quote(s.init) + ' ' + action;
+				let r = run(cmd);
+				return { ok: r.rc == 0, rc: r.rc, output: r.output, message: r.rc == 0 ? 'Action completed: ' + action : '' };
+			}
+		},
+
+		get_config: {
+			call: function() {
+				let s = settings();
+				return { ok: true, path: s.config, content: readfile(s.config) || '', last_backup: latest_backup(s.config) };
+			}
+		},
+
+		save_config: {
+			args: { content: 'string' },
+			call: function(req) {
+				let s = settings();
+				let rel = substr(s.config, length(config_base(s)) + 1);
+				return save_one_file(s, rel, req.args.content || '', false);
+			}
+		},
+
+		apply_config: {
+			args: { content: 'string' },
+			call: function(req) {
+				let s = settings();
+				let rel = substr(s.config, length(config_base(s)) + 1);
+				return save_one_file(s, rel, req.args.content || '', true);
+			}
+		},
+
+		restore_last: {
+			call: function() {
+				let s = settings();
+				let b = latest_backup(s.config);
+				if (!b) return { ok: false, error: 'No backup found' };
+				let r = run('cp -f ' + shell_quote(b) + ' ' + shell_quote(s.config) + ' && ' + shell_quote(s.binary) + ' reload');
+				return { ok: r.rc == 0, output: r.output, backup: b };
+			}
+		},
+
+		list_config_files: {
+			call: function() {
+				let s = settings();
+				return { ok: true, base: config_base(s), main: s.config, files: config_files(s) };
+			}
+		},
+
+		get_config_file: {
+			args: { path: 'string' },
+			call: function(req) {
+				let s = settings();
+				let path = resolve_config_file(s, req.args.path || '', true);
+				if (!path) return { ok: false, error: 'Invalid or missing configuration file' };
+				return { ok: true, path: req.args.path, content: readfile(path) || '', latest_backup: latest_backup(path) };
+			}
+		},
+
+		save_config_file: {
+			args: { path: 'string', content: 'string', apply: 'bool' },
+			call: function(req) {
+				let s = settings();
+				return save_one_file(s, req.args.path || '', req.args.content || '', !!req.args.apply);
+			}
+		},
+
+		create_config_file: {
+			args: { name: 'string', content: 'string', apply: 'bool' },
+			call: function(req) {
+				let s = settings();
+				let name = req.args.name || '';
+				if (!match(name, /^[A-Za-z0-9._-]+\.dae$/))
+					return { ok: false, error: 'File name must end in .dae and contain only safe characters' };
+				let rel = 'config.d/' + name;
+				let path = resolve_config_file(s, rel, false);
+				if (!path) return { ok: false, error: 'Invalid target path' };
+				if (stat(path)) return { ok: false, error: 'File already exists' };
+				run('mkdir -p ' + shell_quote(dirname(path)));
+				let w = write_atomic(path, req.args.content || '');
+				if (!w.ok) return w;
+				let v = validate(s.binary, s.config);
+				if (v.rc != 0) {
+					run('rm -f ' + shell_quote(path));
+					return { ok: false, error: 'Validation failed; new file removed', output: v.output, rolled_back: true };
+				}
+				if (req.args.apply) {
+					let r = run(shell_quote(s.binary) + ' reload');
+					if (r.rc != 0) {
+						run('rm -f ' + shell_quote(path));
+						run(shell_quote(s.binary) + ' reload');
+						return { ok: false, error: 'Reload failed; new file removed', output: r.output, rolled_back: true };
+					}
+				}
+				return { ok: true, path: rel, message: req.args.apply ? 'File created and hot-reloaded' : 'File created and validated' };
+			}
+		},
+
+		get_sections: {
+			call: function() {
+				let s = settings();
+				let all = [];
+				for (let fidx, f in config_files(s)) {
+					let sections = section_extract(readfile(f.full_path) || '', f.path);
+					for (let sidx, sec in sections) push(all, sec);
+				}
+				return { ok: true, sections: all };
+			}
+		},
+
+		list_backups: {
+			call: function() {
+				let s = settings();
+				let base = config_base(s);
+				let r = run('find ' + shell_quote(base) + " -maxdepth 3 -type f -name '*.dae.backup.*' 2>/dev/null | sort -r");
+				let items = [];
+				for (let idx, line in split(trim(r.output), '\n')) {
+					if (!line) continue;
+					let rel = substr(line, length(base) + 1);
+					let st = stat(line);
+					push(items, { path: rel, size: st ? (st.size || 0) : 0 });
+				}
+				return { ok: true, backups: items };
+			}
+		},
+
+		diff_backup: {
+			args: { path: 'string' },
+			call: function(req) {
+				let s = settings();
+				let base = config_base(s);
+				let rel = req.args.path || '';
+				if (!match(rel, /^[A-Za-z0-9._\/-]+\.dae\.backup\.[0-9-]+$/) || match(rel, /(^|\/)\.\.(\/|$)/))
+					return { ok: false, error: 'Invalid backup path' };
+				let b = base + '/' + rel;
+				if (!stat(b)) return { ok: false, error: 'Backup not found' };
+				let current_rel = replace(rel, /\.backup\.[0-9-]+$/, '');
+				let current = resolve_config_file(s, current_rel, true);
+				if (!current) return { ok: false, error: 'Current configuration file not found' };
+				let r = run('diff -u ' + shell_quote(b) + ' ' + shell_quote(current) + ' | head -400');
+				return { ok: true, identical: !trim(r.output), output: r.output, current: current_rel };
+			}
+		},
+
+		restore_backup: {
+			args: { path: 'string', apply: 'bool' },
+			call: function(req) {
+				let s = settings();
+				let base = config_base(s);
+				let rel = req.args.path || '';
+				if (!match(rel, /^[A-Za-z0-9._\/-]+\.dae\.backup\.[0-9-]+$/) || match(rel, /(^|\/)\.\.(\/|$)/))
+					return { ok: false, error: 'Invalid backup path' };
+				let b = base + '/' + rel;
+				if (!stat(b)) return { ok: false, error: 'Backup not found' };
+				let current_rel = replace(rel, /\.backup\.[0-9-]+$/, '');
+				let current = resolve_config_file(s, current_rel, true);
+				if (!current) return { ok: false, error: 'Current configuration file not found' };
+				backup(current);
+				let old = readfile(current) || '';
+				let content = readfile(b) || '';
+				let w = write_atomic(current, content);
+				if (!w.ok) return w;
+				let v = validate(s.binary, s.config);
+				if (v.rc != 0) {
+					write_atomic(current, old);
+					return { ok: false, error: 'Backup validation failed; current file restored', output: v.output, rolled_back: true };
+				}
+				if (req.args.apply) {
+					let r = run(shell_quote(s.binary) + ' reload');
+					if (r.rc != 0) {
+						write_atomic(current, old);
+						run(shell_quote(s.binary) + ' reload');
+						return { ok: false, error: 'Reload failed; current file restored', output: r.output, rolled_back: true };
+					}
+				}
+				return { ok: true, current: current_rel, message: req.args.apply ? 'Backup restored and hot-reloaded' : 'Backup restored and validated' };
+			}
+		},
+
+
+		include_status: {
+			call: function() {
+				let s = settings();
+				let v = include_status(s);
+				v.main = s.config;
+				return v;
+			}
+		},
+
+		get_managed_section: {
+			args: { kind: 'string' },
+			call: function(req) {
+				return get_managed(settings(), req.args.kind || '');
+			}
+		},
+
+		save_managed_section: {
+			args: { kind: 'string', body: 'string', apply: 'bool' },
+			call: function(req) {
+				return save_managed(settings(), req.args.kind || '', req.args.body || '', !!req.args.apply);
+			}
+		},
+
+		geodata_status: {
+			call: function() {
+				return { ok: true, locations: geodata_status() };
+			}
+		},
+
+		get_log: {
+			args: { limit: 'int' },
+			call: function(req) {
+				let s = settings();
+				let n = +(req.args.limit || 250);
+				if (n < 20) n = 20;
+				if (n > 1000) n = 1000;
+				let r = stat(s.log) ? run('tail -n ' + n + ' ' + shell_quote(s.log)) : run('logread | grep -i dae | tail -n ' + n);
+				return { ok: true, output: r.output };
+			}
+		},
+
+		clear_log: {
+			call: function() {
+				let s = settings();
+				if (!stat(s.log)) return { ok: true, message: 'No standalone log file to clear' };
+				let r = run(': > ' + shell_quote(s.log));
+				return { ok: r.rc == 0, output: r.output };
+			}
+		},
+
+		diagnose: {
+			call: function() {
+				let s = settings();
+				let p = pid();
+				let v = stat(s.config) ? validate(s.binary, s.config) : { rc: 1, output: 'Config file missing' };
+				let route = run('ip route show default');
+				let link = run('ip -brief link show dae0 2>/dev/null; ip -brief link show dae0peer 2>/dev/null');
+				return {
+					ok: p > 0 && v.rc == 0,
+					checks: [
+						{ name: 'dae process', state: p > 0 ? 'PASS' : 'FAIL', detail: p ? 'PID ' + p : 'not running' },
+						{ name: 'configuration', state: v.rc == 0 ? 'PASS' : 'FAIL', detail: trim(v.output) },
+						{ name: 'config files', state: length(config_files(s)) > 0 ? 'PASS' : 'WARN', detail: '' + length(config_files(s)) + ' .dae file(s)' },
+						{ name: 'dae0 interface', state: iface_exists('dae0') ? 'PASS' : 'WARN', detail: trim(link.output) },
+						{ name: 'default route', state: trim(route.output) ? 'PASS' : 'WARN', detail: trim(route.output) }
+					]
+				};
+			}
+		},
+
+		native_api_status: {
+			call: function() {
+				let s = settings();
+				let n = native_api_status(s.config);
+				n.dashboard_exists = !!stat(s.dashboard + '/index.html');
+				return n;
+			}
+		}
+	}
+};
+));
+		if (m) {
+			let lines = [];
+			for (let idx, line in split(m[1], '\n')) {
+				line = replace(line, /^    /, '');
+				if (trim(line) == '') continue;
+				push(lines, line);
+			}
+			body = join('\n', lines);
+		}
+	}
+	return { ok: true, kind: kind, path: spec.file, section: spec.section, body: body, exists: !!stat(path), include_enabled: inc.enabled };
+}
+
+function save_managed(s, kind, body, apply) {
+	let spec = managed_spec(kind);
+	if (!spec) return { ok: false, error: 'Unsupported managed section' };
+	let inc = include_status(s);
+	if (!inc.enabled)
+		return { ok: false, error: 'Main config does not include config.d/*.dae; managed writes are disabled for safety' };
+	if (length(body || '') > 262144)
+		return { ok: false, error: 'Managed section is too large' };
+
+	let path = resolve_config_file(s, spec.file, false);
+	if (!path) return { ok: false, error: 'Invalid managed path' };
+	run('mkdir -p ' + shell_quote(dirname(path)));
+
+	let existed = !!stat(path);
+	let old = existed ? (readfile(path) || '') : '';
+	let b = existed ? backup(path) : '';
+	let w = write_atomic(path, managed_content(spec.section, body || ''));
+	if (!w.ok) return w;
+
+	let v = validate(s.binary, s.config);
+	if (v.rc != 0) {
+		if (existed) write_atomic(path, old);
+		else run('rm -f ' + shell_quote(path));
+		return { ok: false, error: 'Validation failed; managed file rolled back', output: v.output, rolled_back: true, backup: b };
+	}
+	if (apply) {
+		let r = run(shell_quote(s.binary) + ' reload');
+		if (r.rc != 0) {
+			if (existed) write_atomic(path, old);
+			else run('rm -f ' + shell_quote(path));
+			run(shell_quote(s.binary) + ' reload');
+			return { ok: false, error: 'Reload failed; managed file rolled back', output: r.output, rolled_back: true, backup: b };
+		}
+	}
+	return { ok: true, path: spec.file, backup: b, message: apply ? 'Managed section validated and hot-reloaded' : 'Managed section saved and validated' };
+}
+
+function geo_candidate_dirs() {
+	return [ '/usr/share/v2ray', '/usr/share/dae', '/usr/local/share/dae', '/etc/dae' ];
+}
+
+function geodata_status() {
+	let found = [];
+	for (let idx, dir in geo_candidate_dirs()) {
+		let geoip = dir + '/geoip.dat';
+		let geosite = dir + '/geosite.dat';
+		let gi = stat(geoip);
+		let gs = stat(geosite);
+		if (gi || gs) {
+			push(found, {
+				dir: dir,
+				geoip: !!gi,
+				geoip_size: gi ? (gi.size || 0) : 0,
+				geosite: !!gs,
+				geosite_size: gs ? (gs.size || 0) : 0
+			});
+		}
+	}
+	return found;
+}
+
 function native_api_status(cfg) {
 	let content = readfile(cfg) || '';
 	let has = !!match(content, /native_api\s*\{/);
