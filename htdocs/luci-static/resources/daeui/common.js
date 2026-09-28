@@ -46,6 +46,8 @@ var callNativeRoutingTrace = rpc.declare({
 	params: [ 'domain', 'dst_ip', 'network', 'dst_port', 'src_ip', 'src_port', 'pname', 'resolve' ],
 	expect: {}
 });
+var callNativeProbeStart = rpc.declare({ object: 'luci.daeui', method: 'native_probe_start', params: [ 'node_id' ], expect: {} });
+var callNativeOperationGet = rpc.declare({ object: 'luci.daeui', method: 'native_operation_get', params: [ 'operation_id' ], expect: {} });
 
 function callNativeApiGet(resource, opts) {
 	opts = opts || {};
@@ -138,6 +140,8 @@ return baseclass.extend({
 	callClearNativeToken: callClearNativeToken,
 	callNativeDnsQuery: callNativeDnsQuery,
 	callNativeRoutingTrace: callNativeRoutingTrace,
+	callNativeProbeStart: callNativeProbeStart,
+	callNativeOperationGet: callNativeOperationGet,
 	callIncludeStatus: callIncludeStatus,
 	callGetManagedSection: callGetManagedSection,
 	callSaveManagedSection: callSaveManagedSection,
