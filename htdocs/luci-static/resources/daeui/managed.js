@@ -13,7 +13,7 @@ function existingSections(all, names) {
 		return E('div', { 'class': 'cbi-section' }, [
 			E('div', { 'style': 'display:flex;justify-content:space-between;gap:12px;align-items:center' }, [
 				E('h3', { 'style': 'margin-bottom:4px' }, x.name),
-				E('code', {}, x.source || '-')
+				x.source ? E('a', { 'href':dae.configUrl(x.source, 0) }, E('code', {}, x.source)) : E('code', {}, '-')
 			]),
 			E('pre', { 'style': 'white-space:pre-wrap;max-height:360px;overflow:auto' }, x.content || '')
 		]);
@@ -61,8 +61,22 @@ function save(kind, id, apply) {
 	return dae.callSaveManagedSection(kind, ta.value || '', !!apply).then(function(res) {
 		ui.hideModal();
 		var msg = (res && (res.message || res.error)) || _('Operation finished.');
-		if (res && res.output) msg += '\n' + res.output;
-		dae.notify(msg, res && res.ok ? 'info' : 'error');
+		if (res && res.ok) {
+			dae.notify(msg, 'info');
+			return;
+		}
+		var diagnostics = dae.diagnosticsNode(res && res.diagnostics);
+		if (diagnostics) {
+			ui.showModal(_('DAE validation failed'), [
+				E('p', {}, msg),
+				diagnostics,
+				res && res.output ? E('pre', { 'style':'white-space:pre-wrap;max-height:42vh;overflow:auto' }, res.output) : null,
+				E('div', { 'class':'right' }, E('button', { 'class':'btn', 'click':ui.hideModal }, _('Close')))
+			]);
+		} else {
+			if (res && res.output) msg += '\n' + res.output;
+			dae.notify(msg, 'error');
+		}
 	});
 }
 
