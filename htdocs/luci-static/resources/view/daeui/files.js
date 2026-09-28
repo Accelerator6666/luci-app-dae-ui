@@ -7,6 +7,19 @@
 return view.extend({
 	load: function() { return dae.callListConfigFiles(); },
 
+	jumpToRequestedLine: function(path) {
+		if (!this.requestedLine || path !== this.requestedPath) return;
+		var line = Math.max(0, Number(this.requestedLine || 1) - 1);
+		if (this.editor && this.editor.setCursor) {
+			this.editor.setCursor({ line: line, ch: 0 });
+			if (this.editor.scrollIntoView) this.editor.scrollIntoView({ line: line, ch: 0 }, 120);
+			if (this.editor.focus) this.editor.focus();
+		} else {
+			var ta = document.getElementById('dae-file-editor');
+			if (ta) ta.focus();
+		}
+	},
+
 	loadPath: function(path) {
 		this.currentPath = path;
 		return dae.callGetConfigFile(path).then(function(res) {
@@ -21,6 +34,9 @@ return view.extend({
 			}
 			var info = document.getElementById('dae-file-info');
 			if (info) info.textContent = path + (res.latest_backup ? ' · ' + _('Latest backup: ') + res.latest_backup : '');
+			var select = document.getElementById('dae-file-select');
+			if (select && select.value !== path) select.value = path;
+			window.setTimeout(function() { this.jumpToRequestedLine(path); }.bind(this), 0);
 		}.bind(this)).catch(function(err) {
 			dae.notify(err.message || String(err), 'error');
 		});
@@ -39,8 +55,22 @@ return view.extend({
 		return dae.callSaveConfigFile(this.currentPath, text, !!apply).then(function(res) {
 			ui.hideModal();
 			var msg = (res && (res.message || res.error)) || _('Operation finished.');
-			if (res && res.output) msg += '\n' + res.output;
-			dae.notify(msg, res && res.ok ? 'info' : 'error');
+			if (res && res.ok) {
+				dae.notify(msg, 'info');
+				return;
+			}
+			var diagnostics = dae.diagnosticsNode(res && res.diagnostics);
+			if (diagnostics) {
+				ui.showModal(_('DAE validation failed'), [
+					E('p', {}, msg),
+					diagnostics,
+					res && res.output ? E('pre', { 'style':'white-space:pre-wrap;max-height:42vh;overflow:auto' }, res.output) : null,
+					E('div', { 'class':'right' }, E('button', { 'class':'btn', 'click':ui.hideModal }, _('Close')))
+				]);
+			} else {
+				if (res && res.output) msg += '\n' + res.output;
+				dae.notify(msg, 'error');
+			}
 		});
 	},
 
@@ -60,7 +90,11 @@ return view.extend({
 
 	render: function(data) {
 		var files = (data && data.files) || [];
-		var selected = files.filter(function(x) { return x.main; })[0] || files[0] || null;
+		var params = new URLSearchParams(window.location.search || '');
+		this.requestedPath = params.get('path') || '';
+		this.requestedLine = Number(params.get('line') || 0);
+		var selected = files.filter(function(x) { return this.requestedPath && x.path === this.requestedPath; }.bind(this))[0] ||
+			files.filter(function(x) { return x.main; })[0] || files[0] || null;
 		this.currentPath = selected ? selected.path : null;
 
 		var selector = E('select', {
