@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+
       - name: JSON syntax
         run: |
           python3 - <<'PY'
@@ -16,8 +17,110 @@ jobs:
               json.loads(p.read_text())
               print('OK', p)
           PY
+
       - name: JavaScript syntax
         run: |
           find htdocs/luci-static/resources -type f -name '*.js' -print0 | while IFS= read -r -d '' f; do
             node --check "$f"
           done
+
+      - name: Ucode structural sanity
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('root/usr/share/rpcd/ucode/daeui.uc')
+          text = path.read_text()
+
+          assert text.count("'luci.daeui':") == 1, "rpcd object must appear exactly once"
+          assert text.rstrip().endswith('};'), "ucode file has trailing or truncated content"
+          assert 'new RegExp' not in text, "avoid browser-only RegExp construction in ucode backend"
+
+          stack = []
+          state = 'code'
+          quote = None
+          regex_class = False
+          prev_sig = ''
+          pairs = {')': '(', '}': '{', ']': '['}
+
+          i = 0
+          while i < len(text):
+              ch = text[i]
+              nx = text[i + 1] if i + 1 < len(text) else ''
+
+              if state == 'line':
+                  if ch == '\n':
+                      state = 'code'
+                  i += 1
+                  continue
+
+              if state == 'block':
+                  if ch == '*' and nx == '/':
+                      state = 'code'
+                      i += 2
+                  else:
+                      i += 1
+                  continue
+
+              if state == 'string':
+                  if ch == '\\':
+                      i += 2
+                      continue
+                  if ch == quote:
+                      state = 'code'
+                  i += 1
+                  continue
+
+              if state == 'regex':
+                  if ch == '\\':
+                      i += 2
+                      continue
+                  if ch == '[':
+                      regex_class = True
+                  elif ch == ']':
+                      regex_class = False
+                  elif ch == '/' and not regex_class:
+                      state = 'code'
+                      i += 1
+                      while i < len(text) and text[i] in 'gimsuy':
+                          i += 1
+                      continue
+                  i += 1
+                  continue
+
+              if ch == '/' and nx == '/':
+                  state = 'line'
+                  i += 2
+                  continue
+
+              if ch == '/' and nx == '*':
+                  state = 'block'
+                  i += 2
+                  continue
+
+              if ch in ("'", '"'):
+                  state = 'string'
+                  quote = ch
+                  i += 1
+                  continue
+
+              if ch == '/' and (not prev_sig or prev_sig in '([=,:!&|?{;'):
+                  state = 'regex'
+                  regex_class = False
+                  i += 1
+                  continue
+
+              if ch in '({[':
+                  stack.append((ch, i))
+              elif ch in ')}]':
+                  assert stack and stack[-1][0] == pairs[ch], f"delimiter mismatch at byte {i}"
+                  stack.pop()
+
+              if not ch.isspace():
+                  prev_sig = ch
+              i += 1
+
+          assert state == 'code', f"unterminated lexical state: {state}"
+          assert not stack, f"unclosed delimiter: {stack[-1] if stack else None}"
+          print('OK', path)
+          PY
