@@ -34,6 +34,18 @@ var callNativeApiGetRaw = rpc.declare({
 var callNativeAuthStatus = rpc.declare({ object: 'luci.daeui', method: 'native_auth_status', expect: {} });
 var callSetNativeToken = rpc.declare({ object: 'luci.daeui', method: 'set_native_token', params: [ 'token' ], expect: {} });
 var callClearNativeToken = rpc.declare({ object: 'luci.daeui', method: 'clear_native_token', expect: {} });
+var callNativeDnsQuery = rpc.declare({
+	object: 'luci.daeui',
+	method: 'native_dns_query',
+	params: [ 'domain', 'record_types', 'upstream', 'cache_mode' ],
+	expect: {}
+});
+var callNativeRoutingTrace = rpc.declare({
+	object: 'luci.daeui',
+	method: 'native_routing_trace',
+	params: [ 'domain', 'dst_ip', 'network', 'dst_port', 'src_ip', 'src_port', 'pname', 'resolve' ],
+	expect: {}
+});
 
 function callNativeApiGet(resource, opts) {
 	opts = opts || {};
@@ -99,6 +111,8 @@ return baseclass.extend({
 	callNativeAuthStatus: callNativeAuthStatus,
 	callSetNativeToken: callSetNativeToken,
 	callClearNativeToken: callClearNativeToken,
+	callNativeDnsQuery: callNativeDnsQuery,
+	callNativeRoutingTrace: callNativeRoutingTrace,
 	callIncludeStatus: callIncludeStatus,
 	callGetManagedSection: callGetManagedSection,
 	callSaveManagedSection: callSaveManagedSection,
