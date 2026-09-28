@@ -114,5 +114,21 @@
       "type": "view",
       "path": "daeui/settings"
     }
+  },
+  "admin/services/dae-ui/sources": {
+    "title": "Config Sources",
+    "order": 41,
+    "action": {
+      "type": "view",
+      "path": "daeui/sources"
+    }
+  },
+  "admin/services/dae-ui/geodata": {
+    "title": "GeoData",
+    "order": 42,
+    "action": {
+      "type": "view",
+      "path": "daeui/geodata"
+    }
   }
 }
