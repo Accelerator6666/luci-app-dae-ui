@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.0 - 2026-09-28
+
+- Added a whitelisted read-only Native API GET gateway in rpcd; callers cannot pass arbitrary URLs or invoke API mutations.
+- Added hidden capability-driven pages for Native Connections, Nodes & Latency, Runtime Policies, Flows and DNS Runtime.
+- Runtime Dashboard shows navigation buttons only when `/api/v1/capabilities` explicitly reports the corresponding resource as available.
+- Native Connections polls read-only full connection snapshots and shows network, state, source, target, outbound, process and transfer rates.
+- Native Nodes shows protocol/provider/group membership and backend-reported TCP/UDP health latency observations.
+- Runtime Policies combines `/groups` selection state with `/runtime/outbounds` counters when both are available.
+- Native Flows renders retained flow summaries without issuing routing trace or other POST operations.
+- DNS Runtime renders read-only cache and log resources without cache flush/delete/query mutations.
+- Authentication-required resources remain unavailable; the LuCI backend still does not extract or replay the configured Native API secret.
+
 ## 0.5.0 - 2026-09-28
 
 - Rebuilt the rpcd Ucode backend into one clean source after several incremental feature additions.
