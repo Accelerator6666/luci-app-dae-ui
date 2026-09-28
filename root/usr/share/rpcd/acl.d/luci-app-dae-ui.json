@@ -1,0 +1,30 @@
+{
+  "luci-app-dae-ui": {
+    "description": "Grant access to the DAE LuCI UI",
+    "read": {
+      "ubus": {
+        "luci.daeui": [
+          "status",
+          "get_config",
+          "get_sections",
+          "get_log",
+          "diagnose",
+          "native_api_status"
+        ],
+        "uci": [ "get" ]
+      }
+    },
+    "write": {
+      "ubus": {
+        "luci.daeui": [
+          "service",
+          "save_config",
+          "apply_config",
+          "restore_last",
+          "clear_log"
+        ],
+        "uci": [ "set", "add", "delete", "commit" ]
+      }
+    }
+  }
+}
