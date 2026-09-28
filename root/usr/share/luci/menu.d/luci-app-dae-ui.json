@@ -186,5 +186,13 @@
       "type": "view",
       "path": "daeui/native-tools"
     }
+  },
+  "admin/services/dae-ui/native-rules": {
+    "title": "Native Rules",
+    "hidden": true,
+    "action": {
+      "type": "view",
+      "path": "daeui/native-rules"
+    }
   }
 }
