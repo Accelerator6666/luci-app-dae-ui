@@ -12,7 +12,7 @@ This package must be useful **today** with normal dae installations. It therefor
 
 When dae implements the shared daeuniverse native API contract, the Native API page becomes the integration point for connections, DNS telemetry, policy selection, route traces, activity history and other runtime resources.
 
-## v0.7.0
+## v0.8.0
 
 - Live Overview with process, memory, version, config validation, discovered config-file count and eBPF interface state.
 - Runtime Dashboard with 2-second polling for process CPU, memory, process uptime, socket FDs and `dae0`/`dae0peer` interface counters.
@@ -49,8 +49,16 @@ When dae implements the shared daeuniverse native API contract, the Native API p
   - never copied from `native_api.secret` automatically;
   - used only by server-side curl through a temporary root-only curl config;
   - removed when the package is uninstalled.
-- Native Connections, Nodes, Flows and DNS Runtime now provide local search, filtering, sortable columns and 25/50/100/200-row client-side paging.
-- The backend request whitelist supports the contract's safe read query fields such as connection type/source, node group/cursor, flow network/state/cursor, and DNS name/type/source/cursor. Current v0.7 UI fetches a bounded first server page (up to 1000 records; DNS log 500) and clearly reports when another server cursor page exists.
+- Native Connections, Nodes, Flows and DNS Runtime provide local search, filtering, sortable columns and 25/50/100/200-row client-side paging.
+- Nodes, Flows, DNS cache and DNS log now support incremental Native API cursor loading. The first page remains live; loading a second server page freezes the current snapshot so subsequent rows cannot be silently mixed with a newer generation. “Restart live snapshot” explicitly returns to first-page polling.
+- Cursor walks are bounded to 5000 locally retained rows per dataset; expired/invalid cursors are reported instead of silently restarting against another snapshot.
+- The backend request whitelist supports the contract's safe read query fields such as connection type/source, node group/cursor, flow network/state/cursor, and DNS name/type/source/cursor.
+- Validation output is parsed for safe `*.dae:line:column` locations. Save failures and Diagnostics can link directly to **Configuration Files**, select the source file and scroll the local editor to the reported line.
+- Config Sources, All Sections, and existing structured-section views now link source labels back to their actual `.dae` files.
+- Added capability-gated **Native Diagnostics**:
+  - DNS Query uses the standard read-only `GET /api/v1/dns/query` with a typed query whitelist and visible request preview.
+  - Routing Trace uses only `POST /api/v1/routing/trace`, constructing a bounded `RoutingTraceRequest` server-side. The UI labels the result as a hypothetical simulation, never a recorded flow.
+  - No connection close, policy mutation, DNS cache delete/flush, config write, probe start, or arbitrary Native API POST is exposed.
 - Configurable dae binary, init script, config path and log path through UCI.
 
 ## Install for development
@@ -66,12 +74,12 @@ Copy the project into an OpenWrt build tree as a package, or install the package
 
 They can be changed under **Services → DAE → Settings**.
 
-## Planned v0.8
+## Planned v0.9
 
-- Incremental server-cursor loading for Nodes, Flows, DNS cache and DNS log while preserving local search/sort state.
-- Better parser diagnostics and click-through source navigation.
+- Native API rule dictionaries with source-aware rule navigation when the backend exposes safe source IDs.
+- Optional operation polling for explicitly requested, capability-gated node probes without broad mutation access.
 - GeoData pin refresh automation tied to dae upstream changes.
-- Optional authenticated read-only routing trace and DNS query tools with explicit request previews.
+- Better protocol-aware structured node/subscription forms while preserving raw DAE syntax.
 
 ## Native API token security
 
