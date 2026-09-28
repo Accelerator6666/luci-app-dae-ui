@@ -22,7 +22,37 @@ var callGetLog = rpc.declare({ object: 'luci.daeui', method: 'get_log', params: 
 var callClearLog = rpc.declare({ object: 'luci.daeui', method: 'clear_log', expect: {} });
 var callDiagnose = rpc.declare({ object: 'luci.daeui', method: 'diagnose', expect: {} });
 var callNativeApiStatus = rpc.declare({ object: 'luci.daeui', method: 'native_api_status', expect: {} });
-var callNativeApiGet = rpc.declare({ object: 'luci.daeui', method: 'native_api_get', params: [ 'resource' ], expect: {} });
+var callNativeApiGetRaw = rpc.declare({
+	object: 'luci.daeui',
+	method: 'native_api_get',
+	params: [
+		'resource', 'limit', 'cursor', 'type', 'src', 'network', 'state',
+		'group_id', 'connection_id', 'name', 'domain', 'record_type', 'include_expired'
+	],
+	expect: {}
+});
+var callNativeAuthStatus = rpc.declare({ object: 'luci.daeui', method: 'native_auth_status', expect: {} });
+var callSetNativeToken = rpc.declare({ object: 'luci.daeui', method: 'set_native_token', params: [ 'token' ], expect: {} });
+var callClearNativeToken = rpc.declare({ object: 'luci.daeui', method: 'clear_native_token', expect: {} });
+
+function callNativeApiGet(resource, opts) {
+	opts = opts || {};
+	return callNativeApiGetRaw(
+		resource,
+		Number(opts.limit || 0),
+		opts.cursor || '',
+		opts.type || '',
+		opts.src || '',
+		opts.network || '',
+		opts.state || '',
+		opts.group_id || '',
+		opts.connection_id || '',
+		opts.name || '',
+		opts.domain || '',
+		opts.record_type || '',
+		!!opts.include_expired
+	);
+}
 var callIncludeStatus = rpc.declare({ object: 'luci.daeui', method: 'include_status', expect: {} });
 var callGetManagedSection = rpc.declare({ object: 'luci.daeui', method: 'get_managed_section', params: [ 'kind' ], expect: {} });
 var callSaveManagedSection = rpc.declare({ object: 'luci.daeui', method: 'save_managed_section', params: [ 'kind', 'body', 'apply' ], expect: {} });
@@ -66,6 +96,9 @@ return baseclass.extend({
 	callDiagnose: callDiagnose,
 	callNativeApiStatus: callNativeApiStatus,
 	callNativeApiGet: callNativeApiGet,
+	callNativeAuthStatus: callNativeAuthStatus,
+	callSetNativeToken: callSetNativeToken,
+	callClearNativeToken: callClearNativeToken,
 	callIncludeStatus: callIncludeStatus,
 	callGetManagedSection: callGetManagedSection,
 	callSaveManagedSection: callSaveManagedSection,
