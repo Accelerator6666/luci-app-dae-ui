@@ -1,0 +1,96 @@
+'use strict';
+'require baseclass';
+'require ui';
+'require daeui.common as dae';
+
+function existingSections(all, names) {
+	var wanted = {};
+	names.forEach(function(n) { wanted[n] = true; });
+	var items = ((all && all.sections) || []).filter(function(x) { return wanted[x.name]; });
+	if (!items.length)
+		return E('div', { 'class': 'alert-message notice' }, _('No existing matching sections were found.'));
+	return E('div', {}, items.map(function(x) {
+		return E('div', { 'class': 'cbi-section' }, [
+			E('div', { 'style': 'display:flex;justify-content:space-between;gap:12px;align-items:center' }, [
+				E('h3', { 'style': 'margin-bottom:4px' }, x.name),
+				E('code', {}, x.source || '-')
+			]),
+			E('pre', { 'style': 'white-space:pre-wrap;max-height:360px;overflow:auto' }, x.content || '')
+		]);
+	}));
+}
+
+function includeBanner(managed) {
+	if (managed && managed.include_enabled)
+		return E('div', { 'class': 'alert-message success' }, _('Managed config is enabled through config.d/*.dae.'));
+	return E('div', { 'class': 'alert-message warning' }, [
+		E('strong', {}, _('Managed writes are disabled. ')),
+		_('The main dae configuration does not include config.d/*.dae. Existing configuration is still shown read-only; this UI will not modify the main config automatically.')
+	]);
+}
+
+function appendLine(id, text) {
+	var ta = document.getElementById(id);
+	if (!ta) return;
+	var old = ta.value || '';
+	ta.value = old + (old && !old.endsWith('\n') ? '\n' : '') + text + '\n';
+	ta.dispatchEvent(new Event('input'));
+}
+
+function save(kind, id, apply) {
+	var ta = document.getElementById(id);
+	if (!ta) return Promise.resolve();
+	ui.showModal(_('DAE'), [ E('p', { 'class': 'spinning' }, apply ? _('Validating and hot-reloading staged changes…') : _('Validating staged changes…')) ]);
+	return dae.callSaveManagedSection(kind, ta.value || '', !!apply).then(function(res) {
+		ui.hideModal();
+		var msg = (res && (res.message || res.error)) || _('Operation finished.');
+		if (res && res.output) msg += '\n' + res.output;
+		dae.notify(msg, res && res.ok ? 'info' : 'error');
+	});
+}
+
+function editor(kind, managed, help, quick) {
+	var id = 'dae-managed-' + kind;
+	var body = (managed && managed.body) || '';
+	var controls = [];
+	if (quick) controls.push(quick(id));
+	controls.push(
+		E('textarea', {
+			'id': id,
+			'class': 'cbi-input-textarea',
+			'wrap': 'off',
+			'spellcheck': 'false',
+			'disabled': managed && managed.include_enabled ? null : '',
+			'style': 'width:100%;min-height:260px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre'
+		}, body),
+		E('div', { 'class': 'cbi-page-actions' }, [
+			E('button', {
+				'class': 'btn cbi-button cbi-button-save',
+				'disabled': managed && managed.include_enabled ? null : '',
+				'click': function() { return save(kind, id, false); }
+			}, _('Save + Validate')), ' ',
+			E('button', {
+				'class': 'btn cbi-button cbi-button-apply',
+				'disabled': managed && managed.include_enabled ? null : '',
+				'click': function() { return save(kind, id, true); }
+			}, _('Apply staged changes'))
+		])
+	);
+	return E('div', { 'class': 'cbi-section' }, [
+		E('h3', {}, _('DAE UI managed section')),
+		E('div', { 'class': 'cbi-map-descr' }, [
+			help,
+			E('br'),
+			_('Managed file: '), E('code', {}, (managed && managed.path) || '-')
+		]),
+		controls
+	]);
+}
+
+return baseclass.extend({
+	existingSections: existingSections,
+	includeBanner: includeBanner,
+	appendLine: appendLine,
+	save: save,
+	editor: editor
+});
