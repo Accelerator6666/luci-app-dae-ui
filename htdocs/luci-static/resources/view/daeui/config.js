@@ -13,8 +13,22 @@ return view.extend({
 		return (apply ? dae.callApplyConfig(content) : dae.callSaveConfig(content)).then(function(res) {
 			ui.hideModal();
 			var msg = (res && (res.message || res.error)) || _('Operation finished.');
-			if (res && res.output) msg += '\\n' + res.output;
-			dae.notify(msg, res && res.ok ? 'info' : 'error');
+			if (res && res.ok) {
+				dae.notify(msg, 'info');
+				return;
+			}
+			var diagnostics = dae.diagnosticsNode(res && res.diagnostics);
+			if (diagnostics) {
+				ui.showModal(_('DAE validation failed'), [
+					E('p', {}, msg),
+					diagnostics,
+					res && res.output ? E('pre', { 'style':'white-space:pre-wrap;max-height:42vh;overflow:auto' }, res.output) : null,
+					E('div', { 'class':'right' }, E('button', { 'class':'btn', 'click':ui.hideModal }, _('Close')))
+				]);
+			} else {
+				if (res && res.output) msg += '\n' + res.output;
+				dae.notify(msg, 'error');
+			}
 		});
 	},
 	restore: function() {
