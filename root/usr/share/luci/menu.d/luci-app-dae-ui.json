@@ -130,5 +130,13 @@
       "type": "view",
       "path": "daeui/geodata"
     }
+  },
+  "admin/services/dae-ui/runtime": {
+    "title": "Runtime",
+    "order": 11,
+    "action": {
+      "type": "view",
+      "path": "daeui/runtime"
+    }
   }
 }
