@@ -178,5 +178,13 @@
       "type": "view",
       "path": "daeui/dns-runtime"
     }
+  },
+  "admin/services/dae-ui/native-tools": {
+    "title": "Native Diagnostics",
+    "hidden": true,
+    "action": {
+      "type": "view",
+      "path": "daeui/native-tools"
+    }
   }
 }
