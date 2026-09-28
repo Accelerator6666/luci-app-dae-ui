@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.8.0 - 2026-09-29
+
+- Added snapshot-safe incremental Native API cursor loading for Nodes, Flows, DNS cache and DNS log.
+- First-page polling remains live until another server page is loaded; loading a cursor freezes that dataset snapshot and exposes an explicit Restart live snapshot action.
+- Cursor walks retain at most 5000 rows locally and report 400/410 invalid or expired cursors instead of silently joining a new snapshot.
+- Added validation diagnostic parsing for safe `.dae:line:column` locations.
+- Configuration-file links can now select the exact `.dae` file and scroll CodeMirror to a reported validation line.
+- Main Config, managed-section saves and Diagnostics show clickable validation diagnostics when dae reports source coordinates.
+- Config Sources, All Sections and structured existing-section views now link source labels to the multi-file editor.
+- Added capability-gated Native Diagnostics route.
+- Added read-only diagnostic DNS Query using the contract's GET `/api/v1/dns/query` with domain/type/upstream/cache-mode request preview.
+- Added bounded Routing Trace simulation using only POST `/api/v1/routing/trace`; the backend builds the request from whitelisted fields and does not accept arbitrary URLs or JSON bodies.
+- Routing Trace renders routing evaluations, rule evaluations and simulation DNS evidence while explicitly treating the response as hypothetical simulation data.
+- No connection close, policy mutation, DNS cache mutation, arbitrary Native API POST or raw config mutation was added.
+
 ## 0.7.0 - 2026-09-29
 
 - Added optional Native API Bearer-token authentication without storing the token in UCI or reading `native_api.secret` from dae configuration.
