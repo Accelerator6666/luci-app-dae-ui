@@ -12,16 +12,20 @@ This package must be useful **today** with normal dae installations. It therefor
 
 When dae implements the shared daeuniverse native API contract, the Native API page becomes the integration point for connections, DNS telemetry, policy selection, route traces, activity history and other runtime resources.
 
-## v0.1.0
+## v0.2.0
 
-- Live Overview with process, memory, version, config validation and eBPF interface state.
+- Live Overview with process, memory, version, config validation, discovered config-file count and eBPF interface state.
 - Start / stop / restart / hot reload / suspend controls.
-- Safe configuration editor:
+- Local CodeMirror DAE editor with line numbers, DAE syntax highlighting, bracket matching, auto-close and folding.
+- Include-aware multi-file configuration manager for `.dae` files under the active config directory.
+- Safe configuration writes:
   - timestamped backup before write;
   - `dae validate` before acceptance;
   - hot reload after apply;
   - automatic rollback when validation or reload fails.
-- Read-only structural view for `global`, `subscription`, `node`, `group`, `routing`, `dns`, `experimental` sections.
+- Dedicated read-only Nodes, Policies, Routing and DNS views with source-file attribution.
+- All Sections view for `global`, `subscription`, `node`, `group`, `routing`, `dns`, `experimental` blocks across discovered `.dae` files.
+- Backup history with per-file diff, restore+validate and restore+reload.
 - Diagnostics page for process, validation, `dae0` and default route.
 - Live log page with refresh, pause and clear.
 - Native API readiness page, deliberately capability-driven.
@@ -40,13 +44,11 @@ Copy the project into an OpenWrt build tree as a package, or install the package
 
 They can be changed under **Services → DAE → Settings**.
 
-## Planned v0.2
+## Planned v0.3
 
-- CodeMirror 6 editor with DAE syntax highlighting and diagnostics.
-- Include-aware multi-file configuration sources.
-- Dedicated Nodes / Policies / Routing / DNS editors with staged changes and one atomic apply.
-- Config diff and backup history.
+- Editable structured Nodes / Policies / Routing / DNS forms with staged changes and one atomic apply.
 - Geodata status/update helpers.
+- Better parser diagnostics and source navigation.
 - Native API capability discovery and optional Doona-style runtime pages when dae exposes the required contract.
 
 ## License
