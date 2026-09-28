@@ -18,7 +18,8 @@
           "get_managed_section",
           "geodata_status",
           "preview_managed_section",
-          "runtime_stats"
+          "runtime_stats",
+          "native_api_get"
         ],
         "uci": [
           "get"
