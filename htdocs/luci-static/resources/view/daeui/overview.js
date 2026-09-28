@@ -45,7 +45,6 @@ return view.extend({
 		var vals={
 			'dae-pid':data.pid||'-',
 			'dae-memory':dae.bytesFromKiB(data.memory_kb),
-			'dae-cpu':data.process_cpu ? data.process_cpu+'%' : '-',
 			'dae-uptime':humanSeconds(data.process_uptime),
 			'dae-files':String(data.config_files||0),
 			'dae-route':data.default_route||'-'
@@ -62,7 +61,6 @@ return view.extend({
 			E('div',{'class':'table'},[
 				row(_('Service'),E('span',{'id':'dae-running'},dae.badge(data.running?_('Running'):_('Stopped'),!!data.running))),
 				row(_('PID'),E('span',{'id':'dae-pid'},String(data.pid||'-'))),
-				row(_('CPU'),E('span',{'id':'dae-cpu'},data.process_cpu?data.process_cpu+'%':'-')),
 				row(_('Memory'),E('span',{'id':'dae-memory'},dae.bytesFromKiB(data.memory_kb))),
 				row(_('Process uptime'),E('span',{'id':'dae-uptime'},humanSeconds(data.process_uptime))),
 				row(_('Version'),data.version||'-'),
