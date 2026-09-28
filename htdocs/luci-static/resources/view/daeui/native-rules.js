@@ -106,6 +106,55 @@ return view.extend({
 		var locals=localSet(data.files||{});
 		var rows=buildRows(rulesData);
 		var grid=buildGrid(rows,sources,locals);
+		var params=new URLSearchParams(window.location.search||'');
+		var requestedRule=params.get('rule')||'';
+		var requestedGeneration=params.get('generation')||'';
+		var selected=null;
+		if(requestedRule) {
+			for(var i=0;i<rows.length;i++) {
+				if(rows[i].rule_id===requestedRule) { selected=rows[i]; break; }
+			}
+			if(!selected&&rulesData.fallback&&rulesData.fallback.rule_id===requestedRule)
+				selected=rulesData.fallback;
+		}
+
+		var resolvedNode=null;
+		if(requestedRule) {
+			if(requestedGeneration&&String(rulesData.generation_id||'')!==requestedGeneration) {
+				resolvedNode=E('div',{'class':'alert-message warning'},[
+					_('The requested flow evidence belongs to generation '),E('code',{},requestedGeneration),
+					_(', but this page currently exposes generation '),E('code',{},native.text(rulesData.generation_id)),
+					_('. No cross-generation rule association is made.')
+				]);
+			} else if(!selected) {
+				resolvedNode=E('div',{'class':'alert-message warning'},[
+					_('Generation matches, but rule ID '),E('code',{},requestedRule),_(' is not present in this complete dictionary.')
+				]);
+			} else {
+				resolvedNode=E('div',{'class':'cbi-section'},[
+					E('h3',{},_('Resolved rule')),
+					E('div',{'class':'alert-message success'},_('This rule was opened with a generation-qualified flow association.')),
+					E('div',{'class':'table'},[
+						E('div',{'class':'tr'},[
+							E('div',{'class':'td left','style':'width:180px;font-weight:600'},_('Rule ID')),
+							E('div',{'class':'td left'},E('code',{},native.text(selected.rule_id)))
+						]),
+						E('div',{'class':'tr'},[
+							E('div',{'class':'td left','style':'width:180px;font-weight:600'},_('Expression')),
+							E('div',{'class':'td left'},E('code',{},native.text(selected.expression)))
+						]),
+						E('div',{'class':'tr'},[
+							E('div',{'class':'td left','style':'width:180px;font-weight:600'},_('Outbound')),
+							E('div',{'class':'td left'},native.text(selected.outbound))
+						]),
+						E('div',{'class':'tr'},[
+							E('div',{'class':'td left','style':'width:180px;font-weight:600'},_('Source')),
+							E('div',{'class':'td left'},sourceNode(selected,sources,locals))
+						])
+					])
+				]);
+			}
+		}
 
 		var fallback=rulesData.fallback||null;
 		var fallbackNode=fallback ? E('div',{'class':'cbi-section'},[
@@ -131,6 +180,7 @@ return view.extend({
 				_('Generation: '), E('code',{},native.text(rulesData.generation_id)),
 				' · ', _('Rules: '), String(rows.length)
 			]),
+			resolvedNode,
 			fallbackNode,
 			grid.node
 		]);
