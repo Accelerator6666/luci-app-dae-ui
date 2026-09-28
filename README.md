@@ -12,7 +12,7 @@ This package must be useful **today** with normal dae installations. It therefor
 
 When dae implements the shared daeuniverse native API contract, the Native API page becomes the integration point for connections, DNS telemetry, policy selection, route traces, activity history and other runtime resources.
 
-## v0.9.0
+## v0.10.0
 
 - Live Overview with process, memory, version, config validation, discovered config-file count and eBPF interface state.
 - Runtime Dashboard with 2-second polling for process CPU, memory, process uptime, socket FDs and `dae0`/`dae0peer` interface counters.
@@ -37,7 +37,7 @@ When dae implements the shared daeuniverse native API contract, the Native API p
 - Diagnostics page for process, validation, `dae0` and default route.
 - Live log page with refresh, pause and clear.
 - Native API discovery page that probes `/api` and `/api/v1/capabilities` locally without extracting `native_api.secret` from dae configuration.
-- Native runtime pages remain read-only: no connection close, group selection, probe start, DNS flush/delete, routing trace POST or other mutation is issued.
+- Native runtime pages remain conservative: connection close, group selection, DNS cache mutation and arbitrary Native API writes are not exposed. The only active Native operations are explicit diagnostic routing trace, diagnostic DNS query, and user-requested bounded probes.
 - Runtime capability matrix that clearly separates local telemetry from Native-API-only resources such as detailed connections, node probes, policy runtime selection, flows, routing trace and DNS telemetry.
 - Capability-driven hidden runtime pages for Connections, Nodes & Latency, Runtime Policies, Flows and DNS Runtime. Runtime only exposes entry buttons when `/api/v1/capabilities` reports the corresponding resource as available.
 - A whitelisted read-only Native API gateway: the LuCI frontend can request only known GET resources and cannot supply arbitrary URLs or invoke Native API mutations.
@@ -59,12 +59,24 @@ When dae implements the shared daeuniverse native API contract, the Native API p
   - Rules are tied to the running `generation_id` and displayed with rule ID, evaluation index, kind, expression, outbound, must flag and source metadata.
   - Rule source navigation never treats the rule's display-only `file` label as a local path.
   - The UI joins `rule.source.source_id` to `GET /api/v1/config`, then links into the local editor only if that Native source path exactly matches a locally discovered `.dae` file.
-- Added explicit **TCP Node Probe** actions to Native Nodes when both `probes` and `operations` capabilities are available.
-  - No probe runs automatically or on page refresh.
-  - Every probe requires an explicit button click plus confirmation.
-  - The backend constructs one fixed `tcp_connect` node probe request; the browser cannot send arbitrary probe JSON.
-  - The UI polls only the operation ID returned by that probe, respects the advertised Retry-After floor, and stops after 60 seconds if the operation is still nonterminal.
-  - Probe results show state, latency, resolved leaf, IP version, health-update status and backend error text.
+- Added capability-driven **Node Probe** actions when `probes` and `operations` are available.
+  - Probe kind, transport and IP family are derived from the backend's advertised probe contract.
+  - `tcp_connect` and `http` are constrained to TCP; DNS probes use only advertised DNS-capable transports.
+  - No probe runs automatically or on page refresh; opening the dialog is not enough — the user must press **Run probe**.
+  - rpcd re-reads capabilities before submission and rejects unadvertised target/kind/transport/IP combinations.
+  - The UI polls only the returned operation ID, respects Retry-After, and stops after 60 seconds if one operation remains nonterminal.
+- Added capability-sized **Group Probe** support.
+  - Only direct group members are probed.
+  - Group details are read first so the group's own `probe_transports` restriction is respected.
+  - Direct members are split into explicit member-ID batches using `max_members_per_job` and `max_results_per_job`.
+  - Batches run sequentially; the next operation is not submitted until the previous operation reaches a terminal state.
+  - Partial results remain visible if a later batch fails.
+- Added generation-safe **Flow → Rule** association.
+  - Clicking a flow rule ID reads the retained flow detail and current rule dictionary.
+  - The UI requires a retained `route` step with `chain=traffic`, the same `rule_id`, and a non-null `generation_id`.
+  - A rule link is offered only when that generation exactly equals the current Rules Dictionary `generation_id`.
+  - Missing retained evidence or a generation mismatch is shown explicitly; no cross-generation rule guess is made.
+- Native API Discovery also shows the advertised probe targets, kinds, transports, IP versions and job limits.
 - Added capability-gated **Native Diagnostics**:
   - DNS Query uses the standard read-only `GET /api/v1/dns/query` with a typed query whitelist and visible request preview.
   - Routing Trace uses only `POST /api/v1/routing/trace`, constructing a bounded `RoutingTraceRequest` server-side. The UI labels the result as a hypothetical simulation, never a recorded flow.
@@ -84,10 +96,10 @@ Copy the project into an OpenWrt build tree as a package, or install the package
 
 They can be changed under **Services → DAE → Settings**.
 
-## Planned v0.10
+## Planned v0.11
 
-- Optional group-target probes using the backend-advertised probe kinds/transports/limits instead of fixed defaults.
-- Rule-aware joins from retained flow evidence to the matching generation dictionary where the Native API exposes enough generation context.
+- Probe presets for HTTP/DNS targets with clearer backend-advertised timeout/rate-limit guidance.
+- Flow detail view with the full retained trace timeline and rule/source drill-down.
 - GeoData pin refresh automation tied to dae upstream changes.
 - Better protocol-aware structured node/subscription forms while preserving raw DAE syntax.
 
