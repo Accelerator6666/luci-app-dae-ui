@@ -1,7 +1,6 @@
 'use strict';
 'require view';
 'require poll';
-'require dom';
 'require daeui.common as dae';
 'require daeui.native as native';
 
@@ -40,31 +39,23 @@ function buildGrid(rows) {
 	});
 }
 
-function meta(data) {
+function meta(data, loaded) {
 	data = data || {};
-	var count = (data.nodes || []).length;
-	var total = data.total !== undefined ? data.total : count;
-	var parts = [ _('Loaded: ') + count, _('Total: ') + total ];
-	if (data.next_cursor) parts.push(_('more server pages available'));
-	return parts.join(' · ');
+	var total = data.total !== undefined ? data.total : loaded;
+	return _('Loaded: ') + loaded + ' · ' + _('Total: ') + total;
 }
 
 return view.extend({
 	load:function() {
-		return native.loadResource('nodes', { limit:1000 });
+		return native.loadResource('nodes', { limit:200 });
 	},
 
 	refresh:function() {
-		return dae.callNativeApiGet('nodes', { limit:1000 }).then(function(res) {
+		if (this.loader && this.loader.frozen()) return Promise.resolve();
+		return dae.callNativeApiGet('nodes', { limit:200 }).then(function(res) {
 			var parsed = native.parse(res);
-			var info = document.getElementById('native-nodes-meta');
-			if (!parsed.ok) {
-				var box = document.getElementById('native-nodes');
-				if (box) dom.content(box, native.errorBox(parsed));
-				return;
-			}
-			if (info) info.textContent = meta(parsed.data);
-			if (this.grid) this.grid.setRows((parsed.data && parsed.data.nodes) || []);
+			if (!parsed.ok) return;
+			if (this.loader) this.loader.replaceLive(parsed.data || {});
 		}.bind(this));
 	},
 
@@ -78,17 +69,25 @@ return view.extend({
 		if (!data.resource || !data.resource.ok)
 			return E([], [ E('h2',{},_('Native Nodes & Latency')), native.errorBox(data.resource) ]);
 
-		this.grid = buildGrid((data.resource.data && data.resource.data.nodes) || []);
+		var initial = data.resource.data || {};
+		this.grid = buildGrid(initial.nodes || []);
+		var info = E('div', { 'id':'native-nodes-meta', 'class':'cbi-map-descr' }, meta(initial, (initial.nodes || []).length));
+		this.loader = native.cursorLoader('nodes', initial, {
+			grid:this.grid,
+			rowsKey:'nodes',
+			query:{ limit:200 },
+			maxRows:5000,
+			onData:function(page, rows) { info.textContent = meta(page, rows.length); }
+		});
+
 		poll.add(L.bind(this.refresh,this),10);
 
 		return E([],[
 			E('h2',{},_('Native Nodes & Latency')),
-			E('div',{'class':'cbi-map-descr'},_('Read-only node inventory and backend probe observations. Search, filtering, sorting and local paging apply to the current server page of up to 1000 nodes.')),
-			E('div',{'id':'native-nodes-meta','class':'cbi-map-descr'},meta(data.resource.data)),
-			data.resource.data && data.resource.data.next_cursor
-				? E('div',{'class':'alert-message notice'},_('The backend reports another cursor page. v0.7 keeps the first 1000-node page stable for local sorting/filtering; server-side cursor walking is reserved for a later incremental loader.'))
-				: null,
-			E('div',{'id':'native-nodes'},this.grid.node)
+			E('div',{'class':'cbi-map-descr'},_('Read-only node inventory and backend probe observations. The first server page stays live; loading another cursor page freezes that snapshot so sorting and filtering never mix generations.')),
+			info,
+			this.loader.node,
+			this.grid.node
 		]);
 	},
 
