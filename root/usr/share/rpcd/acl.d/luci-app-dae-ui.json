@@ -20,7 +20,9 @@
           "preview_managed_section",
           "runtime_stats",
           "native_api_get",
-          "native_auth_status"
+          "native_auth_status",
+          "native_dns_query",
+          "native_routing_trace"
         ],
         "uci": [
           "get"
