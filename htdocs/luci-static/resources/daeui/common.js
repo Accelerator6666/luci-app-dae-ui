@@ -46,8 +46,15 @@ var callNativeRoutingTrace = rpc.declare({
 	params: [ 'domain', 'dst_ip', 'network', 'dst_port', 'src_ip', 'src_port', 'pname', 'resolve' ],
 	expect: {}
 });
-var callNativeProbeStart = rpc.declare({ object: 'luci.daeui', method: 'native_probe_start', params: [ 'node_id' ], expect: {} });
+var callNativeProbeStart = rpc.declare({
+	object: 'luci.daeui',
+	method: 'native_probe_start',
+	params: [ 'target_type', 'target_id', 'kind', 'transport', 'ip_version', 'warmth', 'members_json' ],
+	expect: {}
+});
 var callNativeOperationGet = rpc.declare({ object: 'luci.daeui', method: 'native_operation_get', params: [ 'operation_id' ], expect: {} });
+var callNativeGroupGet = rpc.declare({ object: 'luci.daeui', method: 'native_group_get', params: [ 'group_id' ], expect: {} });
+var callNativeFlowGet = rpc.declare({ object: 'luci.daeui', method: 'native_flow_get', params: [ 'flow_id' ], expect: {} });
 
 function callNativeApiGet(resource, opts) {
 	opts = opts || {};
@@ -142,6 +149,8 @@ return baseclass.extend({
 	callNativeRoutingTrace: callNativeRoutingTrace,
 	callNativeProbeStart: callNativeProbeStart,
 	callNativeOperationGet: callNativeOperationGet,
+	callNativeGroupGet: callNativeGroupGet,
+	callNativeFlowGet: callNativeFlowGet,
 	callIncludeStatus: callIncludeStatus,
 	callGetManagedSection: callGetManagedSection,
 	callSaveManagedSection: callSaveManagedSection,
