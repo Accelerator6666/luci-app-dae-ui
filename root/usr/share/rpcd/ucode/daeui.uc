@@ -281,7 +281,11 @@ return {
 					dae0: iface_exists('dae0'),
 					dae0peer: iface_exists('dae0peer'),
 					last_backup: latest_backup(s.config),
-					config_files: length(config_files(s))
+					config_files: length(config_files(s)),
+					process_uptime: p ? trim(run('ps -o etimes= -p ' + p).output) : '',
+					process_cpu: p ? trim(run('ps -o %cpu= -p ' + p).output) : '',
+					interfaces: trim(run('ip -brief link show 2>/dev/null').output),
+					default_route: trim(run('ip route show default 2>/dev/null').output)
 				};
 			}
 		},
@@ -501,7 +505,20 @@ return {
 
 		geodata_status: {
 			call: function() {
-				return { ok: true, locations: geodata_status() };
+				return { ok: true, locations: geodata_status(), target: geodata_target_dir(), pins: geodata_pins() };
+			}
+		},
+
+		update_geodata: {
+			call: function() {
+				return update_geodata();
+			}
+		},
+
+		preview_managed_section: {
+			args: { kind: 'string', body: 'string' },
+			call: function(req) {
+				return preview_managed(settings(), req.args.kind || '', req.args.body || '');
 			}
 		},
 
@@ -629,6 +646,97 @@ function geodata_status() {
 		}
 	}
 	return found;
+}
+
+
+function preview_managed(s, kind, body) {
+	let spec = managed_spec(kind);
+	if (!spec) return { ok: false, error: 'Unsupported managed section' };
+	let path = resolve_config_file(s, spec.file, false);
+	if (!path) return { ok: false, error: 'Invalid managed path' };
+	let old = stat(path) ? (readfile(path) || '') : '';
+	let next = managed_content(spec.section, body || '');
+	let tmpdir = '/tmp/dae-ui-preview-' + pid() + '-' + stamp();
+	run('mkdir -p ' + shell_quote(tmpdir));
+	let a = tmpdir + '/current.dae';
+	let b = tmpdir + '/staged.dae';
+	writefile(a, old);
+	writefile(b, next);
+	let d = run('diff -u ' + shell_quote(a) + ' ' + shell_quote(b) + ' | head -500');
+	run('rm -rf ' + shell_quote(tmpdir));
+	return { ok: true, identical: !trim(d.output), output: d.output, path: spec.file };
+}
+
+function geodata_target_dir() {
+	let found = geodata_status();
+	for (let idx, item in found) {
+		if (item.geoip && item.geosite) return item.dir;
+	}
+	for (let idx, item in found) {
+		if (item.geoip || item.geosite) return item.dir;
+	}
+	return '/usr/share/v2ray';
+}
+
+function geodata_pins() {
+	return {
+		geoip_version: '202609050329',
+		geoip_sha256: '1cba1f0982cf62502fa079c66047c3d0c608196da5b3305671e68f60e917a482',
+		geoip_url: 'https://github.com/v2fly/geoip/releases/download/202609050329/geoip.dat',
+		geosite_version: '20260908094002',
+		geosite_sha256: '35ed26a24cafa1256bd7261414224b7bcef5c944cea7760e172b030a8b266450',
+		geosite_url: 'https://github.com/v2fly/domain-list-community/releases/download/20260908094002/dlc.dat'
+	};
+}
+
+function update_geodata() {
+	let dir = geodata_target_dir();
+	let pins = geodata_pins();
+	let tmp = '/tmp/dae-ui-geodata-' + pid() + '-' + stamp();
+	let r = run('mkdir -p ' + shell_quote(tmp) + ' ' + shell_quote(dir));
+	if (r.rc != 0) return { ok: false, error: 'Unable to prepare GeoData directories', output: r.output };
+
+	let items = [
+		{ name: 'geoip.dat', url: pins.geoip_url, sha: pins.geoip_sha256 },
+		{ name: 'geosite.dat', url: pins.geosite_url, sha: pins.geosite_sha256 }
+	];
+
+	for (let idx, item in items) {
+		let out = tmp + '/' + item.name;
+		let dl = run('curl --fail --location --silent --show-error --retry 3 -o ' + shell_quote(out) + ' ' + shell_quote(item.url));
+		if (dl.rc != 0) {
+			run('rm -rf ' + shell_quote(tmp));
+			return { ok: false, error: 'Download failed: ' + item.name, output: dl.output };
+		}
+		let got = trim(run('sha256sum ' + shell_quote(out) + " | awk '{print $1}'").output);
+		if (got != item.sha) {
+			run('rm -rf ' + shell_quote(tmp));
+			return { ok: false, error: 'SHA256 mismatch: ' + item.name, expected: item.sha, actual: got };
+		}
+	}
+
+	let suffix = stamp();
+	for (let idx, item in items) {
+		let dst = dir + '/' + item.name;
+		if (stat(dst)) {
+			let cp = run('cp -p ' + shell_quote(dst) + ' ' + shell_quote(dst + '.backup.' + suffix));
+			if (cp.rc != 0) {
+				run('rm -rf ' + shell_quote(tmp));
+				return { ok: false, error: 'Unable to backup existing ' + item.name, output: cp.output };
+			}
+		}
+	}
+
+	for (let idx, item in items) {
+		let dst = dir + '/' + item.name;
+		let mv = run('chmod 644 ' + shell_quote(tmp + '/' + item.name) + ' && mv -f ' + shell_quote(tmp + '/' + item.name) + ' ' + shell_quote(dst));
+		if (mv.rc != 0) {
+			run('rm -rf ' + shell_quote(tmp));
+			return { ok: false, error: 'Unable to install ' + item.name, output: mv.output };
+		}
+	}
+	run('rm -rf ' + shell_quote(tmp));
+	return { ok: true, directory: dir, pins: pins, message: 'GeoData downloaded, SHA256-verified and atomically installed' };
 }
 
 function native_api_status(cfg) {
