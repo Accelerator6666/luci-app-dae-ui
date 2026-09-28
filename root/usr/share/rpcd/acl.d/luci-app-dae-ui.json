@@ -7,11 +7,17 @@
           "status",
           "get_config",
           "get_sections",
+          "list_config_files",
+          "get_config_file",
+          "list_backups",
+          "diff_backup",
           "get_log",
           "diagnose",
           "native_api_status"
         ],
-        "uci": [ "get" ]
+        "uci": [
+          "get"
+        ]
       }
     },
     "write": {
@@ -21,9 +27,17 @@
           "save_config",
           "apply_config",
           "restore_last",
+          "save_config_file",
+          "create_config_file",
+          "restore_backup",
           "clear_log"
         ],
-        "uci": [ "set", "add", "delete", "commit" ]
+        "uci": [
+          "set",
+          "add",
+          "delete",
+          "commit"
+        ]
       }
     }
   }
