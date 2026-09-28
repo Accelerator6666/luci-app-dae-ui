@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.0 - 2026-09-28
+
+- Rebuilt the rpcd Ucode backend into one clean source after several incremental feature additions.
+- Added Runtime Dashboard with 2-second local telemetry polling.
+- Added process memory, CPU-tick based live CPU calculation, process uptime, socket-FD count and best-effort `ss` process socket count.
+- Added `dae0` and `dae0peer` RX/TX byte, packet and live-rate counters from sysfs.
+- Added a capability matrix that separates locally observable metrics from Native-API-only resources.
+- Added local read-only Native API discovery against `/api` and `/api/v1/capabilities` without extracting or replaying the configured API secret.
+- Detects Doona-compatible `api_major=1`, Bearer authentication challenges, backend name/base path and reported runtime resources when capabilities are public.
+- Added Ucode structural sanity checks to CI so duplicated/truncated backend content is caught before merge.
+- Moved live CPU display from Overview to Runtime, where the value is derived from poll deltas instead of a static process snapshot.
+
 ## 0.4.0 - 2026-09-28
 
 - Added visual node/subscription cards with protocol detection for common one-line entries.
