@@ -21,7 +21,7 @@ function unavailable(status, key) {
 	if (v === false)
 		return E('div', { 'class':'alert-message warning' }, _('This Native API resource is explicitly unavailable.'));
 	if (status && status.capabilities_status === 401)
-		return E('div', { 'class':'alert-message notice' }, _('The capabilities endpoint requires authentication. This LuCI UI does not extract or replay the native_api secret.'));
+		return E('div', { 'class':'alert-message notice' }, _('The capabilities endpoint requires authentication. This LuCI UI never extracts native_api.secret from dae configuration; configure the separate root-only token on the Native API page if token mode is desired.'));
 	return E('div', { 'class':'alert-message notice' }, _('This resource has not been reported as available by the Native API.'));
 }
 
@@ -236,7 +236,6 @@ function dataGrid(rows, opts) {
 		node: node,
 		setRows: function(nextRows) {
 			rows = nextRows || [];
-			state.page = 0;
 			render();
 		},
 		state: state
