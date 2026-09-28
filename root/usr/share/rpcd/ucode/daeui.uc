@@ -808,6 +808,8 @@ function native_resource_path(kind) {
 		groups: '/api/v1/groups',
 		connections: '/api/v1/connections',
 		flows: '/api/v1/flows',
+		config: '/api/v1/config',
+		rules: '/api/v1/rules',
 		dns_cache: '/api/v1/dns/cache',
 		dns_log: '/api/v1/dns/log'
 	};
@@ -890,6 +892,65 @@ function native_api_get(s, args) {
 	};
 }
 
+
+function retry_after_seconds(headers) {
+	let m = match(headers || '', /Retry-After:\s*([0-9]+)/i);
+	let n = m ? +(m[1] || 0) : 0;
+	return n > 0 && n <= 30 ? n : 1;
+}
+
+function native_probe_start(s, args) {
+	let node_id = safe_query_text(args.node_id, 256);
+	if (!node_id)
+		return { ok: false, status: 0, error: 'Node ID is required' };
+
+	let cfg = native_api_config(s);
+	let base = native_probe_url(cfg.listen);
+	if (!base)
+		return { ok: false, status: 0, error: 'Native API listener is not locally probeable' };
+
+	let payload = {
+		target: { type: 'node', node_id: node_id },
+		kind: 'tcp_connect',
+		purpose: 'data',
+		transport: [ 'tcp' ],
+		ip_version: 'any',
+		members: 'direct',
+		warmth: 'cold'
+	};
+
+	let r = http_post_json(base + '/api/v1/probes', payload);
+	return {
+		ok: r.status == 202,
+		status: r.status,
+		body: r.body || '',
+		retry_after: retry_after_seconds(r.headers),
+		auth_required: r.status == 401,
+		error: r.status == 202 ? '' : (r.status ? 'Native API returned HTTP ' + r.status : (r.error || 'Native API probe request failed'))
+	};
+}
+
+function native_operation_get(s, args) {
+	let operation_id = safe_query_text(args.operation_id, 256);
+	if (!operation_id || !match(operation_id, /^[A-Za-z0-9._:-]+$/))
+		return { ok: false, status: 0, error: 'Invalid operation ID' };
+
+	let cfg = native_api_config(s);
+	let base = native_probe_url(cfg.listen);
+	if (!base)
+		return { ok: false, status: 0, error: 'Native API listener is not locally probeable' };
+
+	let r = http_probe(base + '/api/v1/operations/' + operation_id, true, []);
+	return {
+		ok: r.status == 200,
+		status: r.status,
+		body: r.body || '',
+		retry_after: retry_after_seconds(r.headers),
+		auth_required: r.status == 401,
+		error: r.status == 200 ? '' : (r.status ? 'Native API returned HTTP ' + r.status : (r.error || 'Native API operation request failed'))
+	};
+}
+
 function native_api_status(s) {
 	let cfg = native_api_config(s);
 	let base = native_probe_url(cfg.listen);
@@ -940,7 +1001,10 @@ function native_api_status(s) {
 			runtime_outbounds: capability_available(cap_body, 'runtime_outbounds'),
 			nodes: capability_available(cap_body, 'nodes'),
 			groups: capability_available(cap_body, 'groups'),
+			config: capability_available(cap_body, 'config'),
 			probes: capability_available(cap_body, 'probes'),
+			rules: capability_available(cap_body, 'rules'),
+			operations: capability_available(cap_body, 'operations'),
 			connections: capability_available(cap_body, 'connections'),
 			flows: capability_available(cap_body, 'flows'),
 			routing_trace: capability_available(cap_body, 'routing_trace'),
@@ -1308,6 +1372,20 @@ return {
 		clear_native_token: {
 			call: function() {
 				return clear_native_token();
+			}
+		},
+
+		native_probe_start: {
+			args: { node_id: 'string' },
+			call: function(req) {
+				return native_probe_start(settings(), req.args);
+			}
+		},
+
+		native_operation_get: {
+			args: { operation_id: 'string' },
+			call: function(req) {
+				return native_operation_get(settings(), req.args);
 			}
 		},
 
