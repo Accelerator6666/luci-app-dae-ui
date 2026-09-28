@@ -74,6 +74,101 @@ function loadResource(key, opts) {
 	});
 }
 
+
+function cursorLoader(resource, initialData, opts) {
+	opts = opts || {};
+	var extract = opts.extract || function(data) { return (data && data[opts.rowsKey]) || []; };
+	var rows = extract(initialData || {});
+	var nextCursor = (initialData && initialData.next_cursor) || '';
+	var serverPages = 1;
+	var frozen = false;
+	var maxRows = Number(opts.maxRows || 5000);
+
+	var info = E('span', { 'class':'cbi-map-descr' });
+	var loadMore = E('button', { 'class':'btn cbi-button' }, _('Load next server page'));
+	var restart = E('button', { 'class':'btn cbi-button' }, _('Restart live snapshot'));
+	var controls = E('div', {
+		'style':'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0'
+	}, [ loadMore, restart, info ]);
+
+	function refreshInfo() {
+		info.textContent = _('Server pages: ') + serverPages + ' · ' + _('Loaded rows: ') + rows.length +
+			(nextCursor ? ' · ' + _('more available') : ' · ' + _('end of snapshot'));
+		loadMore.disabled = !nextCursor || rows.length >= maxRows;
+		restart.style.display = frozen ? '' : 'none';
+	}
+
+	function applyData(data, append) {
+		var incoming = extract(data || {});
+		if (append) rows = rows.concat(incoming);
+		else rows = incoming;
+		if (rows.length > maxRows) rows = rows.slice(0, maxRows);
+		nextCursor = (data && data.next_cursor) || '';
+		if (append) serverPages++;
+		else serverPages = 1;
+		if (opts.grid) opts.grid.setRows(rows);
+		if (opts.onData) opts.onData(data || {}, rows, append);
+		refreshInfo();
+	}
+
+	function loadNext() {
+		if (!nextCursor || rows.length >= maxRows) return Promise.resolve();
+		loadMore.disabled = true;
+		loadMore.classList.add('spinning');
+		var request = Object.assign({}, opts.query || {}, { cursor:nextCursor });
+
+		return dae.callNativeApiGet(resource, request).then(function(res) {
+			var parsed = parse(res);
+			loadMore.classList.remove('spinning');
+
+			if (!parsed.ok) {
+				loadMore.disabled = false;
+				var msg = parsed.status === 410 || parsed.status === 400
+					? _('The server cursor expired or is no longer valid. Restart the live snapshot before loading more.')
+					: parsed.error;
+				dae.notify(msg, 'warning');
+				return;
+			}
+
+			frozen = true;
+			applyData(parsed.data || {}, true);
+		});
+	}
+
+	function restartSnapshot() {
+		restart.disabled = true;
+		restart.classList.add('spinning');
+		return dae.callNativeApiGet(resource, opts.query || {}).then(function(res) {
+			var parsed = parse(res);
+			restart.classList.remove('spinning');
+			restart.disabled = false;
+			if (!parsed.ok) {
+				dae.notify(parsed.error, 'error');
+				return;
+			}
+			frozen = false;
+			applyData(parsed.data || {}, false);
+		});
+	}
+
+	loadMore.addEventListener('click', loadNext);
+	restart.addEventListener('click', restartSnapshot);
+	refreshInfo();
+
+	return {
+		node:controls,
+		frozen:function(){ return frozen; },
+		rows:function(){ return rows; },
+		nextCursor:function(){ return nextCursor; },
+		replaceLive:function(data) {
+			if (frozen) return;
+			applyData(data || {}, false);
+		},
+		loadNext:loadNext,
+		restart:restartSnapshot
+	};
+}
+
 function dataGrid(rows, opts) {
 	rows = rows || [];
 	opts = opts || {};
@@ -252,5 +347,6 @@ return baseclass.extend({
 	time:time,
 	table:table,
 	loadResource:loadResource,
-	dataGrid:dataGrid
+	dataGrid:dataGrid,
+	cursorLoader:cursorLoader
 });
