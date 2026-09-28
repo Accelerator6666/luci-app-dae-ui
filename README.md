@@ -12,7 +12,7 @@ This package must be useful **today** with normal dae installations. It therefor
 
 When dae implements the shared daeuniverse native API contract, the Native API page becomes the integration point for connections, DNS telemetry, policy selection, route traces, activity history and other runtime resources.
 
-## v0.5.0
+## v0.6.0
 
 - Live Overview with process, memory, version, config validation, discovered config-file count and eBPF interface state.
 - Runtime Dashboard with 2-second polling for process CPU, memory, process uptime, socket FDs and `dae0`/`dae0peer` interface counters.
@@ -37,7 +37,10 @@ When dae implements the shared daeuniverse native API contract, the Native API p
 - Diagnostics page for process, validation, `dae0` and default route.
 - Live log page with refresh, pause and clear.
 - Native API discovery page that probes `/api` and `/api/v1/capabilities` locally without replaying or exposing the configured secret.
+- Native runtime pages remain read-only: no connection close, group selection, probe start, DNS flush/delete, routing trace POST or other mutation is issued.
 - Runtime capability matrix that clearly separates local telemetry from Native-API-only resources such as detailed connections, node probes, policy runtime selection, flows, routing trace and DNS telemetry.
+- Capability-driven hidden runtime pages for Connections, Nodes & Latency, Runtime Policies, Flows and DNS Runtime. Runtime only exposes entry buttons when `/api/v1/capabilities` reports the corresponding resource as available.
+- A whitelisted read-only Native API gateway: the LuCI frontend can request only known GET resources and cannot supply arbitrary URLs or invoke Native API mutations.
 - Configurable dae binary, init script, config path and log path through UCI.
 
 ## Install for development
@@ -53,10 +56,10 @@ Copy the project into an OpenWrt build tree as a package, or install the package
 
 They can be changed under **Services → DAE → Settings**.
 
-## Planned v0.6
+## Planned v0.7
 
 - Optional authenticated Native API profile support without storing plaintext secrets in LuCI config.
-- Read-only detailed Connections / Nodes / Policies pages when the backend explicitly reports those resources.
+- Read-only pagination/search for large Connections, Nodes, Flows and DNS datasets.
 - Better parser diagnostics and click-through source navigation.
 - GeoData pin refresh automation tied to dae upstream changes.
 
