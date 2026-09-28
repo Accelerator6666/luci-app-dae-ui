@@ -1136,8 +1136,8 @@ function probe_member_ids(group, raw) {
 		if (member && member.id) allowed[member.id] = true;
 
 	for (let idx, value in parsed) {
-		let id = safe_native_id(value);
-		if (!id || !allowed[id]) return null;
+		let id = type(value) == 'string' ? value : '';
+		if (!id || length(id) > 256 || !allowed[id]) return null;
 		if (!array_has(members, id)) push(members, id);
 	}
 	return members;
