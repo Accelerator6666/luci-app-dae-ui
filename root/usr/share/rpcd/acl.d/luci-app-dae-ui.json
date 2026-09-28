@@ -17,7 +17,8 @@
           "include_status",
           "get_managed_section",
           "geodata_status",
-          "preview_managed_section"
+          "preview_managed_section",
+          "runtime_stats"
         ],
         "uci": [
           "get"
