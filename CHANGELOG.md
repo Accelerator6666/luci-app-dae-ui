@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.7.0 - 2026-09-29
+
+- Added optional Native API Bearer-token authentication without storing the token in UCI or reading `native_api.secret` from dae configuration.
+- Stores the optional token in `/etc/dae-ui/native-api.token` with a private directory and mode 0600; rpcd never returns the token to browser JavaScript.
+- Server-side curl uses a temporary root-only curl config for the Authorization header instead of placing the token in the request URL.
+- Added replace/remove token controls to Native API Discovery and capability probing now retries authenticated reads when a token is configured.
+- Added a typed query whitelist for Native API GET resources; arbitrary URLs and arbitrary query strings remain impossible through rpcd.
+- Added reusable search/filter/sort/page controls for Native runtime datasets.
+- Connections now loads up to 1000 records and supports local network/state/outbound filtering, search and sortable traffic columns.
+- Nodes & Latency now supports protocol/provider filters, latency sorting and local pagination over a server page of up to 1000 nodes.
+- Flows now supports network/state/outbound filtering, source/target search and local pagination over a server page of up to 1000 flows.
+- DNS Runtime now adds searchable/filterable/sortable cache and log tables; DNS cache requests up to 1000 entries and DNS log up to 500 records.
+- Pages explicitly report when the Native API returns a `next_cursor`; v0.7 does not silently mix another server snapshot into the current sorted page.
+- Package uninstall removes the private Native API token file while preserving normal UCI configuration semantics.
+
 ## 0.6.0 - 2026-09-28
 
 - Added a whitelisted read-only Native API GET gateway in rpcd; callers cannot pass arbitrary URLs or invoke API mutations.
