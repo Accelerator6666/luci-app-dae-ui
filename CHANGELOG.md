@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0 - 2026-09-28
+
+- Added safe managed config sections under `config.d/dae-ui-*.dae`.
+- Managed writes are enabled only when the main configuration already includes `config.d/*.dae`.
+- Added staged Nodes/Subscriptions, Policy Groups and Routing quick-entry forms.
+- Added a managed DNS editor with a split-DNS starter template.
+- Added Config Sources view with per-file recognized section ownership.
+- Added GeoData presence/size detection for common OpenWrt and upstream DAE asset directories.
+- Existing user-owned config blocks remain read-only in the structured pages; all managed writes still validate the complete main config and rollback on failure.
+- Expanded rpcd ACLs for managed-section and GeoData status methods.
+
 ## 0.2.0 - 2026-09-28
 
 - Added include-aware discovery for `.dae` files below the active configuration directory.
