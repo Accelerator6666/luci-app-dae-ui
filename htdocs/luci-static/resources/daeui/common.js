@@ -25,6 +25,8 @@ var callIncludeStatus = rpc.declare({ object: 'luci.daeui', method: 'include_sta
 var callGetManagedSection = rpc.declare({ object: 'luci.daeui', method: 'get_managed_section', params: [ 'kind' ], expect: {} });
 var callSaveManagedSection = rpc.declare({ object: 'luci.daeui', method: 'save_managed_section', params: [ 'kind', 'body', 'apply' ], expect: {} });
 var callGeodataStatus = rpc.declare({ object: 'luci.daeui', method: 'geodata_status', expect: {} });
+var callUpdateGeodata = rpc.declare({ object: 'luci.daeui', method: 'update_geodata', expect: {} });
+var callPreviewManagedSection = rpc.declare({ object: 'luci.daeui', method: 'preview_managed_section', params: [ 'kind', 'body' ], expect: {} });
 
 function notify(msg, type) {
 	ui.addNotification(null, E('p', {}, msg || _('Operation completed.')), type || 'info');
@@ -64,6 +66,8 @@ return baseclass.extend({
 	callGetManagedSection: callGetManagedSection,
 	callSaveManagedSection: callSaveManagedSection,
 	callGeodataStatus: callGeodataStatus,
+	callUpdateGeodata: callUpdateGeodata,
+	callPreviewManagedSection: callPreviewManagedSection,
 	notify: notify,
 	badge: badge,
 	bytesFromKiB: bytesFromKiB
