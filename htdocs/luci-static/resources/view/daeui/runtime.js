@@ -105,9 +105,9 @@ return view.extend({
 			cpu = Math.max(0, tickDelta / hz / dt * 100);
 		}
 
-		function rate(cur, old) {
-			if (!prev || !cur || !old || !cur.present || !old.present) return 0;
-			var d = Number(cur || 0) - Number(old || 0);
+		function rate(curValue, oldValue, curPresent, oldPresent) {
+			if (!prev || !curPresent || !oldPresent) return 0;
+			var d = Number(curValue || 0) - Number(oldValue || 0);
 			return d > 0 ? d / dt : 0;
 		}
 
@@ -130,9 +130,9 @@ return view.extend({
 			var st = document.getElementById('rt-' + name + '-state');
 			if (st) dom.content(st, dae.badge(cur.present ? _('Present') : _('Missing'), !!cur.present));
 			var rx = document.getElementById('rt-' + name + '-rx-rate');
-			if (rx) rx.textContent = humanRate(rate(cur.rx_bytes, old.rx_bytes));
+			if (rx) rx.textContent = humanRate(rate(cur.rx_bytes, old.rx_bytes, cur.present, old.present));
 			var tx = document.getElementById('rt-' + name + '-tx-rate');
-			if (tx) tx.textContent = humanRate(rate(cur.tx_bytes, old.tx_bytes));
+			if (tx) tx.textContent = humanRate(rate(cur.tx_bytes, old.tx_bytes, cur.present, old.present));
 			var total = document.getElementById('rt-' + name + '-total');
 			if (total) total.textContent = humanBytes(cur.rx_bytes) + ' / ' + humanBytes(cur.tx_bytes);
 			var pk = document.getElementById('rt-' + name + '-packets');
