@@ -900,9 +900,49 @@ function retry_after_seconds(headers) {
 }
 
 function native_probe_start(s, args) {
-	let node_id = safe_query_text(args.node_id, 256);
-	if (!node_id)
-		return { ok: false, status: 0, error: 'Node ID is required' };
+	let target_type = args.target_type == 'group' ? 'group' : 'node';
+	let target_id = safe_native_id(args.target_id);
+	if (!target_id)
+		return { ok: false, status: 0, error: 'Probe target ID is required' };
+
+	let caps = native_capabilities(s);
+	if (!caps.ok)
+		return { ok: false, status: caps.status, error: caps.error || 'Unable to read Native API capabilities' };
+
+	let probes = probe_options_from_capabilities(caps.data);
+	if (!probes.available || !array_has(probes.targets, target_type))
+		return { ok: false, status: 0, error: 'Requested probe target type is not advertised' };
+
+	let kind = args.kind || '';
+	if (!array_has(probes.kinds, kind))
+		return { ok: false, status: 0, error: 'Requested probe kind is not advertised' };
+
+	let purpose = kind == 'dns' ? 'dns' : 'data';
+	if (!array_has(probes.purposes, purpose))
+		return { ok: false, status: 0, error: 'Probe purpose required by this kind is not advertised' };
+
+	let transport = args.transport || '';
+	if (!array_has(probes.transports, transport))
+		return { ok: false, status: 0, error: 'Requested probe transport is not advertised' };
+	if ((kind == 'tcp_connect' || kind == 'http') && transport != 'tcp')
+		return { ok: false, status: 0, error: 'tcp_connect/http probes require TCP transport' };
+
+	let ipv4 = array_has(probes.ip_versions, 'ipv4');
+	let ipv6 = array_has(probes.ip_versions, 'ipv6');
+	let ip_version = args.ip_version || '';
+	if (ip_version == 'any') {
+		if (!ipv4 || !ipv6)
+			return { ok: false, status: 0, error: 'ip_version=any requires both IPv4 and IPv6 capability' };
+	} else if (!array_has(probes.ip_versions, ip_version)) {
+		return { ok: false, status: 0, error: 'Requested IP version is not advertised' };
+	}
+
+	let warmth = args.warmth == 'cold' ? 'cold' : 'warm';
+	let limits = probes.limits || {};
+	let max_members = +(limits.max_members_per_job || 0);
+	let max_results = +(limits.max_results_per_job || 0);
+	if (max_members < 1 || max_results < 1)
+		return { ok: false, status: 0, error: 'Probe limits do not permit a request' };
 
 	let cfg = native_api_config(s);
 	let base = native_probe_url(cfg.listen);
@@ -910,14 +950,56 @@ function native_probe_start(s, args) {
 		return { ok: false, status: 0, error: 'Native API listener is not locally probeable' };
 
 	let payload = {
-		target: { type: 'node', node_id: node_id },
-		kind: 'tcp_connect',
-		purpose: 'data',
-		transport: [ 'tcp' ],
-		ip_version: 'any',
-		members: 'direct',
-		warmth: 'cold'
+		target: target_type == 'group'
+			? { type: 'group', group_id: target_id }
+			: { type: 'node', node_id: target_id },
+		kind: kind,
+		purpose: purpose,
+		transport: [ transport ],
+		ip_version: ip_version,
+		warmth: warmth
 	};
+
+	let member_count = 1;
+	if (target_type == 'group') {
+		let gr = http_probe(base + '/api/v1/groups/' + target_id, true, []);
+		if (gr.status != 200)
+			return { ok: false, status: gr.status, error: gr.status ? 'Native API returned HTTP ' + gr.status + ' reading group' : 'Unable to read group' };
+
+		let group = parse_json_safe(gr.body);
+		if (type(group) != 'object')
+			return { ok: false, status: 0, error: 'Native API returned invalid group JSON' };
+
+		let allowed_transports = group.capabilities && group.capabilities.probe_transports;
+		if (type(allowed_transports) == 'array' && !array_has(allowed_transports, transport))
+			return { ok: false, status: 0, error: 'This group does not advertise the selected probe transport' };
+
+		let chosen = probe_member_ids(group, args.members_json || '');
+		if (chosen === null)
+			return { ok: false, status: 0, error: 'Probe member list is invalid or contains members outside the group' };
+
+		if (length(chosen)) {
+			payload.members = chosen;
+			member_count = length(chosen);
+		} else {
+			payload.members = 'direct';
+			member_count = length(group.members || []);
+		}
+	}
+
+	let dimensions = ip_version == 'any' ? 2 : 1;
+	if (member_count < 1)
+		return { ok: false, status: 0, error: 'Probe target contains no members' };
+	if (member_count > max_members || member_count * dimensions > max_results)
+		return {
+			ok: false,
+			status: 0,
+			error: 'Probe request exceeds advertised limits',
+			max_members_per_job: max_members,
+			max_results_per_job: max_results,
+			requested_members: member_count,
+			requested_results: member_count * dimensions
+		};
 
 	let r = http_post_json(base + '/api/v1/probes', payload);
 	return {
@@ -951,6 +1033,116 @@ function native_operation_get(s, args) {
 	};
 }
 
+
+function parse_json_safe(raw) {
+	try {
+		return json(raw || '{}');
+	} catch (e) {
+		return null;
+	}
+}
+
+function array_has(values, wanted) {
+	if (type(values) != 'array') return false;
+	for (let idx, value in values)
+		if (value == wanted) return true;
+	return false;
+}
+
+function native_capabilities(s) {
+	let cfg = native_api_config(s);
+	let base = native_probe_url(cfg.listen);
+	if (!base) return { ok: false, status: 0, error: 'Native API listener is not locally probeable', data: null };
+
+	let r = http_probe(base + '/api/v1/capabilities', true, []);
+	let data = r.status == 200 ? parse_json_safe(r.body) : null;
+	return {
+		ok: r.status == 200 && type(data) == 'object',
+		status: r.status,
+		error: r.status == 200 && type(data) != 'object' ? 'Native API returned invalid capabilities JSON' :
+			(r.status == 200 ? '' : (r.status ? 'Native API returned HTTP ' + r.status : (r.error || 'Native API request failed'))),
+		data: data
+	};
+}
+
+function probe_options_from_capabilities(data) {
+	let probes = data && data.resources && data.resources.probes;
+	if (type(probes) != 'object')
+		return { available: false, targets: [], kinds: [], purposes: [], transports: [], ip_versions: [], limits: {} };
+
+	return {
+		available: probes.available === true,
+		targets: type(probes.targets) == 'array' ? probes.targets : [],
+		kinds: type(probes.kinds) == 'array' ? probes.kinds : [],
+		purposes: type(probes.purposes) == 'array' ? probes.purposes : [],
+		transports: type(probes.transports) == 'array' ? probes.transports : [],
+		ip_versions: type(probes.ip_versions) == 'array' ? probes.ip_versions : [],
+		limits: type(probes.limits) == 'object' ? probes.limits : {}
+	};
+}
+
+function safe_native_id(value) {
+	let id = value || '';
+	if (!id || length(id) > 256 || !match(id, /^[A-Za-z0-9._:-]+$/))
+		return '';
+	return id;
+}
+
+function native_group_get(s, args) {
+	let id = safe_native_id(args.group_id);
+	if (!id) return { ok: false, status: 0, error: 'Invalid group ID' };
+
+	let cfg = native_api_config(s);
+	let base = native_probe_url(cfg.listen);
+	if (!base) return { ok: false, status: 0, error: 'Native API listener is not locally probeable' };
+
+	let r = http_probe(base + '/api/v1/groups/' + id, true, []);
+	return {
+		ok: r.status == 200,
+		status: r.status,
+		body: r.body || '',
+		auth_required: r.status == 401,
+		error: r.status == 200 ? '' : (r.status ? 'Native API returned HTTP ' + r.status : (r.error || 'Native API group request failed'))
+	};
+}
+
+function native_flow_get(s, args) {
+	let id = safe_native_id(args.flow_id);
+	if (!id) return { ok: false, status: 0, error: 'Invalid flow ID' };
+
+	let cfg = native_api_config(s);
+	let base = native_probe_url(cfg.listen);
+	if (!base) return { ok: false, status: 0, error: 'Native API listener is not locally probeable' };
+
+	let r = http_probe(base + '/api/v1/flows/' + id, true, []);
+	return {
+		ok: r.status == 200,
+		status: r.status,
+		body: r.body || '',
+		auth_required: r.status == 401,
+		error: r.status == 200 ? '' : (r.status ? 'Native API returned HTTP ' + r.status : (r.error || 'Native API flow request failed'))
+	};
+}
+
+function probe_member_ids(group, raw) {
+	let members = [];
+	if (!raw) return members;
+
+	let parsed = parse_json_safe(raw);
+	if (type(parsed) != 'array') return null;
+
+	let allowed = {};
+	for (let idx, member in (group.members || []))
+		if (member && member.id) allowed[member.id] = true;
+
+	for (let idx, value in parsed) {
+		let id = safe_native_id(value);
+		if (!id || !allowed[id]) return null;
+		if (!array_has(members, id)) push(members, id);
+	}
+	return members;
+}
+
 function native_api_status(s) {
 	let cfg = native_api_config(s);
 	let base = native_probe_url(cfg.listen);
@@ -979,6 +1171,8 @@ function native_api_status(s) {
 
 	let cap = http_probe(base ? base + '/api/v1/capabilities' : '', true, []);
 	let cap_body = cap.status == 200 ? cap.body : '';
+	let cap_data = cap.status == 200 ? parse_json_safe(cap.body) : null;
+	let probe_options = probe_options_from_capabilities(cap_data);
 
 	return {
 		detected: cfg.detected,
@@ -995,6 +1189,7 @@ function native_api_status(s) {
 		auth_accepted: auth_configured && cap.status == 200,
 		contract_ready: compatible,
 		capabilities_status: cap.status,
+		probe_options: probe_options,
 		resources: {
 			runtime: capability_available(cap_body, 'runtime'),
 			runtime_memory: capability_available(cap_body, 'runtime_memory'),
@@ -1376,9 +1571,31 @@ return {
 		},
 
 		native_probe_start: {
-			args: { node_id: 'string' },
+			args: {
+				target_type: 'string',
+				target_id: 'string',
+				kind: 'string',
+				transport: 'string',
+				ip_version: 'string',
+				warmth: 'string',
+				members_json: 'string'
+			},
 			call: function(req) {
 				return native_probe_start(settings(), req.args);
+			}
+		},
+
+		native_group_get: {
+			args: { group_id: 'string' },
+			call: function(req) {
+				return native_group_get(settings(), req.args);
+			}
+		},
+
+		native_flow_get: {
+			args: { flow_id: 'string' },
+			call: function(req) {
+				return native_flow_get(settings(), req.args);
 			}
 		},
 
