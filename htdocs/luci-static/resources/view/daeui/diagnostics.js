@@ -15,7 +15,10 @@ return view.extend({
 					E('div', { 'class': 'td left' }, E('pre', { 'style': 'white-space:pre-wrap;margin:0' }, c.detail || ''))
 				]);
 			});
-			box.replaceChildren(E('div', { 'class': 'table' }, rows));
+			box.replaceChildren(
+				E('div', { 'class': 'table' }, rows),
+				dae.diagnosticsNode(res && res.diagnostics)
+			);
 			dae.notify(res && res.ok ? _('Core checks passed.') : _('One or more checks need attention.'), res && res.ok ? 'info' : 'warning');
 		});
 	},
