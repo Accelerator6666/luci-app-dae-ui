@@ -1,0 +1,43 @@
+{
+  "admin/services/dae-ui": {
+    "title": "DAE",
+    "order": 61,
+    "action": { "type": "firstchild" },
+    "depends": { "acl": [ "luci-app-dae-ui" ] }
+  },
+  "admin/services/dae-ui/overview": {
+    "title": "Overview",
+    "order": 10,
+    "action": { "type": "view", "path": "daeui/overview" }
+  },
+  "admin/services/dae-ui/config": {
+    "title": "Configuration",
+    "order": 20,
+    "action": { "type": "view", "path": "daeui/config" }
+  },
+  "admin/services/dae-ui/sections": {
+    "title": "Config Sections",
+    "order": 30,
+    "action": { "type": "view", "path": "daeui/sections" }
+  },
+  "admin/services/dae-ui/diagnostics": {
+    "title": "Diagnostics",
+    "order": 40,
+    "action": { "type": "view", "path": "daeui/diagnostics" }
+  },
+  "admin/services/dae-ui/logs": {
+    "title": "Logs",
+    "order": 50,
+    "action": { "type": "view", "path": "daeui/logs" }
+  },
+  "admin/services/dae-ui/dashboard": {
+    "title": "Native API",
+    "order": 60,
+    "action": { "type": "view", "path": "daeui/dashboard" }
+  },
+  "admin/services/dae-ui/settings": {
+    "title": "Settings",
+    "order": 70,
+    "action": { "type": "view", "path": "daeui/settings" }
+  }
+}
