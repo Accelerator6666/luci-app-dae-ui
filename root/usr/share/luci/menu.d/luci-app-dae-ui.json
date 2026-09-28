@@ -138,5 +138,45 @@
       "type": "view",
       "path": "daeui/runtime"
     }
+  },
+  "admin/services/dae-ui/connections": {
+    "title": "Native Connections",
+    "hidden": true,
+    "action": {
+      "type": "view",
+      "path": "daeui/connections"
+    }
+  },
+  "admin/services/dae-ui/native-nodes": {
+    "title": "Native Nodes",
+    "hidden": true,
+    "action": {
+      "type": "view",
+      "path": "daeui/native-nodes"
+    }
+  },
+  "admin/services/dae-ui/runtime-policies": {
+    "title": "Runtime Policies",
+    "hidden": true,
+    "action": {
+      "type": "view",
+      "path": "daeui/runtime-policies"
+    }
+  },
+  "admin/services/dae-ui/flows": {
+    "title": "Native Flows",
+    "hidden": true,
+    "action": {
+      "type": "view",
+      "path": "daeui/flows"
+    }
+  },
+  "admin/services/dae-ui/dns-runtime": {
+    "title": "DNS Runtime",
+    "hidden": true,
+    "action": {
+      "type": "view",
+      "path": "daeui/dns-runtime"
+    }
   }
 }
