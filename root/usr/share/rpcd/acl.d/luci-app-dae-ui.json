@@ -23,7 +23,9 @@
           "native_auth_status",
           "native_dns_query",
           "native_routing_trace",
-          "native_operation_get"
+          "native_operation_get",
+          "native_group_get",
+          "native_flow_get"
         ],
         "uci": [
           "get"
