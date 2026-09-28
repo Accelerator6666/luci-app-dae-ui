@@ -151,6 +151,20 @@ return view.extend({
 			E('h3', {}, _('Reported resources')),
 			E('div', { 'class': 'table' }, resourceRows(data)),
 
+			data.probe_options && data.probe_options.available ? E('div', { 'class':'cbi-section' }, [
+				E('h3', {}, _('Probe contract')),
+				E('div', { 'class':'table' }, [
+					row(_('Targets'), (data.probe_options.targets || []).join(', ') || '-'),
+					row(_('Kinds'), (data.probe_options.kinds || []).join(', ') || '-'),
+					row(_('Transports'), (data.probe_options.transports || []).join(', ') || '-'),
+					row(_('IP versions'), (data.probe_options.ip_versions || []).join(', ') || '-'),
+					row(_('Max members / job'), String((data.probe_options.limits || {}).max_members_per_job || '-')),
+					row(_('Max results / job'), String((data.probe_options.limits || {}).max_results_per_job || '-')),
+					row(_('Job timeout'), (data.probe_options.limits || {}).job_timeout_ms
+						? String(data.probe_options.limits.job_timeout_ms) + ' ms' : '-')
+				])
+			]) : null,
+
 			data.capabilities_status === 401
 				? E('div', { 'class': 'alert-message notice' }, data.auth_configured
 					? _('The Native API still returns HTTP 401 with the stored token. Check that it matches native_api.secret.')
