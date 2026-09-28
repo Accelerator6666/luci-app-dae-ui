@@ -64,6 +64,40 @@ function validate(bin, cfg) {
 	return run(shell_quote(bin) + ' validate -c ' + shell_quote(cfg));
 }
 
+function validation_diagnostics(s, output) {
+	let items = [];
+	let base = config_base(s);
+	for (let idx, raw in split(output || '', '\n')) {
+		let line = trim(raw);
+		if (!line) continue;
+
+		let m = match(line, /([^:]+\.dae):([0-9]+):([0-9]+):\s*(.*)$/);
+		if (!m)
+			m = match(line, /([^:]+\.dae):([0-9]+):\s*(.*)$/);
+
+		if (m) {
+			let file = trim(m[1]);
+			let lineno = +(m[2] || 0);
+			let col = length(m) >= 5 ? +(m[3] || 0) : 0;
+			let msg = length(m) >= 5 ? (m[4] || line) : (m[3] || line);
+			let rel = file;
+			if (substr(file, 0, length(base) + 1) == base + '/')
+				rel = substr(file, length(base) + 1);
+			if (!safe_relative(rel))
+				rel = '';
+			push(items, { file: rel, line: lineno, column: col, message: trim(msg), raw: line });
+			continue;
+		}
+
+		let p = match(line, /[Ll]ine\s+([0-9]+).*?[Cc]ol(?:umn)?\s+([0-9]+)/);
+		if (p) {
+			let rel = substr(s.config, length(base) + 1);
+			push(items, { file: safe_relative(rel) ? rel : '', line: +(p[1] || 0), column: +(p[2] || 0), message: line, raw: line });
+		}
+	}
+	return items;
+}
+
 function stamp() {
 	return trim(run('date +%Y%m%d-%H%M%S').output);
 }
@@ -194,7 +228,7 @@ function save_one_file(s, rel, content, apply) {
 	let v = validate(s.binary, s.config);
 	if (v.rc != 0) {
 		write_atomic(path, old);
-		return { ok: false, error: 'Validation failed; previous file restored', output: v.output, rolled_back: true, backup: b };
+		return { ok: false, error: 'Validation failed; previous file restored', output: v.output, diagnostics: validation_diagnostics(s, v.output), rolled_back: true, backup: b };
 	}
 
 	if (apply) {
@@ -299,7 +333,7 @@ function save_managed(s, kind, body, apply) {
 	if (v.rc != 0) {
 		if (existed) write_atomic(path, old);
 		else run('rm -f ' + shell_quote(path));
-		return { ok: false, error: 'Validation failed; managed file rolled back', output: v.output, rolled_back: true, backup: b };
+		return { ok: false, error: 'Validation failed; managed file rolled back', output: v.output, diagnostics: validation_diagnostics(s, v.output), rolled_back: true, backup: b };
 	}
 
 	if (apply) {
@@ -623,6 +657,127 @@ function http_probe(url, authenticated, query) {
 	return out;
 }
 
+
+function http_post_json(url, payload) {
+	if (!url) return { attempted: false, status: 0, body: '', headers: '' };
+
+	let tag = '/tmp/dae-ui-post-' + pid() + '-' + stamp();
+	let body = tag + '.body';
+	let headers = tag + '.headers';
+	let cfg = tag + '.curl';
+	let payload_file = tag + '.json';
+	let token = native_token();
+	let authopt = '';
+
+	if (token) {
+		if (!valid_native_token(token))
+			return { attempted: false, status: 0, body: '', headers: '', rc: 1, error: 'Stored token is invalid' };
+		if (!writefile(cfg, 'header = "Authorization: Bearer ' + curl_config_escape(token) + '"\nheader = "Content-Type: application/json"\n'))
+			return { attempted: false, status: 0, body: '', headers: '', rc: 1, error: 'Unable to prepare private curl config' };
+		run('chmod 600 ' + shell_quote(cfg));
+		authopt = ' --config ' + shell_quote(cfg);
+	} else {
+		if (!writefile(cfg, 'header = "Content-Type: application/json"\n'))
+			return { attempted: false, status: 0, body: '', headers: '', rc: 1, error: 'Unable to prepare curl config' };
+		run('chmod 600 ' + shell_quote(cfg));
+		authopt = ' --config ' + shell_quote(cfg);
+	}
+
+	if (!writefile(payload_file, sprintf('%J', payload || {}))) {
+		run('rm -f ' + shell_quote(cfg));
+		return { attempted: false, status: 0, body: '', headers: '', rc: 1, error: 'Unable to prepare JSON request body' };
+	}
+	run('chmod 600 ' + shell_quote(payload_file));
+
+	let r = run('curl --connect-timeout 1 --max-time 5 --silent --show-error' + authopt +
+		' -X POST --data-binary @' + shell_quote(payload_file) +
+		' -D ' + shell_quote(headers) + ' -o ' + shell_quote(body) +
+		" -w '%{http_code}' " + shell_quote(url));
+
+	let status = match(trim(r.output), /^[0-9]{3}$/) ? +trim(r.output) : 0;
+	let out = {
+		attempted: true,
+		status: status,
+		body: readfile(body) || '',
+		headers: readfile(headers) || '',
+		rc: r.rc
+	};
+	run('rm -f ' + shell_quote(body) + ' ' + shell_quote(headers) + ' ' + shell_quote(cfg) + ' ' + shell_quote(payload_file));
+	return out;
+}
+
+function native_dns_query(s, args) {
+	let cfg = native_api_config(s);
+	let base = native_probe_url(cfg.listen);
+	if (!base) return { ok: false, status: 0, error: 'Native API listener is not locally probeable' };
+
+	let domain = safe_query_text(args.domain, 255);
+	if (!domain) return { ok: false, status: 0, error: 'DNS domain is required' };
+
+	let query = [];
+	query_add(query, 'domain', domain);
+	let types = safe_query_text(args.record_types, 128);
+	for (let idx, t in split(types || '', ',')) {
+		t = trim(t);
+		if (t && match(t, /^[A-Za-z0-9]+$/))
+			query_add(query, 'type', t);
+	}
+	let upstream = safe_query_text(args.upstream, 512);
+	if (upstream) query_add(query, 'upstream', upstream);
+	if (args.cache_mode == 'normal' || args.cache_mode == 'bypass')
+		query_add(query, 'cache_mode', args.cache_mode);
+	query_add(query, 'detail', 'full');
+
+	let r = http_probe(base + '/api/v1/dns/query', true, query);
+	return {
+		ok: r.status == 200,
+		status: r.status,
+		body: r.body || '',
+		auth_required: r.status == 401,
+		error: r.status == 200 ? '' : (r.status ? 'Native API returned HTTP ' + r.status : (r.error || 'Native API request failed'))
+	};
+}
+
+function native_routing_trace(s, args) {
+	let cfg = native_api_config(s);
+	let base = native_probe_url(cfg.listen);
+	if (!base) return { ok: false, status: 0, error: 'Native API listener is not locally probeable' };
+
+	let domain = safe_query_text(args.domain, 255);
+	let dst_ip = safe_query_text(args.dst_ip, 128);
+	if (!domain && !dst_ip)
+		return { ok: false, status: 0, error: 'Routing trace requires domain or destination IP' };
+
+	let network = args.network == 'udp' ? 'udp' : 'tcp';
+	let dst_port = +(args.dst_port || 0);
+	if (dst_port < 1 || dst_port > 65535) dst_port = 443;
+
+	let input = { network: network, dst_port: dst_port };
+	if (domain) input.domain = domain;
+	if (dst_ip) input.dst_ip = dst_ip;
+
+	let src_ip = safe_query_text(args.src_ip, 128);
+	let pname = safe_query_text(args.pname, 256);
+	let src_port = +(args.src_port || 0);
+	if (src_ip) input.src_ip = src_ip;
+	if (src_port >= 1 && src_port <= 65535) input.src_port = src_port;
+	if (pname) input.pname = pname;
+
+	let payload = {
+		input: input,
+		resolve: args.resolve == 'live' ? 'live' : 'none'
+	};
+
+	let r = http_post_json(base + '/api/v1/routing/trace', payload);
+	return {
+		ok: r.status == 200,
+		status: r.status,
+		body: r.body || '',
+		auth_required: r.status == 401,
+		error: r.status == 200 ? '' : (r.status ? 'Native API returned HTTP ' + r.status : (r.error || 'Native API request failed'))
+	};
+}
+
 function capability_available(body, key) {
 	let needle = '"' + key + '"';
 	let pos = index(body || '', needle);
@@ -813,6 +968,7 @@ return {
 					config_exists: !!stat(s.config),
 					config_valid: vr.rc == 0,
 					validate_output: vr.output,
+					validation_diagnostics: validation_diagnostics(s, vr.output),
 					dae0: iface_exists('dae0'),
 					dae0peer: iface_exists('dae0peer'),
 					last_backup: latest_backup(s.config),
@@ -924,7 +1080,7 @@ return {
 				let v = validate(s.binary, s.config);
 				if (v.rc != 0) {
 					run('rm -f ' + shell_quote(path));
-					return { ok: false, error: 'Validation failed; new file removed', output: v.output, rolled_back: true };
+					return { ok: false, error: 'Validation failed; new file removed', output: v.output, diagnostics: validation_diagnostics(s, v.output), rolled_back: true };
 				}
 
 				if (req.args.apply) {
@@ -1009,7 +1165,7 @@ return {
 				let v = validate(s.binary, s.config);
 				if (v.rc != 0) {
 					write_atomic(current, old);
-					return { ok: false, error: 'Backup validation failed; current file restored', output: v.output, rolled_back: true };
+					return { ok: false, error: 'Backup validation failed; current file restored', output: v.output, diagnostics: validation_diagnostics(s, v.output), rolled_back: true };
 				}
 
 				if (req.args.apply) {
@@ -1151,6 +1307,29 @@ return {
 		clear_native_token: {
 			call: function() {
 				return clear_native_token();
+			}
+		},
+
+		native_dns_query: {
+			args: { domain: 'string', record_types: 'string', upstream: 'string', cache_mode: 'string' },
+			call: function(req) {
+				return native_dns_query(settings(), req.args);
+			}
+		},
+
+		native_routing_trace: {
+			args: {
+				domain: 'string',
+				dst_ip: 'string',
+				network: 'string',
+				dst_port: 'int',
+				src_ip: 'string',
+				src_port: 'int',
+				pname: 'string',
+				resolve: 'string'
+			},
+			call: function(req) {
+				return native_routing_trace(settings(), req.args);
 			}
 		},
 
