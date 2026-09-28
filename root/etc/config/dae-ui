@@ -1,0 +1,8 @@
+config main 'main'
+	option enabled '1'
+	option binary '/usr/bin/dae'
+	option init '/etc/init.d/dae'
+	option config_file '/etc/dae/config.dae'
+	option log_file '/var/log/dae/dae.log'
+	option native_api 'auto'
+	option dashboard_dir '/usr/share/dae-ui/dashboard'
