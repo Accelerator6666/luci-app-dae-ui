@@ -87,6 +87,31 @@ function bytesFromKiB(kib) {
 	return n ? (n / 1024).toFixed(1) + ' MiB' : '-';
 }
 
+function configUrl(path, line) {
+	var url = L.url('admin/services/dae-ui/files');
+	var q = [];
+	if (path) q.push('path=' + encodeURIComponent(path));
+	if (line) q.push('line=' + encodeURIComponent(String(line)));
+	return url + (q.length ? '?' + q.join('&') : '');
+}
+
+function diagnosticsNode(items) {
+	items = items || [];
+	if (!items.length) return null;
+	return E('div', { 'class':'cbi-section' }, [
+		E('h4', {}, _('Validation diagnostics')),
+		items.map(function(d) {
+			var label = (d.file || _('Main config')) +
+				(d.line ? ':' + d.line : '') +
+				(d.column ? ':' + d.column : '');
+			return E('div', { 'style':'margin:6px 0' }, [
+				d.file ? E('a', { 'href':configUrl(d.file, d.line) }, E('code', {}, label)) : E('code', {}, label),
+				E('span', {}, ' — ' + (d.message || d.raw || _('Validation error')))
+			]);
+		})
+	]);
+}
+
 return baseclass.extend({
 	callStatus: callStatus,
 	callRuntimeStats: callRuntimeStats,
@@ -121,5 +146,7 @@ return baseclass.extend({
 	callPreviewManagedSection: callPreviewManagedSection,
 	notify: notify,
 	badge: badge,
-	bytesFromKiB: bytesFromKiB
+	bytesFromKiB: bytesFromKiB,
+	configUrl: configUrl,
+	diagnosticsNode: diagnosticsNode
 });
