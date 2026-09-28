@@ -2,42 +2,117 @@
   "admin/services/dae-ui": {
     "title": "DAE",
     "order": 61,
-    "action": { "type": "firstchild" },
-    "depends": { "acl": [ "luci-app-dae-ui" ] }
+    "action": {
+      "type": "firstchild"
+    },
+    "depends": {
+      "acl": [
+        "luci-app-dae-ui"
+      ]
+    }
   },
   "admin/services/dae-ui/overview": {
     "title": "Overview",
     "order": 10,
-    "action": { "type": "view", "path": "daeui/overview" }
+    "action": {
+      "type": "view",
+      "path": "daeui/overview"
+    }
+  },
+  "admin/services/dae-ui/files": {
+    "title": "Configuration Files",
+    "order": 20,
+    "action": {
+      "type": "view",
+      "path": "daeui/files"
+    }
   },
   "admin/services/dae-ui/config": {
-    "title": "Configuration",
-    "order": 20,
-    "action": { "type": "view", "path": "daeui/config" }
+    "title": "Main Config",
+    "order": 21,
+    "action": {
+      "type": "view",
+      "path": "daeui/config"
+    }
+  },
+  "admin/services/dae-ui/nodes": {
+    "title": "Nodes",
+    "order": 30,
+    "action": {
+      "type": "view",
+      "path": "daeui/nodes"
+    }
+  },
+  "admin/services/dae-ui/groups": {
+    "title": "Policies",
+    "order": 31,
+    "action": {
+      "type": "view",
+      "path": "daeui/groups"
+    }
+  },
+  "admin/services/dae-ui/routing": {
+    "title": "Routing",
+    "order": 32,
+    "action": {
+      "type": "view",
+      "path": "daeui/routing"
+    }
+  },
+  "admin/services/dae-ui/dns": {
+    "title": "DNS",
+    "order": 33,
+    "action": {
+      "type": "view",
+      "path": "daeui/dns"
+    }
   },
   "admin/services/dae-ui/sections": {
-    "title": "Config Sections",
-    "order": 30,
-    "action": { "type": "view", "path": "daeui/sections" }
+    "title": "All Sections",
+    "order": 39,
+    "action": {
+      "type": "view",
+      "path": "daeui/sections"
+    }
+  },
+  "admin/services/dae-ui/backups": {
+    "title": "Backups",
+    "order": 40,
+    "action": {
+      "type": "view",
+      "path": "daeui/backups"
+    }
   },
   "admin/services/dae-ui/diagnostics": {
     "title": "Diagnostics",
-    "order": 40,
-    "action": { "type": "view", "path": "daeui/diagnostics" }
+    "order": 50,
+    "action": {
+      "type": "view",
+      "path": "daeui/diagnostics"
+    }
   },
   "admin/services/dae-ui/logs": {
     "title": "Logs",
-    "order": 50,
-    "action": { "type": "view", "path": "daeui/logs" }
+    "order": 60,
+    "action": {
+      "type": "view",
+      "path": "daeui/logs"
+    }
   },
   "admin/services/dae-ui/dashboard": {
     "title": "Native API",
-    "order": 60,
-    "action": { "type": "view", "path": "daeui/dashboard" }
+    "order": 70,
+    "action": {
+      "type": "view",
+      "path": "daeui/dashboard"
+    }
   },
   "admin/services/dae-ui/settings": {
     "title": "Settings",
-    "order": 70,
-    "action": { "type": "view", "path": "daeui/settings" }
+    "order": 80,
+    "action": {
+      "type": "view",
+      "path": "daeui/settings"
+    }
   }
 }
