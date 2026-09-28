@@ -27,6 +27,11 @@ function run(cmd) {
 	return { rc: rc || 0, output: out || '' };
 }
 
+function dirname(path) {
+	let d = replace(path || '', /\/[^\/]*$/, '');
+	return d || '/';
+}
+
 function pid() {
 	let r = run('pidof dae');
 	let m = match(r.output, /([0-9]+)/);
@@ -54,27 +59,76 @@ function validate(bin, cfg) {
 	return run(shell_quote(bin) + ' validate -c ' + shell_quote(cfg));
 }
 
+function stamp() {
+	return trim(run('date +%Y%m%d-%H%M%S').output);
+}
+
 function latest_backup(cfg) {
 	let r = run("ls -1t " + shell_quote(cfg + '.backup.*') + " 2>/dev/null | head -1");
 	return trim(r.output);
 }
 
-function backup(cfg) {
-	if (!stat(cfg)) return '';
-	let stamp = trim(run("date +%Y%m%d-%H%M%S").output);
-	let dst = cfg + '.backup.' + stamp;
-	let r = run('cp -p ' + shell_quote(cfg) + ' ' + shell_quote(dst));
+function backup(path) {
+	if (!stat(path)) return '';
+	let dst = path + '.backup.' + stamp();
+	let r = run('cp -p ' + shell_quote(path) + ' ' + shell_quote(dst));
 	return r.rc == 0 ? dst : '';
 }
 
 function write_atomic(path, content) {
-	let tmp = path + '.new.' + pid();
+	let tmp = path + '.new.' + pid() + '.' + stamp();
 	if (!writefile(tmp, content)) return { ok: false, error: 'Unable to write temporary config' };
 	let r = run('chmod 600 ' + shell_quote(tmp) + ' && mv -f ' + shell_quote(tmp) + ' ' + shell_quote(path));
 	return r.rc == 0 ? { ok: true } : { ok: false, error: r.output || 'Unable to replace config' };
 }
 
-function section_extract(content) {
+function config_base(s) {
+	return dirname(s.config);
+}
+
+function safe_relative(rel) {
+	if (!rel || substr(rel, 0, 1) == '/' || match(rel, /(^|\/)\.\.(\/|$)/) || match(rel, /\/\//))
+		return false;
+	if (!match(rel, /^[A-Za-z0-9._\/-]+\.dae$/))
+		return false;
+	return true;
+}
+
+function resolve_config_file(s, rel, must_exist) {
+	if (!safe_relative(rel)) return null;
+	let base = config_base(s);
+	let path = base + '/' + rel;
+	if (must_exist && !stat(path)) return null;
+	let dir = dirname(path);
+	let canon_dir = trim(run('readlink -f ' + shell_quote(dir)).output);
+	let canon_base = trim(run('readlink -f ' + shell_quote(base)).output);
+	if (!canon_dir || !canon_base) return null;
+	if (canon_dir != canon_base && substr(canon_dir, 0, length(canon_base) + 1) != canon_base + '/')
+		return null;
+	return path;
+}
+
+function config_files(s) {
+	let base = config_base(s);
+	let cmd = 'find ' + shell_quote(base) + " -maxdepth 3 -type f -name '*.dae' 2>/dev/null | sort";
+	let r = run(cmd);
+	let out = [];
+	for (let line in split(trim(r.output), '\n')) {
+		if (!line) continue;
+		let rel = substr(line, length(base) + 1);
+		if (!safe_relative(rel)) continue;
+		let st = stat(line);
+		push(out, {
+			path: rel,
+			full_path: line,
+			main: line == s.config,
+			size: st ? (st.size || 0) : 0
+		});
+	}
+	return out;
+}
+
+function section_extract(content, source) {
 	let names = { global: true, subscription: true, node: true, group: true, routing: true, dns: true, experimental: true };
 	let lines = split(content || '', '\n');
 	let out = [];
@@ -95,7 +149,7 @@ function section_extract(content) {
 					else if (c == '}') depth--;
 				}
 				if (depth <= 0) {
-					push(out, { name: active, content: join('\n', buf) });
+					push(out, { name: active, source: source, content: join('\n', buf) });
 					active = null;
 				}
 			}
@@ -107,13 +161,43 @@ function section_extract(content) {
 				else if (c == '}') depth--;
 			}
 			if (depth <= 0) {
-				push(out, { name: active, content: join('\n', buf) });
+				push(out, { name: active, source: source, content: join('\n', buf) });
 				active = null;
 				buf = [];
 			}
 		}
 	}
 	return out;
+}
+
+function save_one_file(s, rel, content, apply) {
+	if (length(content || '') > 1048576)
+		return { ok: false, error: 'Configuration is too large' };
+
+	let path = resolve_config_file(s, rel, true);
+	if (!path) return { ok: false, error: 'Invalid or missing configuration file' };
+
+	let old = readfile(path) || '';
+	let b = backup(path);
+	let w = write_atomic(path, content || '');
+	if (!w.ok) return w;
+
+	let v = validate(s.binary, s.config);
+	if (v.rc != 0) {
+		write_atomic(path, old);
+		return { ok: false, error: 'Validation failed; previous file restored', output: v.output, rolled_back: true, backup: b };
+	}
+
+	if (apply) {
+		let r = run(shell_quote(s.binary) + ' reload');
+		if (r.rc != 0) {
+			write_atomic(path, old);
+			run(shell_quote(s.binary) + ' reload');
+			return { ok: false, error: 'Reload failed; previous file restored', output: r.output, rolled_back: true, backup: b };
+		}
+	}
+
+	return { ok: true, backup: b, message: apply ? 'Configuration validated and hot-reloaded' : 'Configuration saved and validated' };
 }
 
 function native_api_status(cfg) {
@@ -152,10 +236,12 @@ return {
 					validate_output: vr.output,
 					dae0: iface_exists('dae0'),
 					dae0peer: iface_exists('dae0peer'),
-					last_backup: latest_backup(s.config)
+					last_backup: latest_backup(s.config),
+					config_files: length(config_files(s))
 				};
 			}
 		},
+
 		service: {
 			args: { action: 'string' },
 			call: function(req) {
@@ -172,54 +258,32 @@ return {
 				return { ok: r.rc == 0, rc: r.rc, output: r.output, message: r.rc == 0 ? 'Action completed: ' + action : '' };
 			}
 		},
+
 		get_config: {
 			call: function() {
 				let s = settings();
 				return { ok: true, path: s.config, content: readfile(s.config) || '', last_backup: latest_backup(s.config) };
 			}
 		},
+
 		save_config: {
 			args: { content: 'string' },
 			call: function(req) {
 				let s = settings();
-				let content = req.args.content || '';
-				if (!content || length(content) > 1048576) return { ok: false, error: 'Configuration is empty or too large' };
-				let b = backup(s.config);
-				let w = write_atomic(s.config, content);
-				if (!w.ok) return w;
-				let v = validate(s.binary, s.config);
-				if (v.rc != 0) {
-					if (b) run('cp -f ' + shell_quote(b) + ' ' + shell_quote(s.config));
-					return { ok: false, error: 'Validation failed; previous configuration restored', output: v.output, rolled_back: !!b };
-				}
-				return { ok: true, backup: b, message: 'Configuration saved and validated' };
+				let rel = substr(s.config, length(config_base(s)) + 1);
+				return save_one_file(s, rel, req.args.content || '', false);
 			}
 		},
+
 		apply_config: {
 			args: { content: 'string' },
 			call: function(req) {
 				let s = settings();
-				let content = req.args.content || '';
-				if (!content || length(content) > 1048576) return { ok: false, error: 'Configuration is empty or too large' };
-				let b = backup(s.config);
-				let w = write_atomic(s.config, content);
-				if (!w.ok) return w;
-				let v = validate(s.binary, s.config);
-				if (v.rc != 0) {
-					if (b) run('cp -f ' + shell_quote(b) + ' ' + shell_quote(s.config));
-					return { ok: false, error: 'Validation failed; previous configuration restored', output: v.output, rolled_back: !!b };
-				}
-				let r = run(shell_quote(s.binary) + ' reload');
-				if (r.rc != 0) {
-					if (b) {
-						run('cp -f ' + shell_quote(b) + ' ' + shell_quote(s.config));
-						run(shell_quote(s.binary) + ' reload');
-					}
-					return { ok: false, error: 'Reload failed; previous configuration restored', output: r.output, rolled_back: !!b };
-				}
-				return { ok: true, backup: b, message: 'Configuration validated and hot-reloaded' };
+				let rel = substr(s.config, length(config_base(s)) + 1);
+				return save_one_file(s, rel, req.args.content || '', true);
 			}
 		},
+
 		restore_last: {
 			call: function() {
 				let s = settings();
@@ -229,13 +293,144 @@ return {
 				return { ok: r.rc == 0, output: r.output, backup: b };
 			}
 		},
+
+		list_config_files: {
+			call: function() {
+				let s = settings();
+				return { ok: true, base: config_base(s), main: s.config, files: config_files(s) };
+			}
+		},
+
+		get_config_file: {
+			args: { path: 'string' },
+			call: function(req) {
+				let s = settings();
+				let path = resolve_config_file(s, req.args.path || '', true);
+				if (!path) return { ok: false, error: 'Invalid or missing configuration file' };
+				return { ok: true, path: req.args.path, content: readfile(path) || '', latest_backup: latest_backup(path) };
+			}
+		},
+
+		save_config_file: {
+			args: { path: 'string', content: 'string', apply: 'bool' },
+			call: function(req) {
+				let s = settings();
+				return save_one_file(s, req.args.path || '', req.args.content || '', !!req.args.apply);
+			}
+		},
+
+		create_config_file: {
+			args: { name: 'string', content: 'string', apply: 'bool' },
+			call: function(req) {
+				let s = settings();
+				let name = req.args.name || '';
+				if (!match(name, /^[A-Za-z0-9._-]+\.dae$/))
+					return { ok: false, error: 'File name must end in .dae and contain only safe characters' };
+				let rel = 'config.d/' + name;
+				let path = resolve_config_file(s, rel, false);
+				if (!path) return { ok: false, error: 'Invalid target path' };
+				if (stat(path)) return { ok: false, error: 'File already exists' };
+				run('mkdir -p ' + shell_quote(dirname(path)));
+				let w = write_atomic(path, req.args.content || '');
+				if (!w.ok) return w;
+				let v = validate(s.binary, s.config);
+				if (v.rc != 0) {
+					run('rm -f ' + shell_quote(path));
+					return { ok: false, error: 'Validation failed; new file removed', output: v.output, rolled_back: true };
+				}
+				if (req.args.apply) {
+					let r = run(shell_quote(s.binary) + ' reload');
+					if (r.rc != 0) {
+						run('rm -f ' + shell_quote(path));
+						run(shell_quote(s.binary) + ' reload');
+						return { ok: false, error: 'Reload failed; new file removed', output: r.output, rolled_back: true };
+					}
+				}
+				return { ok: true, path: rel, message: req.args.apply ? 'File created and hot-reloaded' : 'File created and validated' };
+			}
+		},
+
 		get_sections: {
 			call: function() {
 				let s = settings();
-				let c = readfile(s.config) || '';
-				return { ok: true, sections: section_extract(c) };
+				let all = [];
+				for (let f in config_files(s)) {
+					let sections = section_extract(readfile(f.full_path) || '', f.path);
+					for (let sec in sections) push(all, sec);
+				}
+				return { ok: true, sections: all };
 			}
 		},
+
+		list_backups: {
+			call: function() {
+				let s = settings();
+				let base = config_base(s);
+				let r = run('find ' + shell_quote(base) + " -maxdepth 3 -type f -name '*.dae.backup.*' 2>/dev/null | sort -r");
+				let items = [];
+				for (let line in split(trim(r.output), '\n')) {
+					if (!line) continue;
+					let rel = substr(line, length(base) + 1);
+					let st = stat(line);
+					push(items, { path: rel, size: st ? (st.size || 0) : 0 });
+				}
+				return { ok: true, backups: items };
+			}
+		},
+
+		diff_backup: {
+			args: { path: 'string' },
+			call: function(req) {
+				let s = settings();
+				let base = config_base(s);
+				let rel = req.args.path || '';
+				if (!match(rel, /^[A-Za-z0-9._\/-]+\.dae\.backup\.[0-9-]+$/) || match(rel, /(^|\/)\.\.(\/|$)/))
+					return { ok: false, error: 'Invalid backup path' };
+				let b = base + '/' + rel;
+				if (!stat(b)) return { ok: false, error: 'Backup not found' };
+				let current_rel = replace(rel, /\.backup\.[0-9-]+$/, '');
+				let current = resolve_config_file(s, current_rel, true);
+				if (!current) return { ok: false, error: 'Current configuration file not found' };
+				let r = run('diff -u ' + shell_quote(b) + ' ' + shell_quote(current) + ' | head -400');
+				return { ok: true, identical: !trim(r.output), output: r.output, current: current_rel };
+			}
+		},
+
+		restore_backup: {
+			args: { path: 'string', apply: 'bool' },
+			call: function(req) {
+				let s = settings();
+				let base = config_base(s);
+				let rel = req.args.path || '';
+				if (!match(rel, /^[A-Za-z0-9._\/-]+\.dae\.backup\.[0-9-]+$/) || match(rel, /(^|\/)\.\.(\/|$)/))
+					return { ok: false, error: 'Invalid backup path' };
+				let b = base + '/' + rel;
+				if (!stat(b)) return { ok: false, error: 'Backup not found' };
+				let current_rel = replace(rel, /\.backup\.[0-9-]+$/, '');
+				let current = resolve_config_file(s, current_rel, true);
+				if (!current) return { ok: false, error: 'Current configuration file not found' };
+				backup(current);
+				let old = readfile(current) || '';
+				let content = readfile(b) || '';
+				let w = write_atomic(current, content);
+				if (!w.ok) return w;
+				let v = validate(s.binary, s.config);
+				if (v.rc != 0) {
+					write_atomic(current, old);
+					return { ok: false, error: 'Backup validation failed; current file restored', output: v.output, rolled_back: true };
+				}
+				if (req.args.apply) {
+					let r = run(shell_quote(s.binary) + ' reload');
+					if (r.rc != 0) {
+						write_atomic(current, old);
+						run(shell_quote(s.binary) + ' reload');
+						return { ok: false, error: 'Reload failed; current file restored', output: r.output, rolled_back: true };
+					}
+				}
+				return { ok: true, current: current_rel, message: req.args.apply ? 'Backup restored and hot-reloaded' : 'Backup restored and validated' };
+			}
+		},
+
 		get_log: {
 			args: { limit: 'int' },
 			call: function(req) {
@@ -247,6 +442,7 @@ return {
 				return { ok: true, output: r.output };
 			}
 		},
+
 		clear_log: {
 			call: function() {
 				let s = settings();
@@ -255,6 +451,7 @@ return {
 				return { ok: r.rc == 0, output: r.output };
 			}
 		},
+
 		diagnose: {
 			call: function() {
 				let s = settings();
@@ -267,12 +464,14 @@ return {
 					checks: [
 						{ name: 'dae process', state: p > 0 ? 'PASS' : 'FAIL', detail: p ? 'PID ' + p : 'not running' },
 						{ name: 'configuration', state: v.rc == 0 ? 'PASS' : 'FAIL', detail: trim(v.output) },
+						{ name: 'config files', state: length(config_files(s)) > 0 ? 'PASS' : 'WARN', detail: '' + length(config_files(s)) + ' .dae file(s)' },
 						{ name: 'dae0 interface', state: iface_exists('dae0') ? 'PASS' : 'WARN', detail: trim(link.output) },
 						{ name: 'default route', state: trim(route.output) ? 'PASS' : 'WARN', detail: trim(route.output) }
 					]
 				};
 			}
 		},
+
 		native_api_status: {
 			call: function() {
 				let s = settings();
