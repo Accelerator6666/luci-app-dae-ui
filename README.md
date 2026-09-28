@@ -12,7 +12,7 @@ This package must be useful **today** with normal dae installations. It therefor
 
 When dae implements the shared daeuniverse native API contract, the Native API page becomes the integration point for connections, DNS telemetry, policy selection, route traces, activity history and other runtime resources.
 
-## v0.2.0
+## v0.3.0
 
 - Live Overview with process, memory, version, config validation, discovered config-file count and eBPF interface state.
 - Start / stop / restart / hot reload / suspend controls.
@@ -23,9 +23,13 @@ When dae implements the shared daeuniverse native API contract, the Native API p
   - `dae validate` before acceptance;
   - hot reload after apply;
   - automatic rollback when validation or reload fails.
-- Dedicated read-only Nodes, Policies, Routing and DNS views with source-file attribution.
+- Dedicated Nodes, Policies, Routing and DNS control pages with source-file attribution and safe staged managed sections.
 - All Sections view for `global`, `subscription`, `node`, `group`, `routing`, `dns`, `experimental` blocks across discovered `.dae` files.
 - Backup history with per-file diff, restore+validate and restore+reload.
+- Safe managed config files under `config.d/dae-ui-*.dae`; the UI refuses managed writes unless the main config already includes `config.d/*.dae`.
+- Quick staging forms for nodes, subscriptions, policy groups and routing rules; DNS gets a safe split-DNS template plus raw staged editing.
+- Config Sources page showing discovered files and recognized section ownership.
+- GeoData status detection for common DAE/OpenWrt asset directories.
 - Diagnostics page for process, validation, `dae0` and default route.
 - Live log page with refresh, pause and clear.
 - Native API readiness page, deliberately capability-driven.
@@ -44,11 +48,11 @@ Copy the project into an OpenWrt build tree as a package, or install the package
 
 They can be changed under **Services → DAE → Settings**.
 
-## Planned v0.3
+## Planned v0.4
 
-- Editable structured Nodes / Policies / Routing / DNS forms with staged changes and one atomic apply.
-- Geodata status/update helpers.
-- Better parser diagnostics and source navigation.
+- Richer structured editors for existing user-owned blocks without rewriting unknown syntax.
+- Optional GeoData update workflow with checksum verification.
+- Better parser diagnostics and click-through source navigation.
 - Native API capability discovery and optional Doona-style runtime pages when dae exposes the required contract.
 
 ## License
