@@ -13,7 +13,10 @@
           "diff_backup",
           "get_log",
           "diagnose",
-          "native_api_status"
+          "native_api_status",
+          "include_status",
+          "get_managed_section",
+          "geodata_status"
         ],
         "uci": [
           "get"
@@ -30,7 +33,8 @@
           "save_config_file",
           "create_config_file",
           "restore_backup",
-          "clear_log"
+          "clear_log",
+          "save_managed_section"
         ],
         "uci": [
           "set",
