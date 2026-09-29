@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.13.0 - 2026-09-29
+
+- Added a persistent DAE Version Manager page for installing and selecting multiple dae binaries without changing `.dae` configuration files.
+- Added fixed-path managed binary slots under `/usr/lib/dae-ui/versions`; release slots include the verified archive digest so an updated nightly/stable asset cannot overwrite a selected or last-good binary in place.
+- Added on-demand official release discovery from `daeuniverse/dae`, filtered to release assets matching the router architecture.
+- x86_64 exposes upstream v1, v2/SSE and v3/AVX2 assets; every downloaded binary must pass an execution smoke test before installation.
+- Release archives require SHA256 verification from fresh GitHub release asset metadata or the official `.dgst` file before extraction.
+- A candidate binary must validate the actual `/etc/config/dae` service configuration before installation and again before activation.
+- Downloading does not activate a release. Activation is an explicit separate action.
+- Activate & Restart persists the selected slot, restarts dae, verifies the running `/proc/<pid>/exe`, and only then marks the slot last-good.
+- Failed runtime activation automatically rolls selection back and restarts the previous last-good/system slot.
+- Added a stable `/usr/bin/dae` managed runner while leaving the upstream `/etc/init.d/dae` file unchanged.
+- Added `/etc/init.d/dae-ui-version` with START=98 so boot validation/fallback happens before the upstream dae START=99 service.
+- Boot selection tries persisted selected → last-good → captured system binary while leaving configuration content untouched.
+- The original package-managed dae is captured into a protected system slot before first takeover.
+- If a later dae package upgrade overwrites `/usr/bin/dae`, boot repair captures the new package binary, preserves the previous system binary as an immutable `system-prev-*` slot, then reinstalls the runner.
+- When version management is enabled, backend validate/reload calls use the selected slot directly; Start/Restart repairs the runner before invoking the normal dae init script.
+- Overview now shows Version Manager state, selected slot, last-good slot and the actual running binary.
+- Added shell syntax checks to CI for init/libexec helpers.
+- Package install ensures version-manager helpers are executable and adds `unzip`/CA dependencies for verified official release downloads.
+- Package removal restores the captured system binary to `/usr/bin/dae` when the managed runner still owns that path.
+
 ## 0.12.0 - 2026-09-29
 
 - Added the fixed read-only Native API resource `GET /api/v1/dns/rules` and `dns_rules` capability discovery.
