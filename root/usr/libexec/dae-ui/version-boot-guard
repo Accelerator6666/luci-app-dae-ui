@@ -1,0 +1,139 @@
+#!/bin/sh
+
+ROOT="/usr/lib/dae-ui/versions"
+RUNNER="/usr/libexec/dae-ui/dae-runner"
+SYSTEM="$ROOT/system/dae"
+PUBLIC="/usr/bin/dae"
+LOG="/tmp/dae-ui-version-boot.log"
+
+log() {
+	echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"
+	logger -t dae-ui-version "$*" 2>/dev/null || true
+}
+
+safe_slot() {
+	case "$1" in
+		""|*[!A-Za-z0-9._-]*) return 1 ;;
+		*) return 0 ;;
+	esac
+}
+
+slot_bin() {
+	safe_slot "$1" || return 1
+	printf '%s/%s/dae\n' "$ROOT" "$1"
+}
+
+service_config() {
+	local cfg
+	cfg="$(uci -q get dae.config.config_file)"
+	[ -n "$cfg" ] || cfg="$(uci -q get dae-ui.main.config_file)"
+	[ -n "$cfg" ] || cfg="/etc/dae/config.dae"
+	printf '%s\n' "$cfg"
+}
+
+capture_system() {
+	local resolved tmp
+	mkdir -p "$ROOT/system" || return 1
+
+	resolved="$(readlink -f "$PUBLIC" 2>/dev/null)"
+	[ "$resolved" = "$RUNNER" ] && return 0
+
+	[ -x "$PUBLIC" ] || {
+		[ -x "$SYSTEM" ] && return 0
+		log "cannot capture system dae: $PUBLIC is missing or not executable"
+		return 1
+	}
+
+	tmp="$SYSTEM.new.$$"
+	if ! cp -L "$PUBLIC" "$tmp"; then
+		rm -f "$tmp"
+		log "failed to copy system dae into managed system slot"
+		return 1
+	fi
+	chmod 755 "$tmp" || {
+		rm -f "$tmp"
+		return 1
+	}
+	mv -f "$tmp" "$SYSTEM" || {
+		rm -f "$tmp"
+		return 1
+	}
+	log "captured system dae into $SYSTEM"
+	return 0
+}
+
+install_runner() {
+	[ -x "$RUNNER" ] || {
+		log "runner is missing: $RUNNER"
+		return 1
+	}
+	capture_system || return 1
+
+	if [ "$(readlink -f "$PUBLIC" 2>/dev/null)" != "$RUNNER" ]; then
+		rm -f "$PUBLIC" || return 1
+		ln -s "$RUNNER" "$PUBLIC" || return 1
+		log "installed managed /usr/bin/dae runner"
+	fi
+	return 0
+}
+
+validate_slot() {
+	local slot="$1" cfg="$2" bin
+	bin="$(slot_bin "$slot")" || return 1
+	[ -x "$bin" ] || return 1
+	"$bin" --version >/dev/null 2>&1 || "$bin" version >/dev/null 2>&1 || return 1
+	"$bin" validate -c "$cfg" >/tmp/dae-ui-version-validate.$$ 2>&1
+	local rc=$?
+	[ "$rc" -eq 0 ] || cat /tmp/dae-ui-version-validate.$$ >> "$LOG"
+	rm -f /tmp/dae-ui-version-validate.$$
+	return "$rc"
+}
+
+persist_slot() {
+	local slot="$1"
+	uci -q set dae-ui.main.version_manager_enabled='1'
+	uci -q set dae-ui.main.selected_slot="$slot"
+	uci -q set dae-ui.main.last_good_slot="$slot"
+	uci -q set dae-ui.main.binary='/usr/bin/dae'
+	uci -q commit dae-ui
+}
+
+choose_boot_slot() {
+	local cfg selected last_good candidate
+	cfg="$(service_config)"
+	selected="$(uci -q get dae-ui.main.selected_slot)"
+	last_good="$(uci -q get dae-ui.main.last_good_slot)"
+
+	for candidate in "$selected" "$last_good" system; do
+		safe_slot "$candidate" || continue
+		if validate_slot "$candidate" "$cfg"; then
+			if [ "$candidate" != "$selected" ]; then
+				log "selected slot '$selected' failed validation; falling back to '$candidate'"
+				persist_slot "$candidate"
+			else
+				log "selected slot '$candidate' validated for $cfg"
+			fi
+			rm -f /tmp/dae-ui-version-boot-error
+			return 0
+		fi
+	done
+
+	echo "No installed dae version validates $cfg" >/tmp/dae-ui-version-boot-error
+	log "no installed dae version validates $cfg; configuration was left untouched"
+	return 1
+}
+
+mode="${1:-boot}"
+case "$mode" in
+	prepare)
+		install_runner
+		;;
+	boot)
+		install_runner || exit 1
+		choose_boot_slot
+		;;
+	*)
+		echo "usage: $0 [prepare|boot]" >&2
+		exit 2
+		;;
+esac
