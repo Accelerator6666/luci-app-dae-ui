@@ -202,5 +202,13 @@
       "type": "view",
       "path": "daeui/native-dns-rules"
     }
+  },
+  "admin/services/dae-ui/versions": {
+    "title": "DAE Versions",
+    "order": 72,
+    "action": {
+      "type": "view",
+      "path": "daeui/versions"
+    }
   }
 }
