@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.11.0 - 2026-09-29
+
+- Added a reusable retained-flow trace renderer shared by the Flows and Connections pages.
+- Native Flows now exposes a Timeline action that reads the exact retained flow detail and renders its causal steps in sequence order.
+- Timeline covers input, route, datapath, dial mode, DNS, reroute, outbound and connection stages with observed time, elapsed microseconds, generation ID and evidence provenance.
+- Route steps render retained rule evaluations; outbound steps render retained group/member selection candidates including eligibility, sorting latency, score, selected state and reason when present.
+- Partial or disabled traces keep their trace status and missing-evidence reasons visible; the UI does not imply omitted evidence was observed.
+- Every timeline step and the complete flow detail retain a raw JSON disclosure for low-level diagnosis.
+- Traffic-rule links inside the timeline are generated only when the recorded route-step generation exactly matches the current complete rule dictionary and the rule ID exists in that dictionary.
+- Native Connections now exposes Timeline only for rows carrying a backend-provided flow_id and opens that exact retained flow; the UI never fabricates a flow identity for unrecorded connections.
+- Connection-launched and Flow-launched timelines use the same generation-safe rule/source drill-down logic.
+- No flow simulation, connection mutation, rule mutation or arbitrary Native API path was introduced.
+
 ## 0.10.0 - 2026-09-29
 
 - Native API status now parses and exposes the advertised probe targets, kinds, purposes, transports, IP versions and job limits.
