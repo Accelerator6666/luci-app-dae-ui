@@ -1,0 +1,38 @@
+#!/bin/sh
+
+ROOT="/usr/lib/dae-ui/versions"
+
+safe_slot() {
+	case "$1" in
+		""|*[!A-Za-z0-9._-]*) return 1 ;;
+		*) return 0 ;;
+	esac
+}
+
+slot_bin() {
+	safe_slot "$1" || return 1
+	printf '%s/%s/dae\n' "$ROOT" "$1"
+}
+
+pick_slot() {
+	local selected last_good candidate bin
+	selected="$(uci -q get dae-ui.main.selected_slot)"
+	last_good="$(uci -q get dae-ui.main.last_good_slot)"
+
+	for candidate in "$selected" "$last_good" system; do
+		safe_slot "$candidate" || continue
+		bin="$(slot_bin "$candidate")" || continue
+		[ -x "$bin" ] || continue
+		printf '%s\n' "$bin"
+		return 0
+	done
+
+	return 1
+}
+
+bin="$(pick_slot)" || {
+	echo "dae-ui: no usable managed dae binary is installed" >&2
+	exit 127
+}
+
+exec "$bin" "$@"
