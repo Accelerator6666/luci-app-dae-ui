@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.12.0 - 2026-09-29
+
+- Added the fixed read-only Native API resource `GET /api/v1/dns/rules` and `dns_rules` capability discovery.
+- Added a hidden capability-driven Native DNS Rule Dictionary page with separate request and response rule lists, search, filtering, sorting and source metadata.
+- DNS request rules expose upstream/asis/reject actions; DNS response rules expose accept/reject/requery actions and resolved upstream names where applicable.
+- DNS rule source links use source_id joined through the Native config snapshot and become clickable only when the mapped path exactly matches a locally discovered `.dae` file.
+- Native DNS Rules accepts generation-qualified list/rule links and refuses cross-generation associations or rules missing from the requested request/response list.
+- Runtime and Native API Discovery now expose DNS rule capability and a Native DNS Rules entry only when reported available.
+- Retained Flow Timeline now uses the correct dictionary per route chain: traffic and dns_upstream use traffic rules; dns_request and dns_response use the DNS rule dictionary.
+- Both the selected route rule and every retained rule-evaluation row use generation-safe dictionary links; no rule ID alone is treated as sufficient identity.
+- Route timeline fields now include DNS action, and DNS evidence exposes route_evaluation_ids for correlating recorded lookups with retained routing evaluations.
+- Flow and Connection timeline loaders fetch DNS rules only when the backend explicitly advertises dns_rules; traffic and DNS dictionary failures are reported independently without hiding the retained trace itself.
+- No DNS rule mutation, arbitrary config write, cache mutation or general-purpose Native API path was introduced.
+
 ## 0.11.0 - 2026-09-29
 
 - Added a reusable retained-flow trace renderer shared by the Flows and Connections pages.
