@@ -47,7 +47,10 @@ return view.extend({
 			'dae-memory':dae.bytesFromKiB(data.memory_kb),
 			'dae-uptime':humanSeconds(data.process_uptime),
 			'dae-files':String(data.config_files||0),
-			'dae-route':data.default_route||'-'
+			'dae-route':data.default_route||'-',
+			'dae-selected-slot':data.selected_slot||'system',
+			'dae-last-good-slot':data.last_good_slot||'system',
+			'dae-running-binary':data.running_binary||'-'
 		};
 		Object.keys(vals).forEach(function(id){var n=document.getElementById(id);if(n)n.textContent=vals[id];});
 		var i=document.getElementById('dae-interfaces'); if(i)i.textContent=data.interfaces||_('No interface information.');
@@ -64,7 +67,11 @@ return view.extend({
 				row(_('Memory'),E('span',{'id':'dae-memory'},dae.bytesFromKiB(data.memory_kb))),
 				row(_('Process uptime'),E('span',{'id':'dae-uptime'},humanSeconds(data.process_uptime))),
 				row(_('Version'),data.version||'-'),
-				row(_('Binary'),E('code',{},data.binary||'/usr/bin/dae')),
+				row(_('Binary entry point'),E('code',{},data.binary||'/usr/bin/dae')),
+				row(_('Version manager'),dae.badge(data.version_manager_enabled?_('Enabled'):_('Not enabled'),data.version_manager_enabled?true:'WARN')),
+				row(_('Selected slot'),E('code',{'id':'dae-selected-slot'},data.selected_slot||'system')),
+				row(_('Last-good slot'),E('code',{'id':'dae-last-good-slot'},data.last_good_slot||'system')),
+				row(_('Running binary'),E('code',{'id':'dae-running-binary'},data.running_binary||'-')),
 				row(_('Configuration'),E('code',{},data.config_file||'/etc/dae/config.dae')),
 				row(_('Discovered .dae files'),E('span',{'id':'dae-files'},String(data.config_files||0))),
 				row(_('Validation'),E('span',{'id':'dae-config'},dae.badge(data.config_valid?_('Valid'):_('Invalid'),!!data.config_valid))),
