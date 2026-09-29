@@ -25,7 +25,9 @@
           "native_routing_trace",
           "native_operation_get",
           "native_group_get",
-          "native_flow_get"
+          "native_flow_get",
+          "version_status",
+          "version_releases"
         ],
         "uci": [
           "get"
@@ -47,7 +49,10 @@
           "update_geodata",
           "set_native_token",
           "clear_native_token",
-          "native_probe_start"
+          "native_probe_start",
+          "version_download",
+          "version_switch",
+          "version_delete"
         ],
         "uci": [
           "set",
