@@ -1430,7 +1430,7 @@ function vm_install_release(s, tag, asset) {
 		};
 	}
 
-	let slot = replace(tag + '-' + binary_name, /[^A-Za-z0-9._-]/g, '_');
+	let slot = replace(tag + '-' + binary_name + '-' + substr(actual, 0, 12), /[^A-Za-z0-9._-]/g, '_');
 	if (!vm_safe_slot(slot)) {
 		run('rm -rf ' + shell_quote(tmp));
 		return { ok: false, error: 'Unable to derive a safe version slot' };
@@ -1444,8 +1444,21 @@ function vm_install_release(s, tag, asset) {
 		return { ok: false, error: 'Unable to create version slot', output: inst.output };
 	}
 
-	if (stat(target))
-		run('cp -p ' + shell_quote(target) + ' ' + shell_quote(dir + '/dae.previous') + ' 2>/dev/null');
+	if (stat(target)) {
+		let installed_sha = trim(run("sha256sum " + shell_quote(target) + " 2>/dev/null | awk '{print $1}'").output);
+		if (installed_sha == actual) {
+			run('rm -rf ' + shell_quote(tmp));
+			return {
+				ok: true,
+				slot: slot,
+				path: target,
+				version: smoke.version,
+				sha256: actual,
+				config_file: cfg,
+				message: 'This exact verified release is already installed'
+			};
+		}
+	}
 
 	let mv = run('mv -f ' + shell_quote(candidate) + ' ' + shell_quote(target) + ' && chmod 755 ' + shell_quote(target));
 	if (mv.rc != 0) {
