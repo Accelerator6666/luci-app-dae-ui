@@ -2,8 +2,10 @@
 'require view';
 'require poll';
 'require dom';
+'require ui';
 'require daeui.common as dae';
 'require daeui.native as native';
+'require daeui.flowtrace as flowtrace';
 
 function flatten(data) {
 	var out = [];
@@ -23,7 +25,7 @@ function processName(c) {
 	return c.pname || c.process || c.process_name || '-';
 }
 
-function buildGrid(rows) {
+function buildGrid(rows, canOpenFlow, flowHandler) {
 	return native.dataGrid(rows, {
 		searchPlaceholder: _('Search source, target, outbound or process…'),
 		pageSize: 50,
@@ -34,7 +36,7 @@ function buildGrid(rows) {
 		],
 		search: function(c) {
 			return [
-				c.src, target(c), c.outbound, processName(c), c.state, c.id
+				c.src, target(c), c.outbound, processName(c), c.state, c.id, c.flow_id, c.rule_id, c.rule_expression
 			].join(' ');
 		},
 		columns: [
@@ -45,7 +47,14 @@ function buildGrid(rows) {
 			{ key:'outbound', title:_('Outbound'), value:function(c){ return native.text(c.outbound, ''); } },
 			{ key:'process', title:_('Process'), value:processName },
 			{ key:'up', title:_('Upload'), numeric:true, value:function(c){ return Number(c.upload_bytes_per_second || 0); }, render:function(c){ return native.humanRate(c.upload_bytes_per_second); } },
-			{ key:'down', title:_('Download'), numeric:true, value:function(c){ return Number(c.download_bytes_per_second || 0); }, render:function(c){ return native.humanRate(c.download_bytes_per_second); } }
+			{ key:'down', title:_('Download'), numeric:true, value:function(c){ return Number(c.download_bytes_per_second || 0); }, render:function(c){ return native.humanRate(c.download_bytes_per_second); } },
+			{ key:'trace', title:_('Flow trace'), sortable:false, value:function(){return '';}, render:function(c) {
+				if(!canOpenFlow || !c.flow_id) return '-';
+				return E('button',{
+					'class':'btn cbi-button cbi-button-action',
+					'click':function(){return flowHandler(c);}
+				},_('Timeline'));
+			} }
 		]
 	});
 }
@@ -77,9 +86,61 @@ return view.extend({
 		}.bind(this));
 	},
 
+	viewConnectionFlow:function(connection) {
+		if(!connection||!connection.flow_id) return;
+		ui.showModal(_('Flow trace'),[
+			E('p',{'class':'spinning'},_('Loading retained flow detail for this connection…'))
+		]);
+
+		var tasks=[
+			dae.callNativeFlowGet(String(connection.flow_id)).then(native.parse)
+		];
+		if(this.canResolveRule)
+			tasks.push(dae.callNativeApiGet('rules').then(native.parse));
+		else
+			tasks.push(Promise.resolve(null));
+
+		return Promise.all(tasks).then(function(v){
+			var detail=v[0];
+			var rulesResult=v[1];
+			if(!detail.ok) {
+				ui.showModal(_('Flow trace'),[
+					native.errorBox(detail),
+					E('div',{'class':'right'},E('button',{'class':'btn','click':ui.hideModal},_('Close')))
+				]);
+				return;
+			}
+			var rules=rulesResult&&rulesResult.ok?rulesResult.data:null;
+			var data=detail.data||{};
+
+			ui.showModal(_('Flow trace · ')+native.text(data.id),[
+				E('div',{'style':'max-height:72vh;overflow:auto;padding-right:6px'},[
+					E('div',{'class':'alert-message notice'},[
+						_('Opened from connection '),E('code',{},native.text(connection.id)),
+						_('. The backend-provided flow_id is authoritative; this UI does not fabricate a flow for unrecorded connections.')
+					]),
+					flowtrace.summaryNode(data,rules),
+					rulesResult&&!rulesResult.ok?E('div',{'class':'alert-message notice'},[
+						_('The flow trace is available, but the current rule dictionary could not be loaded: '),
+						rulesResult.error
+					]):null,
+					E('h3',{},_('Retained trace timeline')),
+					flowtrace.traceNode(data,rules),
+					E('details',{'style':'margin-top:12px'},[
+						E('summary',{},_('Raw flow detail')),
+						E('pre',{'style':'white-space:pre-wrap;max-height:420px;overflow:auto'},JSON.stringify(data,null,2))
+					])
+				]),
+				E('div',{'class':'right','style':'margin-top:12px'},E('button',{'class':'btn','click':ui.hideModal},_('Close')))
+			]);
+		});
+	},
+
 	render: function(data) {
 		var status = data.status || {};
 		var available = status.resources && status.resources.connections === true;
+		this.canOpenFlow=!!(status.resources&&status.resources.flows===true);
+		this.canResolveRule=!!(status.resources&&status.resources.rules===true);
 
 		if (!available) {
 			return E([], [
@@ -95,12 +156,12 @@ return view.extend({
 			]);
 		}
 
-		this.grid = buildGrid(flatten(data.resource.data));
+		this.grid = buildGrid(flatten(data.resource.data),this.canOpenFlow,this.viewConnectionFlow.bind(this));
 		poll.add(L.bind(this.refresh, this), 3);
 
 		return E([], [
 			E('h2', {}, _('Native Connections')),
-			E('div', { 'class':'cbi-map-descr' }, _('Read-only connection snapshot. Search, filters, sorting and paging are handled locally within a backend snapshot of up to 1000 connections.')),
+			E('div', { 'class':'cbi-map-descr' }, _('Read-only connection snapshot. When the backend records a flow_id, Timeline opens that exact retained causal trace; connections without a recorded flow remain unlinked.')),
 			E('div', { 'id':'native-connections-meta', 'class':'cbi-map-descr' }, meta(data.resource.data)),
 			E('div', { 'id':'native-connections' }, this.grid.node)
 		]);
