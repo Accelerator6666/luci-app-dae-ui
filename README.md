@@ -12,7 +12,7 @@ This package must be useful **today** with normal dae installations. It therefor
 
 When dae implements the shared daeuniverse native API contract, the Native API page becomes the integration point for connections, DNS telemetry, policy selection, route traces, activity history and other runtime resources.
 
-## v0.10.0
+## v0.11.0
 
 - Live Overview with process, memory, version, config validation, discovered config-file count and eBPF interface state.
 - Runtime Dashboard with 2-second polling for process CPU, memory, process uptime, socket FDs and `dae0`/`dae0peer` interface counters.
@@ -71,6 +71,16 @@ When dae implements the shared daeuniverse native API contract, the Native API p
   - Direct members are split into explicit member-ID batches using `max_members_per_job` and `max_results_per_job`.
   - Batches run sequentially; the next operation is not submitted until the previous operation reaches a terminal state.
   - Partial results remain visible if a later batch fails.
+- Added a reusable **Retained Flow Trace Timeline** renderer.
+  - Flow detail is read only from the fixed `GET /api/v1/flows/{flow_id}` path.
+  - Timeline steps are sorted by `seq` and render the full causal chain: input, traffic/DNS route evaluation, datapath action, dial mode, DNS evidence, reroute decision, outbound selection and connection milestones.
+  - Every step preserves `observed_at`, `elapsed_us`, `generation_id` and evidence type, with raw step JSON available under a disclosure panel.
+  - Route steps render the backend's rule-evaluation list; outbound steps render nested selection-path candidates, eligibility, latency, score and selected state when retained.
+  - Trace status and missing-evidence reasons remain visible for partial/disabled traces instead of presenting them as complete.
+- Added **Connections → Flow Timeline** drill-down.
+  - A connection gets a Timeline action only when the backend returned a real `flow_id`.
+  - The UI never manufactures a flow ID for an unrecorded live connection.
+  - The same generation-safe traffic-rule links are reused inside connection-launched timelines.
 - Added generation-safe **Flow → Rule** association.
   - Clicking a flow rule ID reads the retained flow detail and current rule dictionary.
   - The UI requires a retained `route` step with `chain=traffic`, the same `rule_id`, and a non-null `generation_id`.
@@ -96,10 +106,10 @@ Copy the project into an OpenWrt build tree as a package, or install the package
 
 They can be changed under **Services → DAE → Settings**.
 
-## Planned v0.11
+## Planned v0.12
 
 - Probe presets for HTTP/DNS targets with clearer backend-advertised timeout/rate-limit guidance.
-- Flow detail view with the full retained trace timeline and rule/source drill-down.
+- DNS rule dictionary and generation-safe DNS-route drill-down when the backend reports `dns_rules`.
 - GeoData pin refresh automation tied to dae upstream changes.
 - Better protocol-aware structured node/subscription forms while preserving raw DAE syntax.
 
