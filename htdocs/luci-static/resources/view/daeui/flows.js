@@ -88,18 +88,18 @@ return view.extend({
 
 	loadFlowContext:function(flow) {
 		var tasks=[
-			dae.callNativeFlowGet(String(flow.id)).then(native.parse)
+			dae.callNativeFlowGet(String(flow.id)).then(native.parse),
+			this.canResolveRule ? dae.callNativeApiGet('rules').then(native.parse) : Promise.resolve(null),
+			this.canResolveDnsRule ? dae.callNativeApiGet('dns_rules').then(native.parse) : Promise.resolve(null)
 		];
-		if(this.canResolveRule)
-			tasks.push(dae.callNativeApiGet('rules').then(native.parse));
-		else
-			tasks.push(Promise.resolve(null));
 
 		return Promise.all(tasks).then(function(v){
 			return {
 				detail:v[0],
 				rules:v[1]&&v[1].ok?v[1].data:null,
-				rulesError:v[1]&&!v[1].ok?v[1]:null
+				rulesError:v[1]&&!v[1].ok?v[1]:null,
+				dnsRules:v[2]&&v[2].ok?v[2].data:null,
+				dnsRulesError:v[2]&&!v[2].ok?v[2]:null
 			};
 		});
 	},
@@ -121,14 +121,18 @@ return view.extend({
 
 			var detail=ctx.detail.data||{};
 			var body=E('div',{'style':'max-height:72vh;overflow:auto;padding-right:6px'},[
-				flowtrace.summaryNode(detail,ctx.rules),
+				flowtrace.summaryNode(detail,{traffic:ctx.rules,dns:ctx.dnsRules}),
 				ctx.rulesError?E('div',{'class':'alert-message notice'},[
-					_('The flow trace is available, but the current rule dictionary could not be loaded: '),
+					_('The flow trace is available, but the current traffic rule dictionary could not be loaded: '),
 					ctx.rulesError.error
 				]):null,
+				ctx.dnsRulesError?E('div',{'class':'alert-message notice'},[
+					_('The flow trace is available, but the current DNS rule dictionary could not be loaded: '),
+					ctx.dnsRulesError.error
+				]):null,
 				E('h3',{},_('Retained trace timeline')),
-				E('div',{'class':'cbi-map-descr'},_('Steps are ordered by seq. Generation IDs belong to the recorded evidence; traffic rule links are shown only when the step generation exactly matches the currently loaded rule dictionary.')),
-				flowtrace.traceNode(detail,ctx.rules),
+				E('div',{'class':'cbi-map-descr'},_('Steps are ordered by seq. Generation IDs belong to the recorded evidence. traffic and dns_upstream steps use the traffic rule dictionary; dns_request and dns_response use the DNS rule dictionary. Links appear only on an exact generation match.')),
+				flowtrace.traceNode(detail,{traffic:ctx.rules,dns:ctx.dnsRules}),
 				E('details',{'style':'margin-top:12px'},[
 					E('summary',{},_('Raw flow detail')),
 					E('pre',{'style':'white-space:pre-wrap;max-height:420px;overflow:auto'},JSON.stringify(detail,null,2))
@@ -242,6 +246,7 @@ return view.extend({
 		var status=data.status||{};
 		var available=status.resources&&status.resources.flows===true;
 		this.canResolveRule=!!(status.resources&&status.resources.rules===true);
+		this.canResolveDnsRule=!!(status.resources&&status.resources.dns_rules===true);
 
 		if(!available)
 			return E([], [ E('h2',{},_('Native Flows')), native.unavailable(status,'flows') ]);
@@ -264,7 +269,7 @@ return view.extend({
 
 		return E([],[
 			E('h2',{},_('Native Flows')),
-			E('div',{'class':'cbi-map-descr'},_('Read-only retained flow summaries. Timeline opens the recorded causal trace. Rule links are generation-safe and never join a historical flow to a different current routing generation.')),
+			E('div',{'class':'cbi-map-descr'},_('Read-only retained flow summaries. Timeline opens the recorded causal trace. Traffic and DNS rule links are generation-safe and never join historical evidence to a different current routing generation.')),
 			info,
 			this.loader.node,
 			this.grid.node
