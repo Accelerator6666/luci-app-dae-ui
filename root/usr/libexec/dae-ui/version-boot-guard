@@ -36,7 +36,11 @@ capture_system() {
 	mkdir -p "$ROOT/system" || return 1
 
 	resolved="$(readlink -f "$PUBLIC" 2>/dev/null)"
-	[ "$resolved" = "$RUNNER" ] && return 0
+	if [ "$resolved" = "$RUNNER" ]; then
+		[ -x "$SYSTEM" ] && return 0
+		log "managed runner is installed but the system fallback slot is missing"
+		return 1
+	fi
 
 	[ -x "$PUBLIC" ] || {
 		[ -x "$SYSTEM" ] && return 0
@@ -44,7 +48,19 @@ capture_system() {
 		return 1
 	}
 
-	tmp="$SYSTEM.new.$$"
+	if [ -x "$SYSTEM" ]; then
+		mkdir -p "$ROOT/system-previous"
+		cp -p "$SYSTEM" "$ROOT/system-previous/dae.new.$" 2>/dev/null && {
+			chmod 755 "$ROOT/system-previous/dae.new.$"
+			mv -f "$ROOT/system-previous/dae.new.$" "$ROOT/system-previous/dae"
+			if [ "$(uci -q get dae-ui.main.last_good_slot)" = "system" ]; then
+				uci -q set dae-ui.main.last_good_slot='system-previous'
+				uci -q commit dae-ui
+			fi
+		}
+	fi
+
+	tmp="$SYSTEM.new.$"
 	if ! cp -L "$PUBLIC" "$tmp"; then
 		rm -f "$tmp"
 		log "failed to copy system dae into managed system slot"
