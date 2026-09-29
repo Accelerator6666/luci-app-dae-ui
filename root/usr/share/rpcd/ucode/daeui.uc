@@ -1710,7 +1710,11 @@ return {
 					config_files: length(config_files(s)),
 					process_uptime: process_uptime(p),
 					interfaces: trim(run('ip -brief link show 2>/dev/null').output),
-					default_route: trim(run('ip route show default 2>/dev/null').output)
+					default_route: trim(run('ip route show default 2>/dev/null').output),
+					version_manager_enabled: vm_enabled(),
+					selected_slot: vm_selected(),
+					last_good_slot: vm_last_good(),
+					running_binary: p ? trim(run('readlink -f /proc/' + p + '/exe 2>/dev/null').output) : ''
 				};
 			}
 		},
