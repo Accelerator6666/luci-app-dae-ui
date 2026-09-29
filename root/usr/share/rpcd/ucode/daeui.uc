@@ -7,8 +7,9 @@ import { cursor } from 'uci';
 function settings() {
 	let u = cursor();
 	if (u) u.load('dae-ui');
+	let managed = u && u.get('dae-ui', 'main', 'version_manager_enabled');
 	return {
-		binary: (u && u.get('dae-ui', 'main', 'binary')) || '/usr/bin/dae',
+		binary: managed == '1' ? '/usr/bin/dae' : ((u && u.get('dae-ui', 'main', 'binary')) || '/usr/bin/dae'),
 		init: (u && u.get('dae-ui', 'main', 'init')) || '/etc/init.d/dae',
 		config: (u && u.get('dae-ui', 'main', 'config_file')) || '/etc/dae/config.dae',
 		log: (u && u.get('dae-ui', 'main', 'log_file')) || '/var/log/dae/dae.log',
