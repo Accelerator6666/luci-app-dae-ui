@@ -38,7 +38,7 @@ function kv(rows) {
 	return E('div', { 'class':'table' }, (rows || []).map(function(row) {
 		return E('div', { 'class':'tr' }, [
 			E('div', { 'class':'td left', 'style':'width:180px;font-weight:600' }, row[0]),
-			E('div', { 'class':'td left' }, row[1] instanceof Node ? row[1] : valueText(row[1]))
+			E('div', { 'class':'td left' }, row[1] && typeof row[1] === 'object' && row[1].nodeType ? row[1] : valueText(row[1]))
 		]);
 	}));
 }
