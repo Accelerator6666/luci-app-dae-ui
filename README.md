@@ -12,7 +12,7 @@ This package must be useful **today** with normal dae installations. It therefor
 
 When dae implements the shared daeuniverse native API contract, the Native API page becomes the integration point for connections, DNS telemetry, policy selection, route traces, activity history and other runtime resources.
 
-## v0.11.0
+## v0.12.0
 
 - Live Overview with process, memory, version, config validation, discovered config-file count and eBPF interface state.
 - Runtime Dashboard with 2-second polling for process CPU, memory, process uptime, socket FDs and `dae0`/`dae0peer` interface counters.
@@ -56,6 +56,12 @@ When dae implements the shared daeuniverse native API contract, the Native API p
 - Validation output is parsed for safe `*.dae:line:column` locations. Save failures and Diagnostics can link directly to **Configuration Files**, select the source file and scroll the local editor to the reported line.
 - Config Sources, All Sections, and existing structured-section views now link source labels back to their actual `.dae` files.
 - Added a capability-gated **Native Rule Dictionary** backed by `GET /api/v1/rules`.
+- Added a capability-gated **Native DNS Rule Dictionary** backed by `GET /api/v1/dns/rules`.
+  - Request and response rules are displayed separately in evaluation order, including the backend-reported fallback entries.
+  - Request actions expose `upstream / asis / reject`; response actions expose `accept / reject / requery`, with resolved upstream names when applicable.
+  - DNS rule source navigation follows the same safe source-ID model as traffic rules: `source_id → GET /api/v1/config → exact local .dae path`; the display-only source file label is never used as a file-access path.
+  - Generation-qualified links can open an exact request/response DNS rule only when the requested generation matches the currently loaded complete DNS dictionary.
+
   - Rules are tied to the running `generation_id` and displayed with rule ID, evaluation index, kind, expression, outbound, must flag and source metadata.
   - Rule source navigation never treats the rule's display-only `file` label as a local path.
   - The UI joins `rule.source.source_id` to `GET /api/v1/config`, then links into the local editor only if that Native source path exactly matches a locally discovered `.dae` file.
@@ -71,6 +77,13 @@ When dae implements the shared daeuniverse native API contract, the Native API p
   - Direct members are split into explicit member-ID batches using `max_members_per_job` and `max_results_per_job`.
   - Batches run sequentially; the next operation is not submitted until the previous operation reaches a terminal state.
   - Partial results remain visible if a later batch fails.
+- Flow timelines now resolve all routing chains with the correct dictionary:
+  - `traffic` → traffic Rules Dictionary;
+  - `dns_upstream` → traffic Rules Dictionary, because upstream transport routing uses traffic routing inputs;
+  - `dns_request` → DNS request rules;
+  - `dns_response` → DNS response rules.
+  - Both the winning route rule and every retained rule-evaluation row become links only when the step's `generation_id` exactly matches the corresponding current dictionary.
+  - DNS route steps also expose `dns_action` and DNS evidence shows `route_evaluation_ids` so a recorded lookup can be related back to its retained routing evaluations.
 - Added a reusable **Retained Flow Trace Timeline** renderer.
   - Flow detail is read only from the fixed `GET /api/v1/flows/{flow_id}` path.
   - Timeline steps are sorted by `seq` and render the full causal chain: input, traffic/DNS route evaluation, datapath action, dial mode, DNS evidence, reroute decision, outbound selection and connection milestones.
@@ -90,7 +103,7 @@ When dae implements the shared daeuniverse native API contract, the Native API p
 - Added capability-gated **Native Diagnostics**:
   - DNS Query uses the standard read-only `GET /api/v1/dns/query` with a typed query whitelist and visible request preview.
   - Routing Trace uses only `POST /api/v1/routing/trace`, constructing a bounded `RoutingTraceRequest` server-side. The UI labels the result as a hypothetical simulation, never a recorded flow.
-  - No connection close, policy mutation, DNS cache delete/flush, config write, probe start, or arbitrary Native API POST is exposed.
+  - No connection close, policy mutation, DNS cache delete/flush, config write, or arbitrary Native API POST is exposed. Probe operations remain isolated to the dedicated capability-bounded probe workflow.
 - Configurable dae binary, init script, config path and log path through UCI.
 
 ## Install for development
@@ -106,10 +119,10 @@ Copy the project into an OpenWrt build tree as a package, or install the package
 
 They can be changed under **Services → DAE → Settings**.
 
-## Planned v0.12
+## Planned v0.13
 
 - Probe presets for HTTP/DNS targets with clearer backend-advertised timeout/rate-limit guidance.
-- DNS rule dictionary and generation-safe DNS-route drill-down when the backend reports `dns_rules`.
+- A dedicated Flow detail page URL so deep links survive modal close/reload and can be shared within the LuCI session.
 - GeoData pin refresh automation tied to dae upstream changes.
 - Better protocol-aware structured node/subscription forms while preserving raw DAE syntax.
 
