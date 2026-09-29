@@ -93,16 +93,15 @@ return view.extend({
 		]);
 
 		var tasks=[
-			dae.callNativeFlowGet(String(connection.flow_id)).then(native.parse)
+			dae.callNativeFlowGet(String(connection.flow_id)).then(native.parse),
+			this.canResolveRule ? dae.callNativeApiGet('rules').then(native.parse) : Promise.resolve(null),
+			this.canResolveDnsRule ? dae.callNativeApiGet('dns_rules').then(native.parse) : Promise.resolve(null)
 		];
-		if(this.canResolveRule)
-			tasks.push(dae.callNativeApiGet('rules').then(native.parse));
-		else
-			tasks.push(Promise.resolve(null));
 
 		return Promise.all(tasks).then(function(v){
 			var detail=v[0];
 			var rulesResult=v[1];
+			var dnsRulesResult=v[2];
 			if(!detail.ok) {
 				ui.showModal(_('Flow trace'),[
 					native.errorBox(detail),
@@ -111,6 +110,7 @@ return view.extend({
 				return;
 			}
 			var rules=rulesResult&&rulesResult.ok?rulesResult.data:null;
+			var dnsRules=dnsRulesResult&&dnsRulesResult.ok?dnsRulesResult.data:null;
 			var data=detail.data||{};
 
 			ui.showModal(_('Flow trace · ')+native.text(data.id),[
@@ -119,13 +119,17 @@ return view.extend({
 						_('Opened from connection '),E('code',{},native.text(connection.id)),
 						_('. The backend-provided flow_id is authoritative; this UI does not fabricate a flow for unrecorded connections.')
 					]),
-					flowtrace.summaryNode(data,rules),
+					flowtrace.summaryNode(data,{traffic:rules,dns:dnsRules}),
 					rulesResult&&!rulesResult.ok?E('div',{'class':'alert-message notice'},[
-						_('The flow trace is available, but the current rule dictionary could not be loaded: '),
+						_('The flow trace is available, but the current traffic rule dictionary could not be loaded: '),
 						rulesResult.error
 					]):null,
+					dnsRulesResult&&!dnsRulesResult.ok?E('div',{'class':'alert-message notice'},[
+						_('The flow trace is available, but the current DNS rule dictionary could not be loaded: '),
+						dnsRulesResult.error
+					]):null,
 					E('h3',{},_('Retained trace timeline')),
-					flowtrace.traceNode(data,rules),
+					flowtrace.traceNode(data,{traffic:rules,dns:dnsRules}),
 					E('details',{'style':'margin-top:12px'},[
 						E('summary',{},_('Raw flow detail')),
 						E('pre',{'style':'white-space:pre-wrap;max-height:420px;overflow:auto'},JSON.stringify(data,null,2))
@@ -141,6 +145,7 @@ return view.extend({
 		var available = status.resources && status.resources.connections === true;
 		this.canOpenFlow=!!(status.resources&&status.resources.flows===true);
 		this.canResolveRule=!!(status.resources&&status.resources.rules===true);
+		this.canResolveDnsRule=!!(status.resources&&status.resources.dns_rules===true);
 
 		if (!available) {
 			return E([], [
