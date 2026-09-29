@@ -22,6 +22,7 @@ function resourceRows(data) {
 		[ 'probes', _('Node probes / latency') ],
 		[ 'operations', _('Operations') ],
 		[ 'rules', _('Routing rules') ],
+		[ 'dns_rules', _('DNS routing rules') ],
 		[ 'connections', _('Connections') ],
 		[ 'flows', _('Flows') ],
 		[ 'routing_trace', _('Routing trace') ],
