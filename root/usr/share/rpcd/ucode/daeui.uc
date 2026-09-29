@@ -810,6 +810,7 @@ function native_resource_path(kind) {
 		flows: '/api/v1/flows',
 		config: '/api/v1/config',
 		rules: '/api/v1/rules',
+		dns_rules: '/api/v1/dns/rules',
 		dns_cache: '/api/v1/dns/cache',
 		dns_log: '/api/v1/dns/log'
 	};
@@ -1204,6 +1205,7 @@ function native_api_status(s) {
 			flows: capability_available(cap_body, 'flows'),
 			routing_trace: capability_available(cap_body, 'routing_trace'),
 			dns_query: capability_available(cap_body, 'dns_query'),
+			dns_rules: capability_available(cap_body, 'dns_rules'),
 			dns_cache: capability_available(cap_body, 'dns_cache'),
 			dns_log: capability_available(cap_body, 'dns_log')
 		}
