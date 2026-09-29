@@ -1144,6 +1144,466 @@ function probe_member_ids(group, raw) {
 	return members;
 }
 
+
+function vm_root() {
+	return '/usr/lib/dae-ui/versions';
+}
+
+function vm_runner() {
+	return '/usr/libexec/dae-ui/dae-runner';
+}
+
+function vm_guard() {
+	return '/usr/libexec/dae-ui/version-boot-guard';
+}
+
+function vm_safe_slot(slot) {
+	return !!slot && length(slot) <= 128 && !!match(slot, /^[A-Za-z0-9._-]+$/);
+}
+
+function vm_slot_path(slot) {
+	return vm_safe_slot(slot) ? vm_root() + '/' + slot + '/dae' : '';
+}
+
+function vm_service_config(s) {
+	let u = cursor();
+	let cfg = '';
+	if (u) {
+		u.load('dae');
+		cfg = u.get('dae', 'config', 'config_file') || '';
+	}
+	return cfg || s.config || '/etc/dae/config.dae';
+}
+
+function vm_service_enabled() {
+	let u = cursor();
+	if (!u) return false;
+	u.load('dae');
+	let v = u.get('dae', 'config', 'enabled');
+	return v == '1' || v == 1 || v === true;
+}
+
+function vm_option(name, def) {
+	let u = cursor();
+	if (!u) return def;
+	u.load('dae-ui');
+	let v = u.get('dae-ui', 'main', name);
+	return v === null || v === undefined || v === '' ? def : v;
+}
+
+function vm_enabled() {
+	let v = vm_option('version_manager_enabled', '0');
+	return v == '1' || v == 1 || v === true;
+}
+
+function vm_selected() {
+	let v = vm_option('selected_slot', 'system');
+	return vm_safe_slot(v) ? v : 'system';
+}
+
+function vm_last_good() {
+	let v = vm_option('last_good_slot', 'system');
+	return vm_safe_slot(v) ? v : 'system';
+}
+
+function vm_set_selection(slot, last_good, enabled) {
+	if (!vm_safe_slot(slot) || !vm_safe_slot(last_good))
+		return { ok: false, error: 'Invalid version slot' };
+
+	let cmd =
+		"uci -q get dae-ui.main >/dev/null 2>&1 || uci -q set dae-ui.main=main; " +
+		"uci -q set dae-ui.main.version_manager_enabled=" + shell_quote(enabled ? '1' : '0') + "; " +
+		"uci -q set dae-ui.main.selected_slot=" + shell_quote(slot) + "; " +
+		"uci -q set dae-ui.main.last_good_slot=" + shell_quote(last_good) + "; " +
+		"uci -q set dae-ui.main.binary='/usr/bin/dae'; " +
+		"uci -q commit dae-ui";
+	let r = run(cmd);
+	return { ok: r.rc == 0, output: r.output };
+}
+
+function vm_slot_info(s, slot) {
+	if (!vm_safe_slot(slot)) return null;
+	let path = vm_slot_path(slot);
+	let st = stat(path);
+	if (!st) return null;
+
+	let ver = version(path);
+	let sha = trim(run('sha256sum ' + shell_quote(path) + " 2>/dev/null | awk '{print $1}'").output);
+	return {
+		slot: slot,
+		path: path,
+		version: ver,
+		sha256: sha,
+		size: st.size || 0,
+		selected: slot == vm_selected(),
+		last_good: slot == vm_last_good(),
+		system: slot == 'system'
+	};
+}
+
+function vm_slots(s) {
+	let root = vm_root();
+	let r = run('find ' + shell_quote(root) + " -maxdepth 2 -type f -name dae 2>/dev/null | sort");
+	let out = [];
+	for (let idx, path in split(trim(r.output), '\n')) {
+		if (!path || substr(path, 0, length(root) + 1) != root + '/') continue;
+		let rel = substr(path, length(root) + 1);
+		let parts = split(rel, '/');
+		if (length(parts) != 2 || parts[1] != 'dae' || !vm_safe_slot(parts[0])) continue;
+		let info = vm_slot_info(s, parts[0]);
+		if (info) push(out, info);
+	}
+	return out;
+}
+
+function vm_arch_assets() {
+	let arch = trim(run('uname -m').output);
+	let names = [];
+	if (arch == 'x86_64' || arch == 'amd64') {
+		names = [
+			'dae-linux-x86_64.zip',
+			'dae-linux-x86_64_v2_sse.zip',
+			'dae-linux-x86_64_v3_avx2.zip'
+		];
+	} else if (arch == 'aarch64' || arch == 'arm64') {
+		names = [ 'dae-linux-arm64.zip' ];
+	} else if (match(arch, /^armv7/)) {
+		names = [ 'dae-linux-armv7.zip' ];
+	} else if (match(arch, /^armv6/)) {
+		names = [ 'dae-linux-armv6.zip' ];
+	} else if (match(arch, /^armv5/)) {
+		names = [ 'dae-linux-armv5.zip' ];
+	} else if (match(arch, /^(i[3-6]86|x86)$/)) {
+		names = [ 'dae-linux-x86_32.zip' ];
+	} else if (arch == 'mips64el' || arch == 'mips64le') {
+		names = [ 'dae-linux-mips64le.zip' ];
+	} else if (arch == 'mips64') {
+		names = [ 'dae-linux-mips64.zip' ];
+	} else if (arch == 'mipsel' || arch == 'mipsle') {
+		names = [ 'dae-linux-mips32le.zip' ];
+	} else if (arch == 'mips') {
+		names = [ 'dae-linux-mips32.zip' ];
+	} else if (arch == 'riscv64') {
+		names = [
+			'dae-linux-riscv64.zip',
+			'dae-linux-riscv64_rva20u64.zip',
+			'dae-linux-riscv64_rva22u64.zip',
+			'dae-linux-riscv64_rva23u64.zip'
+		];
+	} else if (arch == 'loongarch64' || arch == 'loong64') {
+		names = [ 'dae-linux-loongarch64.zip' ];
+	} else if (arch == 'ppc64le') {
+		names = [ 'dae-linux-powerpc64le.zip' ];
+	} else if (arch == 'ppc64') {
+		names = [ 'dae-linux-powerpc64.zip' ];
+	} else if (arch == 's390x') {
+		names = [ 'dae-linux-s390x.zip' ];
+	}
+	return { arch: arch, assets: names };
+}
+
+function vm_allowed_asset(name) {
+	if (!name || length(name) > 128 || !match(name, /^dae-[A-Za-z0-9._-]+\.zip$/))
+		return false;
+	let p = vm_arch_assets();
+	return array_has(p.assets, name);
+}
+
+function vm_release_list() {
+	let platform = vm_arch_assets();
+	let r = run(
+		"curl --fail --location --silent --show-error --connect-timeout 8 --max-time 20 " +
+		"-H 'Accept: application/vnd.github+json' -H 'User-Agent: luci-app-dae-ui' " +
+		"'https://api.github.com/repos/daeuniverse/dae/releases?per_page=20'"
+	);
+	if (r.rc != 0)
+		return { ok: false, error: 'Unable to query dae GitHub releases', output: r.output, arch: platform.arch, assets: platform.assets };
+
+	let data = parse_json_safe(r.output);
+	if (type(data) != 'array')
+		return { ok: false, error: 'GitHub returned invalid release JSON', arch: platform.arch, assets: platform.assets };
+
+	let releases = [];
+	for (let ridx, rel in data) {
+		if (!rel || rel.draft === true) continue;
+		let tag = rel.tag_name || '';
+		if (!match(tag, /^[A-Za-z0-9._-]+$/) || length(tag) > 80) continue;
+
+		let assets = [];
+		for (let aidx, asset in (rel.assets || [])) {
+			let name = asset && asset.name || '';
+			if (!vm_allowed_asset(name)) continue;
+			push(assets, {
+				name: name,
+				size: asset.size || 0,
+				digest: asset.digest || '',
+				download_count: asset.download_count || 0
+			});
+		}
+		if (!length(assets)) continue;
+
+		push(releases, {
+			tag: tag,
+			name: rel.name || tag,
+			prerelease: rel.prerelease === true,
+			published_at: rel.published_at || '',
+			assets: assets
+		});
+	}
+	return { ok: true, arch: platform.arch, allowed_assets: platform.assets, releases: releases };
+}
+
+function vm_candidate_version(path) {
+	let r = run(shell_quote(path) + ' --version');
+	if (r.rc != 0 || !trim(r.output))
+		r = run(shell_quote(path) + ' version');
+	return { ok: r.rc == 0 && !!trim(r.output), version: trim(split(r.output || '', '\n')[0] || ''), output: r.output };
+}
+
+function vm_install_release(s, tag, asset) {
+	if (!match(tag || '', /^[A-Za-z0-9._-]+$/) || length(tag) > 80)
+		return { ok: false, error: 'Invalid release tag' };
+	if (!vm_allowed_asset(asset))
+		return { ok: false, error: 'Release asset does not match this router architecture' };
+
+	let tmp = '/tmp/dae-ui-version-' + pid() + '-' + stamp();
+	let archive = tmp + '/' + asset;
+	let dgst = archive + '.dgst';
+	let url = 'https://github.com/daeuniverse/dae/releases/download/' + tag + '/' + asset;
+	let dgst_url = url + '.dgst';
+
+	let prep = run('mkdir -p ' + shell_quote(tmp));
+	if (prep.rc != 0)
+		return { ok: false, error: 'Unable to create download workspace', output: prep.output };
+
+	let dl = run(
+		'curl --fail --location --silent --show-error --retry 2 --connect-timeout 10 --max-time 180 -o ' +
+		shell_quote(archive) + ' ' + shell_quote(url)
+	);
+	if (dl.rc != 0) {
+		run('rm -rf ' + shell_quote(tmp));
+		return { ok: false, error: 'DAE release download failed', output: dl.output };
+	}
+
+	let sd = run(
+		'curl --fail --location --silent --show-error --retry 2 --connect-timeout 10 --max-time 30 -o ' +
+		shell_quote(dgst) + ' ' + shell_quote(dgst_url)
+	);
+	if (sd.rc != 0) {
+		run('rm -rf ' + shell_quote(tmp));
+		return { ok: false, error: 'Release digest download failed; installation aborted', output: sd.output };
+	}
+
+	let expected = trim(run("awk '$NF==\"sha256\" {print $1; exit}' " + shell_quote(dgst)).output);
+	let actual = trim(run("sha256sum " + shell_quote(archive) + " | awk '{print $1}'").output);
+	if (!match(expected, /^[A-Fa-f0-9]{64}$/) || expected != actual) {
+		run('rm -rf ' + shell_quote(tmp));
+		return { ok: false, error: 'Release SHA256 verification failed', expected: expected, actual: actual };
+	}
+
+	let binary_name = replace(asset, /\.zip$/, '');
+	let candidate = tmp + '/dae';
+	let ex = run('unzip -p ' + shell_quote(archive) + ' ' + shell_quote(binary_name) + ' > ' + shell_quote(candidate));
+	if (ex.rc != 0) {
+		run('rm -rf ' + shell_quote(tmp));
+		return { ok: false, error: 'Unable to extract dae binary from release archive', output: ex.output };
+	}
+	run('chmod 755 ' + shell_quote(candidate));
+
+	let smoke = vm_candidate_version(candidate);
+	if (!smoke.ok) {
+		run('rm -rf ' + shell_quote(tmp));
+		return { ok: false, error: 'Downloaded dae binary failed the execution smoke test', output: smoke.output };
+	}
+
+	let cfg = vm_service_config(s);
+	let val = validate(candidate, cfg);
+	if (val.rc != 0) {
+		run('rm -rf ' + shell_quote(tmp));
+		return {
+			ok: false,
+			error: 'Downloaded dae version is incompatible with the current service configuration',
+			output: val.output,
+			diagnostics: validation_diagnostics(s, val.output),
+			config_file: cfg
+		};
+	}
+
+	let slot = replace(tag + '-' + binary_name, /[^A-Za-z0-9._-]/g, '_');
+	if (!vm_safe_slot(slot)) {
+		run('rm -rf ' + shell_quote(tmp));
+		return { ok: false, error: 'Unable to derive a safe version slot' };
+	}
+
+	let dir = vm_root() + '/' + slot;
+	let target = dir + '/dae';
+	let inst = run('mkdir -p ' + shell_quote(dir));
+	if (inst.rc != 0) {
+		run('rm -rf ' + shell_quote(tmp));
+		return { ok: false, error: 'Unable to create version slot', output: inst.output };
+	}
+
+	if (stat(target))
+		run('cp -p ' + shell_quote(target) + ' ' + shell_quote(dir + '/dae.previous') + ' 2>/dev/null');
+
+	let mv = run('mv -f ' + shell_quote(candidate) + ' ' + shell_quote(target) + ' && chmod 755 ' + shell_quote(target));
+	if (mv.rc != 0) {
+		run('rm -rf ' + shell_quote(tmp));
+		return { ok: false, error: 'Unable to install dae into version slot', output: mv.output };
+	}
+
+	writefile(dir + '/source.txt',
+		'tag=' + tag + '\nasset=' + asset + '\nsha256=' + actual + '\nversion=' + smoke.version + '\n'
+	);
+	run('chmod 600 ' + shell_quote(dir + '/source.txt'));
+	run('rm -rf ' + shell_quote(tmp));
+
+	return {
+		ok: true,
+		slot: slot,
+		path: target,
+		version: smoke.version,
+		sha256: actual,
+		config_file: cfg,
+		message: 'Release downloaded, SHA256-verified, executed and configuration-validated'
+	};
+}
+
+function vm_switch(s, slot) {
+	if (!vm_safe_slot(slot))
+		return { ok: false, error: 'Invalid version slot' };
+	let candidate = vm_slot_path(slot);
+	if (!stat(candidate))
+		return { ok: false, error: 'Version slot does not exist' };
+
+	let smoke = vm_candidate_version(candidate);
+	if (!smoke.ok)
+		return { ok: false, error: 'Selected dae binary is not executable on this router', output: smoke.output };
+
+	let cfg = vm_service_config(s);
+	let val = validate(candidate, cfg);
+	if (val.rc != 0)
+		return {
+			ok: false,
+			error: 'Selected dae version does not validate the active service configuration',
+			output: val.output,
+			diagnostics: validation_diagnostics(s, val.output),
+			config_file: cfg
+		};
+
+	let previous = vm_enabled() ? vm_selected() : 'system';
+	let previous_good = vm_last_good();
+
+	let prep = run(shell_quote(vm_guard()) + ' prepare');
+	if (prep.rc != 0)
+		return { ok: false, error: 'Unable to install the persistent dae runner', output: prep.output };
+
+	let en = run('/etc/init.d/dae-ui-version enable');
+	if (en.rc != 0)
+		return { ok: false, error: 'Unable to enable the dae version boot guard', output: en.output };
+
+	let set = vm_set_selection(slot, previous_good, true);
+	if (!set.ok)
+		return { ok: false, error: 'Unable to persist selected dae version', output: set.output };
+
+	let service_enabled = vm_service_enabled();
+	let was_running = pid() > 0;
+	if (!service_enabled && !was_running) {
+		return {
+			ok: true,
+			slot: slot,
+			version: smoke.version,
+			config_file: cfg,
+			restarted: false,
+			last_good: previous_good,
+			message: 'Version selected and persisted; dae service is disabled/stopped, so runtime confirmation was deferred'
+		};
+	}
+
+	let rr = run(shell_quote(s.init) + ' restart');
+	run('sleep 2');
+	let p = pid();
+	let actual = p ? trim(run('readlink -f /proc/' + p + '/exe 2>/dev/null').output) : '';
+	if (rr.rc == 0 && p > 0 && actual == candidate) {
+		vm_set_selection(slot, slot, true);
+		return {
+			ok: true,
+			slot: slot,
+			version: smoke.version,
+			config_file: cfg,
+			restarted: true,
+			pid: p,
+			actual_binary: actual,
+			last_good: slot,
+			message: 'Version activated, dae restarted successfully, and this slot is now last-good'
+		};
+	}
+
+	let fallback = vm_safe_slot(previous_good) && stat(vm_slot_path(previous_good)) ? previous_good :
+		(vm_safe_slot(previous) && stat(vm_slot_path(previous)) ? previous : 'system');
+	vm_set_selection(fallback, fallback, true);
+	run(shell_quote(vm_guard()) + ' boot');
+	let rb = run(shell_quote(s.init) + ' restart');
+	run('sleep 2');
+	let rp = pid();
+
+	return {
+		ok: false,
+		error: 'Selected dae version failed runtime restart; automatically rolled back',
+		output: rr.output,
+		rolled_back: true,
+		fallback_slot: fallback,
+		fallback_running: rb.rc == 0 && rp > 0,
+		fallback_pid: rp,
+		config_file: cfg
+	};
+}
+
+function vm_delete(slot) {
+	if (!vm_safe_slot(slot) || slot == 'system')
+		return { ok: false, error: 'The system slot cannot be deleted' };
+	if (slot == vm_selected() || slot == vm_last_good())
+		return { ok: false, error: 'Selected or last-good slot cannot be deleted' };
+	let dir = vm_root() + '/' + slot;
+	if (!stat(dir))
+		return { ok: false, error: 'Version slot not found' };
+	let r = run('rm -rf ' + shell_quote(dir));
+	return { ok: r.rc == 0, error: r.rc == 0 ? '' : 'Unable to delete version slot', output: r.output };
+}
+
+function vm_status(s) {
+	let platform = vm_arch_assets();
+	let p = pid();
+	let actual = p ? trim(run('readlink -f /proc/' + p + '/exe 2>/dev/null').output) : '';
+	let public_target = trim(run('readlink -f /usr/bin/dae 2>/dev/null').output);
+	let boot_error = trim(readfile('/tmp/dae-ui-version-boot-error') || '');
+	let service_cfg = vm_service_config(s);
+
+	return {
+		ok: true,
+		enabled: vm_enabled(),
+		selected_slot: vm_selected(),
+		last_good_slot: vm_last_good(),
+		root: vm_root(),
+		runner: vm_runner(),
+		runner_installed: public_target == vm_runner(),
+		public_binary: '/usr/bin/dae',
+		public_target: public_target,
+		service_config_file: service_cfg,
+		ui_config_file: s.config,
+		config_paths_match: service_cfg == s.config,
+		service_enabled: vm_service_enabled(),
+		running: p > 0,
+		pid: p,
+		running_binary: actual,
+		arch: platform.arch,
+		allowed_assets: platform.assets,
+		boot_error: boot_error,
+		slots: vm_slots(s),
+		system_external_version: !vm_enabled() && stat('/usr/bin/dae') ? version('/usr/bin/dae') : ''
+	};
+}
+
 function native_api_status(s) {
 	let cfg = native_api_config(s);
 	let base = native_probe_url(cfg.listen);
@@ -1569,6 +2029,39 @@ return {
 		clear_native_token: {
 			call: function() {
 				return clear_native_token();
+			}
+		},
+
+		version_status: {
+			call: function() {
+				return vm_status(settings());
+			}
+		},
+
+		version_releases: {
+			call: function() {
+				return vm_release_list();
+			}
+		},
+
+		version_download: {
+			args: { tag: 'string', asset: 'string' },
+			call: function(req) {
+				return vm_install_release(settings(), req.args.tag || '', req.args.asset || '');
+			}
+		},
+
+		version_switch: {
+			args: { slot: 'string' },
+			call: function(req) {
+				return vm_switch(settings(), req.args.slot || '');
+			}
+		},
+
+		version_delete: {
+			args: { slot: 'string' },
+			call: function(req) {
+				return vm_delete(req.args.slot || '');
 			}
 		},
 
