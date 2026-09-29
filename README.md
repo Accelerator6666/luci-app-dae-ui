@@ -12,11 +12,31 @@ This package must be useful **today** with normal dae installations. It therefor
 
 When dae implements the shared daeuniverse native API contract, the Native API page becomes the integration point for connections, DNS telemetry, policy selection, route traces, activity history and other runtime resources.
 
-## v0.12.0
+## v0.13.0
 
 - Live Overview with process, memory, version, config validation, discovered config-file count and eBPF interface state.
 - Runtime Dashboard with 2-second polling for process CPU, memory, process uptime, socket FDs and `dae0`/`dae0peer` interface counters.
 - Start / stop / restart / hot reload / suspend controls.
+- Added a persistent **DAE Version Manager** under **Services → DAE → DAE Versions**.
+  - Keeps each installed binary in an immutable slot below `/usr/lib/dae-ui/versions/<slot>/dae`.
+  - Official releases are discovered from `daeuniverse/dae` only on demand and filtered to assets matching the router architecture.
+  - x86_64 can choose the upstream v1, v2/SSE and v3/AVX2 release assets; unsupported CPU variants are rejected by the execution smoke test before installation.
+  - Downloads are accepted only after a trusted SHA256 from fresh GitHub release metadata or the official `.dgst` asset matches the archive.
+  - The extracted binary must execute successfully and run `dae validate` against the **actual OpenWrt dae service config** before it is installed.
+  - Downloading a version never activates it automatically.
+  - **Activate & Restart** validates again, persists the selected slot, restarts dae and verifies that `/proc/<pid>/exe` points at the requested slot before marking it **last-good**.
+  - A failed runtime restart automatically restores the previous last-good/system slot and restarts dae.
+  - Version switching never moves, rewrites or deletes the user's `.dae` configuration files.
+- Reboot-safe binary selection:
+  - The original package-managed `/usr/bin/dae` is copied into the protected `system` slot before the manager first takes control.
+  - `/usr/bin/dae` then becomes a stable runner that dispatches to the persisted selected slot, so the existing OpenWrt `/etc/init.d/dae` remains unchanged.
+  - `/etc/init.d/dae-ui-version` runs at **START=98**, before the upstream dae service at **START=99**.
+  - On every boot it validates the persisted selected binary against the service configuration; if that fails it tries **last-good**, then the captured **system** binary.
+  - A fallback changes only the selected binary state; it does not roll back or alter configuration text.
+  - If the normal dae package later overwrites `/usr/bin/dae`, the boot guard captures that new package binary as the new `system` slot, preserves the previous system binary in an immutable `system-prev-*` rollback slot, and reinstalls the runner.
+  - Backend validate/reload operations call the selected slot directly, so a package overwrite of `/usr/bin/dae` cannot silently change LuCI's active binary before reboot.
+  - Start/Restart actions repair the runner first when version management is enabled.
+  - Removing luci-app-dae-ui restores the captured system binary to `/usr/bin/dae` when the managed runner still owns that path.
 - Local CodeMirror DAE editor with line numbers, DAE syntax highlighting, bracket matching, auto-close and folding.
 - Include-aware multi-file configuration manager for `.dae` files under the active config directory.
 - Safe configuration writes:
@@ -119,9 +139,9 @@ Copy the project into an OpenWrt build tree as a package, or install the package
 
 They can be changed under **Services → DAE → Settings**.
 
-## Planned v0.13
+## Planned v0.14
 
-- Probe presets for HTTP/DNS targets with clearer backend-advertised timeout/rate-limit guidance.
+- Optional local-binary import for custom dae builds, using the same smoke-test / config-validation / immutable-slot safety model.
 - A dedicated Flow detail page URL so deep links survive modal close/reload and can be shared within the LuCI session.
 - GeoData pin refresh automation tied to dae upstream changes.
 - Better protocol-aware structured node/subscription forms while preserving raw DAE syntax.
