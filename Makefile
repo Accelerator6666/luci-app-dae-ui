@@ -2,12 +2,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-dae-ui
-PKG_VERSION:=0.10.0
+PKG_VERSION:=0.11.0
 PKG_RELEASE:=1
 PKG_LICENSE:=GPL-3.0-only
 
 LUCI_TITLE:=Modern LuCI management UI for dae
-LUCI_DESCRIPTION:=DAE control plane with capability-driven node/group probes, generation-safe flow-rule joins, runtime paging and visual configuration
+LUCI_DESCRIPTION:=DAE control plane with retained causal flow timelines, generation-safe rule drill-down, capability-driven probes and visual configuration
 LUCI_DEPENDS:=+luci-base +rpcd +ucode +uci +jsonfilter +curl
 LUCI_PKGARCH:=all
 
