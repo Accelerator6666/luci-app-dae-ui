@@ -57,7 +57,7 @@ capture_system() {
 		cp -p "$SYSTEM" "$prev_dir/dae.new" 2>/dev/null && {
 			chmod 755 "$prev_dir/dae.new"
 			mv -f "$prev_dir/dae.new" "$prev_dir/dae"
-			if [ "$(uci -q get dae-ui.main.last_good_slot)" = "system" ]; then
+			if [ "$(uci -q get dae-ui.main.selected_slot)" = "system" ] || [ "$(uci -q get dae-ui.main.last_good_slot)" = "system" ]; then
 				uci -q set dae-ui.main.last_good_slot="$prev_slot"
 				uci -q commit dae-ui
 			fi
