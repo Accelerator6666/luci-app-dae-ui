@@ -67,12 +67,14 @@ function trafficRuleEvidence(detail,ruleId){
 	return matches.length?matches[matches.length-1]:null;
 }
 
-function ruleLinkForStep(step,ctx){
-	if(!step||step.stage!=='route'||!step.data||!step.data.rule_id||!step.generation_id)
+function ruleLinkForStep(step,ctx,ruleIdOverride){
+	if(!step||step.stage!=='route'||!step.data||!step.generation_id)
 		return null;
 
 	var chain=step.data.chain;
-	var ruleId=String(step.data.rule_id);
+	var rawRuleId=ruleIdOverride!==undefined&&ruleIdOverride!==null?ruleIdOverride:step.data.rule_id;
+	if(!rawRuleId) return null;
+	var ruleId=String(rawRuleId);
 	var generation=String(step.generation_id);
 
 	if(chain==='traffic'||chain==='dns_upstream'){
@@ -234,12 +236,12 @@ function fieldsFor(step,ctx){
 	}
 }
 
-function ruleEvaluations(step){
+function ruleEvaluations(step,ctx){
 	if(!step||step.stage!=='route'||!step.data||!Array.isArray(step.data.rules)||!step.data.rules.length)
 		return null;
 	var rows=step.data.rules.map(function(r){
 		return E('tr',{'class':'tr'},[
-			E('td',{'class':'td'},E('code',{},native.text(r.rule_id))),
+			E('td',{'class':'td'},ruleLinkForStep(step,ctx,r.rule_id)||E('code',{},native.text(r.rule_id))),
 			E('td',{'class':'td'},native.text(r.result)),
 			E('td',{'class':'td'},E('code',{},native.text(r.expression))),
 			E('td',{'class':'td'},native.text(r.missing_inputs))
@@ -295,7 +297,7 @@ function stepNode(step,ctx){
 	},[
 		header,
 		kv(fieldsFor(step,ctx)),
-		ruleEvaluations(step),
+		ruleEvaluations(step,ctx),
 		selectionCandidates(step),
 		E('details',{'style':'margin-top:8px'},[
 			E('summary',{},_('Raw step data')),
