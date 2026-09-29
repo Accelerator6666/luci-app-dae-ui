@@ -24,6 +24,13 @@ jobs:
             node --check "$f"
           done
 
+      - name: Shell syntax
+        run: |
+          find root/etc/init.d root/usr/libexec -type f -print0 2>/dev/null | while IFS= read -r -d '' f; do
+            sh -n "$f"
+            echo "OK $f"
+          done
+
       - name: Ucode structural sanity
         run: |
           python3 - <<'PY'
