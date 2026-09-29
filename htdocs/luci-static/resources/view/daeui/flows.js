@@ -4,6 +4,7 @@
 'require ui';
 'require daeui.common as dae';
 'require daeui.native as native';
+'require daeui.flowtrace as flowtrace';
 
 function network(f) {
 	return f.network || (f.input && f.input.network) || f.transport || '-';
@@ -22,7 +23,7 @@ function outbound(f) {
 	return f.outbound || f.final_outbound || '-';
 }
 
-function buildGrid(rows, canResolveRule, resolver) {
+function buildGrid(rows, canResolveRule, resolver, detailHandler) {
 	return native.dataGrid(rows, {
 		searchPlaceholder: _('Search flow, source, target, outbound, rule or connection…'),
 		pageSize: 50,
@@ -53,7 +54,13 @@ function buildGrid(rows, canResolveRule, resolver) {
 				},native.text(f.rule_id));
 			} },
 			{ key:'connection', title:_('Connection'), value:function(f){ return native.text(f.connection_id, ''); } },
-			{ key:'time', title:_('Time'), value:function(f){ return f.started_at || f.observed_at || ''; }, render:function(f){ return native.time(f.started_at || f.observed_at); } }
+			{ key:'time', title:_('Time'), value:function(f){ return f.started_at || f.observed_at || ''; }, render:function(f){ return native.time(f.started_at || f.observed_at); } },
+			{ key:'trace', title:_('Trace'), sortable:false, value:function(){return '';}, render:function(f) {
+				return E('button',{
+					'class':'btn cbi-button cbi-button-action',
+					'click':function(){return detailHandler(f);}
+				},_('Timeline'));
+			} }
 		]
 	});
 }
@@ -64,21 +71,6 @@ function meta(data, loaded) {
 	if (data.total !== undefined) parts.push(_('Total: ') + data.total);
 	if (data.dropped_records !== undefined) parts.push(_('Dropped records: ') + data.dropped_records);
 	return parts.join(' · ');
-}
-
-function trafficRuleEvidence(detail, ruleId) {
-	var matches=((detail&&detail.trace&&detail.trace.steps)||[]).filter(function(step){
-		return step && step.stage==='route' && step.data && step.data.chain==='traffic' &&
-			step.data.rule_id===ruleId && step.generation_id;
-	}).sort(function(a,b){return Number(a.seq||0)-Number(b.seq||0);});
-	return matches.length?matches[matches.length-1]:null;
-}
-
-function findRule(rules, ruleId) {
-	var rows=(rules&&rules.rules)||[];
-	for(var i=0;i<rows.length;i++) if(rows[i].rule_id===ruleId) return rows[i];
-	if(rules&&rules.fallback&&rules.fallback.rule_id===ruleId) return rules.fallback;
-	return null;
 }
 
 return view.extend({
@@ -94,26 +86,88 @@ return view.extend({
 		}.bind(this));
 	},
 
+	loadFlowContext:function(flow) {
+		var tasks=[
+			dae.callNativeFlowGet(String(flow.id)).then(native.parse)
+		];
+		if(this.canResolveRule)
+			tasks.push(dae.callNativeApiGet('rules').then(native.parse));
+		else
+			tasks.push(Promise.resolve(null));
+
+		return Promise.all(tasks).then(function(v){
+			return {
+				detail:v[0],
+				rules:v[1]&&v[1].ok?v[1].data:null,
+				rulesError:v[1]&&!v[1].ok?v[1]:null
+			};
+		});
+	},
+
+	viewFlow:function(flow) {
+		if(!flow||!flow.id) return;
+		ui.showModal(_('Flow trace'),[
+			E('p',{'class':'spinning'},_('Loading retained flow detail…'))
+		]);
+
+		return this.loadFlowContext(flow).then(function(ctx){
+			if(!ctx.detail.ok) {
+				ui.showModal(_('Flow trace'),[
+					native.errorBox(ctx.detail),
+					E('div',{'class':'right'},E('button',{'class':'btn','click':ui.hideModal},_('Close')))
+				]);
+				return;
+			}
+
+			var detail=ctx.detail.data||{};
+			var body=E('div',{'style':'max-height:72vh;overflow:auto;padding-right:6px'},[
+				flowtrace.summaryNode(detail,ctx.rules),
+				ctx.rulesError?E('div',{'class':'alert-message notice'},[
+					_('The flow trace is available, but the current rule dictionary could not be loaded: '),
+					ctx.rulesError.error
+				]):null,
+				E('h3',{},_('Retained trace timeline')),
+				E('div',{'class':'cbi-map-descr'},_('Steps are ordered by seq. Generation IDs belong to the recorded evidence; traffic rule links are shown only when the step generation exactly matches the currently loaded rule dictionary.')),
+				flowtrace.traceNode(detail,ctx.rules),
+				E('details',{'style':'margin-top:12px'},[
+					E('summary',{},_('Raw flow detail')),
+					E('pre',{'style':'white-space:pre-wrap;max-height:420px;overflow:auto'},JSON.stringify(detail,null,2))
+				])
+			]);
+
+			ui.showModal(_('Flow trace · ')+native.text(detail.id),[
+				body,
+				E('div',{'class':'right','style':'margin-top:12px'},[
+					E('button',{'class':'btn','click':ui.hideModal},_('Close'))
+				])
+			]);
+		});
+	},
+
 	resolveRule:function(flow) {
 		if(!flow||!flow.id||!flow.rule_id) return;
 		ui.showModal(_('Resolve flow rule'),[
 			E('p',{'class':'spinning'},_('Reading retained flow evidence and current rule dictionary…'))
 		]);
 
-		return Promise.all([
-			dae.callNativeFlowGet(String(flow.id)).then(native.parse),
-			dae.callNativeApiGet('rules').then(native.parse)
-		]).then(function(v){
-			var detail=v[0], rules=v[1];
-			if(!detail.ok||!rules.ok) {
+		return this.loadFlowContext(flow).then(function(ctx){
+			if(!ctx.detail.ok) {
 				ui.showModal(_('Resolve flow rule'),[
-					native.errorBox(!detail.ok?detail:rules),
+					native.errorBox(ctx.detail),
+					E('div',{'class':'right'},E('button',{'class':'btn','click':ui.hideModal},_('Close')))
+				]);
+				return;
+			}
+			if(!ctx.rules) {
+				ui.showModal(_('Resolve flow rule'),[
+					native.errorBox(ctx.rulesError||{error:_('Current rule dictionary is unavailable.')}),
 					E('div',{'class':'right'},E('button',{'class':'btn','click':ui.hideModal},_('Close')))
 				]);
 				return;
 			}
 
-			var evidence=trafficRuleEvidence(detail.data||{},String(flow.rule_id));
+			var detail=ctx.detail.data||{};
+			var evidence=flowtrace.trafficRuleEvidence(detail,String(flow.rule_id));
 			if(!evidence) {
 				ui.showModal(_('Resolve flow rule'),[
 					E('div',{'class':'alert-message notice'},_('No retained traffic-route step proves the generation for this flow rule. The summary rule_id is therefore not joined to the current dictionary.')),
@@ -122,9 +176,8 @@ return view.extend({
 				return;
 			}
 
-			var rulesData=rules.data||{};
 			var flowGeneration=String(evidence.generation_id||'');
-			var rulesGeneration=String(rulesData.generation_id||'');
+			var rulesGeneration=String(ctx.rules.generation_id||'');
 			if(!flowGeneration||flowGeneration!==rulesGeneration) {
 				ui.showModal(_('Resolve flow rule'),[
 					E('div',{'class':'alert-message warning'},_('Generation mismatch. This retained flow must not be joined to the current rule dictionary.')),
@@ -143,7 +196,7 @@ return view.extend({
 				return;
 			}
 
-			var rule=findRule(rulesData,String(flow.rule_id));
+			var rule=flowtrace.findRule(ctx.rules,String(flow.rule_id));
 			if(!rule) {
 				ui.showModal(_('Resolve flow rule'),[
 					E('div',{'class':'alert-message warning'},_('The generation matches, but this rule ID is not present in the complete current dictionary.')),
@@ -188,7 +241,7 @@ return view.extend({
 	render:function(data){
 		var status=data.status||{};
 		var available=status.resources&&status.resources.flows===true;
-		var canResolveRule=!!(status.resources&&status.resources.rules===true);
+		this.canResolveRule=!!(status.resources&&status.resources.rules===true);
 
 		if(!available)
 			return E([], [ E('h2',{},_('Native Flows')), native.unavailable(status,'flows') ]);
@@ -197,7 +250,7 @@ return view.extend({
 			return E([], [ E('h2',{},_('Native Flows')), native.errorBox(data.resource) ]);
 
 		var initial=data.resource.data||{};
-		this.grid=buildGrid(initial.flows||[],canResolveRule,this.resolveRule.bind(this));
+		this.grid=buildGrid(initial.flows||[],this.canResolveRule,this.resolveRule.bind(this),this.viewFlow.bind(this));
 		var info=E('div',{'id':'native-flows-meta','class':'cbi-map-descr'},meta(initial,(initial.flows||[]).length));
 		this.loader=native.cursorLoader('flows',initial,{
 			grid:this.grid,
@@ -211,7 +264,7 @@ return view.extend({
 
 		return E([],[
 			E('h2',{},_('Native Flows')),
-			E('div',{'class':'cbi-map-descr'},_('Read-only retained flow summaries. A rule link is resolved only after the retained flow detail proves the traffic-route generation and that generation exactly matches the current rule dictionary.')),
+			E('div',{'class':'cbi-map-descr'},_('Read-only retained flow summaries. Timeline opens the recorded causal trace. Rule links are generation-safe and never join a historical flow to a different current routing generation.')),
 			info,
 			this.loader.node,
 			this.grid.node
