@@ -49,18 +49,23 @@ capture_system() {
 	}
 
 	if [ -x "$SYSTEM" ]; then
-		mkdir -p "$ROOT/system-previous"
-		cp -p "$SYSTEM" "$ROOT/system-previous/dae.new.$" 2>/dev/null && {
-			chmod 755 "$ROOT/system-previous/dae.new.$"
-			mv -f "$ROOT/system-previous/dae.new.$" "$ROOT/system-previous/dae"
+		local prev_slot prev_dir
+		prev_slot="system-prev-$(date '+%Y%m%d-%H%M%S')"
+		prev_dir="$ROOT/$prev_slot"
+		mkdir -p "$prev_dir"
+		rm -f "$prev_dir/dae.new"
+		cp -p "$SYSTEM" "$prev_dir/dae.new" 2>/dev/null && {
+			chmod 755 "$prev_dir/dae.new"
+			mv -f "$prev_dir/dae.new" "$prev_dir/dae"
 			if [ "$(uci -q get dae-ui.main.last_good_slot)" = "system" ]; then
-				uci -q set dae-ui.main.last_good_slot='system-previous'
+				uci -q set dae-ui.main.last_good_slot="$prev_slot"
 				uci -q commit dae-ui
 			fi
+			log "preserved previous system dae as $prev_slot"
 		}
 	fi
 
-	tmp="$SYSTEM.new.$"
+	tmp="$SYSTEM.new"
 	if ! cp -L "$PUBLIC" "$tmp"; then
 		rm -f "$tmp"
 		log "failed to copy system dae into managed system slot"
