@@ -46,6 +46,11 @@ var callNativeRoutingTrace = rpc.declare({
 	params: [ 'domain', 'dst_ip', 'network', 'dst_port', 'src_ip', 'src_port', 'pname', 'resolve' ],
 	expect: {}
 });
+var callVersionStatus = rpc.declare({ object: 'luci.daeui', method: 'version_status', expect: {} });
+var callVersionReleases = rpc.declare({ object: 'luci.daeui', method: 'version_releases', expect: {} });
+var callVersionDownload = rpc.declare({ object: 'luci.daeui', method: 'version_download', params: [ 'tag', 'asset' ], expect: {} });
+var callVersionSwitch = rpc.declare({ object: 'luci.daeui', method: 'version_switch', params: [ 'slot' ], expect: {} });
+var callVersionDelete = rpc.declare({ object: 'luci.daeui', method: 'version_delete', params: [ 'slot' ], expect: {} });
 var callNativeProbeStart = rpc.declare({
 	object: 'luci.daeui',
 	method: 'native_probe_start',
@@ -147,6 +152,11 @@ return baseclass.extend({
 	callClearNativeToken: callClearNativeToken,
 	callNativeDnsQuery: callNativeDnsQuery,
 	callNativeRoutingTrace: callNativeRoutingTrace,
+	callVersionStatus: callVersionStatus,
+	callVersionReleases: callVersionReleases,
+	callVersionDownload: callVersionDownload,
+	callVersionSwitch: callVersionSwitch,
+	callVersionDelete: callVersionDelete,
 	callNativeProbeStart: callNativeProbeStart,
 	callNativeOperationGet: callNativeOperationGet,
 	callNativeGroupGet: callNativeGroupGet,
