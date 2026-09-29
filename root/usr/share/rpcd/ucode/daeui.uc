@@ -8,8 +8,12 @@ function settings() {
 	let u = cursor();
 	if (u) u.load('dae-ui');
 	let managed = u && u.get('dae-ui', 'main', 'version_manager_enabled');
+	let selected = (u && u.get('dae-ui', 'main', 'selected_slot')) || 'system';
+	let managed_binary = match(selected, /^[A-Za-z0-9._-]+$/)
+		? '/usr/lib/dae-ui/versions/' + selected + '/dae'
+		: '/usr/bin/dae';
 	return {
-		binary: managed == '1' ? '/usr/bin/dae' : ((u && u.get('dae-ui', 'main', 'binary')) || '/usr/bin/dae'),
+		binary: managed == '1' ? managed_binary : ((u && u.get('dae-ui', 'main', 'binary')) || '/usr/bin/dae'),
 		init: (u && u.get('dae-ui', 'main', 'init')) || '/etc/init.d/dae',
 		config: (u && u.get('dae-ui', 'main', 'config_file')) || '/etc/dae/config.dae',
 		log: (u && u.get('dae-ui', 'main', 'log_file')) || '/var/log/dae/dae.log',
@@ -1755,6 +1759,13 @@ return {
 				let action = req.args.action || '';
 				let allowed = { start: true, stop: true, restart: true, reload: true, enable: true, disable: true, suspend: true };
 				if (!allowed[action]) return { ok: false, error: 'Unsupported action' };
+
+				if (vm_enabled() && (action == 'start' || action == 'restart')) {
+					let guard = run(shell_quote(vm_guard()) + ' prepare');
+					if (guard.rc != 0)
+						return { ok: false, error: 'Unable to repair the managed /usr/bin/dae runner before service action', output: guard.output };
+				}
+
 				let cmd;
 				if (action == 'reload') cmd = shell_quote(s.binary) + ' reload';
 				else if (action == 'suspend') cmd = shell_quote(s.binary) + ' suspend';
