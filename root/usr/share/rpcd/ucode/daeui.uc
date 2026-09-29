@@ -1361,6 +1361,26 @@ function vm_candidate_version(path) {
 	return { ok: r.rc == 0 && !!trim(r.output), version: trim(split(r.output || '', '\n')[0] || ''), output: r.output };
 }
 
+function vm_release_digest(tag, asset) {
+	let api = 'https://api.github.com/repos/daeuniverse/dae/releases/tags/' + tag;
+	let r = run(
+		"curl --fail --location --silent --show-error --connect-timeout 8 --max-time 20 " +
+		"-H 'Accept: application/vnd.github+json' -H 'User-Agent: luci-app-dae-ui' " +
+		shell_quote(api)
+	);
+	if (r.rc != 0) return '';
+
+	let data = parse_json_safe(r.output);
+	if (type(data) != 'object') return '';
+	for (let idx, item in (data.assets || [])) {
+		if (!item || item.name != asset) continue;
+		let d = item.digest || '';
+		let m = match(d, /^sha256:([A-Fa-f0-9]{64})$/);
+		return m ? m[1] : '';
+	}
+	return '';
+}
+
 function vm_install_release(s, tag, asset) {
 	if (!match(tag || '', /^[A-Za-z0-9._-]+$/) || length(tag) > 80)
 		return { ok: false, error: 'Invalid release tag' };
@@ -1386,16 +1406,19 @@ function vm_install_release(s, tag, asset) {
 		return { ok: false, error: 'DAE release download failed', output: dl.output };
 	}
 
-	let sd = run(
-		'curl --fail --location --silent --show-error --retry 2 --connect-timeout 10 --max-time 30 -o ' +
-		shell_quote(dgst) + ' ' + shell_quote(dgst_url)
-	);
-	if (sd.rc != 0) {
-		run('rm -rf ' + shell_quote(tmp));
-		return { ok: false, error: 'Release digest download failed; installation aborted', output: sd.output };
+	let expected = vm_release_digest(tag, asset);
+	if (!expected) {
+		let sd = run(
+			'curl --fail --location --silent --show-error --retry 2 --connect-timeout 10 --max-time 30 -o ' +
+			shell_quote(dgst) + ' ' + shell_quote(dgst_url)
+		);
+		if (sd.rc != 0) {
+			run('rm -rf ' + shell_quote(tmp));
+			return { ok: false, error: 'No trusted SHA256 was available from GitHub metadata or the official .dgst asset; installation aborted', output: sd.output };
+		}
+		expected = trim(run("awk '$NF==\"sha256\" {print $1; exit}' " + shell_quote(dgst)).output);
 	}
 
-	let expected = trim(run("awk '$NF==\"sha256\" {print $1; exit}' " + shell_quote(dgst)).output);
 	let actual = trim(run("sha256sum " + shell_quote(archive) + " | awk '{print $1}'").output);
 	if (!match(expected, /^[A-Fa-f0-9]{64}$/) || expected != actual) {
 		run('rm -rf ' + shell_quote(tmp));
