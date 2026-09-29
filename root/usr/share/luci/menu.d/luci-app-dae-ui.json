@@ -194,5 +194,13 @@
       "type": "view",
       "path": "daeui/native-rules"
     }
+  },
+  "admin/services/dae-ui/native-dns-rules": {
+    "title": "Native DNS Rules",
+    "hidden": true,
+    "action": {
+      "type": "view",
+      "path": "daeui/native-dns-rules"
+    }
   }
 }
