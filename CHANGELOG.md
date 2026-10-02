@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.14.2 - 2026-10-02
+
+- Added drag-and-drop local dae import on the DAE Version Manager page.
+- Added direct archive import for `.zip`, `.tar.gz` and `.tgz`, in addition to raw dae executables.
+- Archive imports use the existing fixed upload path and never accept an arbitrary server-side path through rpcd.
+- Archive inspection rejects unsafe member paths, limits entry count, requires exactly one `dae` / `dae-*` payload and extracts only that payload to a private temporary file.
+- Added an extraction file-size limit of 128 MiB to reduce archive-bomb risk.
+- Added archive SHA256 metadata while keeping immutable slots addressed by the extracted binary SHA256.
+- Archive or binary imports remain non-activating until the user explicitly selects **Activate & Restart**.
+- Updated Simplified Chinese translations, documentation and CI safety-contract checks.
+
 ## 0.14.1 - 2026-10-02
 
 - Added bundled Simplified Chinese (zh_Hans / zh-cn) localization that follows the LuCI system language automatically.
