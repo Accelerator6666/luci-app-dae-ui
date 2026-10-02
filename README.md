@@ -571,7 +571,7 @@ The remaining release work is router-side validation, especially:
 - selected version persistence after reboot
 - Simplified Chinese rendering on a Chinese LuCI installation
 
-See [RELEASE_NOTES_v0.14.0.md](RELEASE_NOTES_v0.14.0.md) and [CHANGELOG.md](CHANGELOG.md) for detailed release history.
+See [RELEASE_NOTES_v0.14.2.md](RELEASE_NOTES_v0.14.2.md), [RELEASE_NOTES_v0.14.0.md](RELEASE_NOTES_v0.14.0.md) and [CHANGELOG.md](CHANGELOG.md) for detailed release history.
 
 ## Inspiration
 
