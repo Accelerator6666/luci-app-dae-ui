@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: luci-app-dae-ui 0.14.1\n"
+"Project-Id-Version: luci-app-dae-ui 0.14.2\n"
 "PO-Revision-Date: 2026-10-02 00:00+0000\n"
 "Language-Team: Chinese (Simplified Han script)\n"
 "Language: zh_Hans\n"
@@ -2678,4 +2678,85 @@ msgstr "版本槽位不存在"
 
 msgid "Version slot not found"
 msgstr "未找到版本槽位"
+
+msgid "Accepted: raw dae executable, .zip, .tar.gz, .tgz"
+msgstr "支持：原始 dae 可执行文件、.zip、.tar.gz、.tgz"
+
+msgid "Archive SHA256"
+msgstr "压缩包 SHA256"
+
+msgid "Archive payload"
+msgstr "压缩包内有效载荷"
+
+msgid "Archive type"
+msgstr "压缩包类型"
+
+msgid "Archives are inspected without writing their internal paths. Exactly one dae or dae-* executable must be present. Extraction is limited to 128 MiB."
+msgstr "压缩包会在不写入其内部路径的情况下进行检查。压缩包中必须且只能包含一个 dae 或 dae-* 可执行文件，解压后的文件最大限制为 128 MiB。"
+
+msgid "Drop a dae binary or archive here"
+msgstr "将 dae 二进制或压缩包拖到这里"
+
+msgid "Import custom dae file"
+msgstr "导入自定义 dae 文件"
+
+msgid "Inspecting the upload, extracting archives when needed, smoke-testing dae and validating the active service configuration…"
+msgstr "正在检查上传文件，并在需要时解压、执行 dae 冒烟测试及验证当前服务配置……"
+
+msgid "Optional label for this custom dae file:"
+msgstr "请输入此自定义 dae 文件的可选标签："
+
+msgid "Security note: validating an uploaded dae file requires executing the extracted or raw binary on the router. Import only files you trust and that match this router CPU/ABI."
+msgstr "安全提示：验证上传的 dae 文件需要在路由器上执行解压后的或原始二进制。仅导入你信任且与本机 CPU/ABI 匹配的文件。"
+
+msgid "The dae upload must be between 1 KiB and 128 MiB."
+msgstr "上传的 dae 文件大小必须在 1 KiB 到 128 MiB 之间。"
+
+msgid "The uploaded file may contain an executable that will be run for a version smoke test and then used to validate the active dae configuration. Only continue with a file you trust. It will not be activated automatically."
+msgstr "上传的文件可能包含可执行程序，系统会运行它进行版本冒烟测试，并用其验证当前 dae 配置。仅在你信任该文件时继续；导入后不会自动启用。"
+
+msgid "Upload a trusted raw dae executable or an archive containing exactly one dae executable. Supported archives are .zip, .tar.gz and .tgz. The backend extracts only the selected dae payload into a private temporary file, enforces 1 KiB–128 MiB limits, runs a version smoke test, validates the active service configuration and derives the immutable slot name from the binary SHA256. Import never activates the binary automatically."
+msgstr "上传可信的原始 dae 可执行文件，或仅包含一个 dae 可执行文件的压缩包。支持 .zip、.tar.gz 和 .tgz。后端只会把选中的 dae 有效载荷提取到私有临时文件中，限制大小为 1 KiB–128 MiB，执行版本冒烟测试、验证当前服务配置，并根据二进制 SHA256 生成不可变槽位名称。导入后不会自动启用。"
+
+msgid "Uploading dae file…"
+msgstr "正在上传 dae 文件……"
+
+msgid "or click to choose a file"
+msgstr "或点击选择文件"
+
+msgid "Uploaded dae file is missing or is not a regular file"
+msgstr "上传的 dae 文件缺失或不是普通文件"
+
+msgid "Uploaded dae file size is outside the accepted 1 KiB to 128 MiB range"
+msgstr "上传的 dae 文件大小超出允许的 1 KiB–128 MiB 范围"
+
+msgid "Unsupported archive format; use a raw dae executable, .zip, .tar.gz or .tgz"
+msgstr "不支持该压缩格式；请使用原始 dae 可执行文件、.zip、.tar.gz 或 .tgz"
+
+msgid "Unable to calculate uploaded archive SHA256"
+msgstr "无法计算上传压缩包的 SHA256"
+
+msgid "Unable to prepare archive extraction workspace"
+msgstr "无法准备压缩包解压临时目录"
+
+msgid "Uploaded archive contains too many entries"
+msgstr "上传的压缩包包含过多文件项"
+
+msgid "Uploaded archive contains an unsafe path"
+msgstr "上传的压缩包包含不安全的路径"
+
+msgid "Uploaded archive must contain exactly one dae executable"
+msgstr "上传的压缩包中必须且只能包含一个 dae 可执行文件"
+
+msgid "Unable to extract dae executable from uploaded archive"
+msgstr "无法从上传的压缩包中提取 dae 可执行文件"
+
+msgid "Extracted dae binary size is outside the accepted 1 KiB to 128 MiB range"
+msgstr "解压后的 dae 二进制大小超出允许的 1 KiB–128 MiB 范围"
+
+msgid "Unable to mark extracted dae binary executable"
+msgstr "无法将解压后的 dae 二进制标记为可执行"
+
+msgid "Custom dae archive extracted, smoke-tested, configuration-validated and installed into an immutable slot"
+msgstr "自定义 dae 压缩包已完成解压、冒烟测试和配置验证，并安装到不可变槽位"
 
