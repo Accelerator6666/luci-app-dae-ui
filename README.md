@@ -44,7 +44,7 @@ The UI is designed around three rules:
 
 ## Screenshots
 
-Real-router screenshots will be added after the v0.14.1 OpenWrt validation pass. The README intentionally does not use generated mockups as production screenshots.
+Real-router screenshots will be added after the v0.14.2 OpenWrt validation pass. The README intentionally does not use generated mockups as production screenshots.
 
 Planned captures:
 
