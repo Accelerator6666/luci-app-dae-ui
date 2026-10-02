@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.14.0 - 2026-10-02
 
 - Added contextual DAE completion to the local CodeMirror editor. `Ctrl+Space` suggests section-aware global, group, DNS and routing syntax and can complete configured proxy-group names after routing arrows/fallbacks.
 - Added inline validation diagnostics in the configuration editor gutter and automatic navigation to the first validation error in the active file while retaining the existing full diagnostics modal.
