@@ -2,9 +2,10 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-dae-ui
-PKG_VERSION:=0.14.0
+PKG_VERSION:=0.14.1
 PKG_RELEASE:=1
 PKG_LICENSE:=GPL-3.0-only
+PKG_BUILD_DEPENDS:=luci-base/host
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -31,6 +32,9 @@ define Build/Configure
 endef
 
 define Build/Compile
+	$(STAGING_DIR_HOSTPKG)/bin/po2lmo \
+		$(CURDIR)/po/zh_Hans/dae-ui.po \
+		$(PKG_BUILD_DIR)/dae-ui.zh-cn.lmo
 endef
 
 define Package/luci-app-dae-ui/install
@@ -39,6 +43,10 @@ define Package/luci-app-dae-ui/install
 
 	$(INSTALL_DIR) $(1)/
 	$(CP) ./root/* $(1)/
+
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/i18n
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/dae-ui.zh-cn.lmo \
+		$(1)/usr/lib/lua/luci/i18n/dae-ui.zh-cn.lmo
 
 	chmod 0755 $(1)/usr/libexec/dae-ui/dae-runner
 	chmod 0755 $(1)/usr/libexec/dae-ui/version-boot-guard
