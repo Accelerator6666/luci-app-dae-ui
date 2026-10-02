@@ -328,7 +328,7 @@ return view.extend({
 		this.probeOptions=status.probe_options||{};
 		this.canProbe=!!(status.resources&&status.resources.probes===true&&status.resources.operations===true&&offered(this.probeOptions.targets,'group'));
 
-		if(available) poll.add(L.bind(this.refresh,this),5);
+		if(available) poll.add(dae.visiblePoll(L.bind(this.refresh,this)), 5);
 		return E([],[
 			E('h2',{},_('Runtime Policies')),
 			E('div',{'class':'cbi-map-descr'},_('Current group selection plus outbound counters when available. Policy selection remains read-only; the only active operation on this page is an explicitly requested bounded group health probe.')),
