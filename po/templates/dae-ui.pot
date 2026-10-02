@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: luci-app-dae-ui 0.14.1\n"
+"Project-Id-Version: luci-app-dae-ui 0.14.2\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
@@ -2672,5 +2672,86 @@ msgid "Version slot does not exist"
 msgstr ""
 
 msgid "Version slot not found"
+msgstr ""
+
+msgid "Accepted: raw dae executable, .zip, .tar.gz, .tgz"
+msgstr ""
+
+msgid "Archive SHA256"
+msgstr ""
+
+msgid "Archive payload"
+msgstr ""
+
+msgid "Archive type"
+msgstr ""
+
+msgid "Archives are inspected without writing their internal paths. Exactly one dae or dae-* executable must be present. Extraction is limited to 128 MiB."
+msgstr ""
+
+msgid "Drop a dae binary or archive here"
+msgstr ""
+
+msgid "Import custom dae file"
+msgstr ""
+
+msgid "Inspecting the upload, extracting archives when needed, smoke-testing dae and validating the active service configuration…"
+msgstr ""
+
+msgid "Optional label for this custom dae file:"
+msgstr ""
+
+msgid "Security note: validating an uploaded dae file requires executing the extracted or raw binary on the router. Import only files you trust and that match this router CPU/ABI."
+msgstr ""
+
+msgid "The dae upload must be between 1 KiB and 128 MiB."
+msgstr ""
+
+msgid "The uploaded file may contain an executable that will be run for a version smoke test and then used to validate the active dae configuration. Only continue with a file you trust. It will not be activated automatically."
+msgstr ""
+
+msgid "Upload a trusted raw dae executable or an archive containing exactly one dae executable. Supported archives are .zip, .tar.gz and .tgz. The backend extracts only the selected dae payload into a private temporary file, enforces 1 KiB–128 MiB limits, runs a version smoke test, validates the active service configuration and derives the immutable slot name from the binary SHA256. Import never activates the binary automatically."
+msgstr ""
+
+msgid "Uploading dae file…"
+msgstr ""
+
+msgid "or click to choose a file"
+msgstr ""
+
+msgid "Uploaded dae file is missing or is not a regular file"
+msgstr ""
+
+msgid "Uploaded dae file size is outside the accepted 1 KiB to 128 MiB range"
+msgstr ""
+
+msgid "Unsupported archive format; use a raw dae executable, .zip, .tar.gz or .tgz"
+msgstr ""
+
+msgid "Unable to calculate uploaded archive SHA256"
+msgstr ""
+
+msgid "Unable to prepare archive extraction workspace"
+msgstr ""
+
+msgid "Uploaded archive contains too many entries"
+msgstr ""
+
+msgid "Uploaded archive contains an unsafe path"
+msgstr ""
+
+msgid "Uploaded archive must contain exactly one dae executable"
+msgstr ""
+
+msgid "Unable to extract dae executable from uploaded archive"
+msgstr ""
+
+msgid "Extracted dae binary size is outside the accepted 1 KiB to 128 MiB range"
+msgstr ""
+
+msgid "Unable to mark extracted dae binary executable"
+msgstr ""
+
+msgid "Custom dae archive extracted, smoke-tested, configuration-validated and installed into an immutable slot"
 msgstr ""
 
