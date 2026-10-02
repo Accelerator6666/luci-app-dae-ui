@@ -122,6 +122,12 @@ jobs:
 
           include $(INCLUDE_DIR)/package.mk
 
+          define Build/Configure
+          endef
+
+          define Build/Compile
+          endef
+
           define Package/dae
             SECTION:=net
             CATEGORY:=Network
