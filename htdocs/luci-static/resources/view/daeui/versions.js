@@ -89,6 +89,27 @@ return view.extend({
 		}.bind(this));
 	},
 
+	importLocalBinary:function(){
+		var label=window.prompt(_('Optional label for this custom dae binary:'),'custom');
+		if(label===null) return;
+		if(!window.confirm(_('The uploaded file will be executed for a version smoke test and then used to validate the active dae configuration. Only continue with a binary you trust. It will not be activated automatically.')))
+			return;
+
+		return ui.uploadFile('/tmp/dae-ui-dae-upload.bin').then(function(info){
+			ui.showModal(_('Import custom dae binary'),[
+				E('p',{'class':'spinning'},[
+					_('Smoke-testing the uploaded binary and validating the active service configuration…'),
+					info&&info.name?E('div',{'style':'margin-top:8px'},E('code',{},info.name)):null
+				])
+			]);
+			return dae.callVersionImport(label||'').then(function(res){
+				resultModal(_('Import custom dae binary'),res,this.reloadStatus.bind(this));
+			}.bind(this));
+		}.bind(this)).catch(function(err){
+			dae.notify((err&&err.message)||String(err),'error');
+		});
+	},
+
 	installRelease:function(tag,asset){
 		if(!window.confirm(_('Download and verify this official dae release? It will be installed into a version slot but will not be activated automatically.')))
 			return;
@@ -258,6 +279,16 @@ return view.extend({
 			E('div',{'class':'cbi-section'},[
 				E('h3',{},_('Installed versions')),
 				this.installedTable(status)
+			]),
+
+			E('div',{'class':'cbi-section'},[
+				E('h3',{},_('Import custom dae binary')),
+				E('div',{'class':'cbi-map-descr'},_('Upload a trusted local dae executable into an immutable custom version slot. The backend accepts only the fixed temporary upload path, enforces a 1 KiB–128 MiB size bound, executes a version smoke test, validates the active service configuration and derives the slot name from the SHA256. Import never activates the binary automatically.')),
+				E('div',{'class':'alert-message warning'},_('Security note: validating a custom binary requires executing it on the router. Import only binaries you trust and that match this router CPU/ABI.')),
+				E('button',{
+					'class':'btn cbi-button cbi-button-action',
+					'click':ui.createHandlerFn(this,this.importLocalBinary)
+				},_('Upload & Validate Custom Binary'))
 			]),
 
 			E('div',{'class':'cbi-section'},[
