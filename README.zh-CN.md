@@ -6,7 +6,7 @@
 
 `luci-app-dae-ui` 将 dae 的日常配置管理、运行时观测、Native API、诊断、GeoData 维护以及可重启恢复的多版本二进制管理整合到同一个 LuCI 应用中。
 
-> **当前版本：** v0.14.2  
+> **当前版本：** v0.14.3  
 > **当前状态：** v0.14.x 功能范围已经基本完成，正式发布前主要剩余 OpenWrt 真机验证。
 
 ## 为什么做这个项目
@@ -46,11 +46,11 @@
 
 ## 界面截图
 
-下面是当前 v0.14.2 界面的**UI 预览图（示例状态数据）**，用于展示布局与交互结构，不代表真机实时数据。
+下面是当前 v0.14.3 界面的**UI 预览图（示例状态数据）**，用于展示布局与交互结构，不代表真机实时数据。
 
 ![DAE 概览 UI 预览](docs/screenshots/overview-preview.svg)
 
-完成 OpenWrt 真机验证后，还会补充真实运行截图。计划展示：
+完成 v0.14.3 OpenWrt 真机验证后，还会补充真实运行截图。计划展示：
 
 - 简体中文 **概览**
 - 简体中文 **运行状态**，包含已经采集到数据的流量曲线
@@ -629,6 +629,7 @@ v0.14.x 的架构与主要功能已经完成。
 
 详细版本记录请查看：
 
+- [RELEASE_NOTES_v0.14.3.md](RELEASE_NOTES_v0.14.3.md)
 - [RELEASE_NOTES_v0.14.2.md](RELEASE_NOTES_v0.14.2.md)
 - [RELEASE_NOTES_v0.14.0.md](RELEASE_NOTES_v0.14.0.md)
 - [CHANGELOG.md](CHANGELOG.md)
