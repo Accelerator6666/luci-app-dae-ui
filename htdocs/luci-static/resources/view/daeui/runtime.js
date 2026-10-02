@@ -3,6 +3,7 @@
 'require poll';
 'require dom';
 'require daeui.common as dae';
+'require daeui.native as nativeApi';
 
 function humanBytes(v) {
 	var n = Number(v || 0);
@@ -97,9 +98,68 @@ function resourceButton(title, path, available) {
 	}, title);
 }
 
+
+function nativeGeneration(parsed) {
+	if (!parsed || !parsed.ok || !parsed.data) return '';
+	var value = parsed.data.generation_id;
+	return value === null || value === undefined ? '' : String(value);
+}
+
+function generationSummary(configResource, rulesResource, dnsRulesResource) {
+	var entries = [
+		{ key:'config', title:_('Config generation'), value:nativeGeneration(configResource) },
+		{ key:'rules', title:_('Traffic rules generation'), value:nativeGeneration(rulesResource) },
+		{ key:'dns_rules', title:_('DNS rules generation'), value:nativeGeneration(dnsRulesResource) }
+	];
+	var ids = [];
+	entries.forEach(function(entry) {
+		if (entry.value && ids.indexOf(entry.value) < 0) ids.push(entry.value);
+	});
+	return {
+		entries: entries,
+		ids: ids,
+		state: ids.length === 0
+			? { text:_('Not reported'), state:'WARN' }
+			: ids.length === 1
+				? { text:_('Consistent'), state:true }
+				: { text:_('Mismatch'), state:false }
+	};
+}
+
+function generationTable(summary, status) {
+	var resources = (status && status.resources) || {};
+	var rows = summary.entries.filter(function(entry) {
+		return resources[entry.key] === true;
+	}).map(function(entry) {
+		return E('div', { 'class':'tr' }, [
+			E('div', { 'class':'td left', 'style':'width:260px;font-weight:600' }, entry.title),
+			E('div', { 'class':'td left' }, entry.value ? E('code', {}, entry.value) : _('Not reported'))
+		]);
+	});
+	rows.push(E('div', { 'class':'tr' }, [
+		E('div', { 'class':'td left', 'style':'width:260px;font-weight:600' }, _('Consistency')),
+		E('div', { 'class':'td left' }, dae.badge(summary.state.text, summary.state.state))
+	]));
+	return E('div', { 'class':'table' }, rows);
+}
+
 return view.extend({
 	load: function() {
-		return Promise.all([ dae.callRuntimeStats(), dae.callNativeApiStatus() ]);
+		return Promise.all([ dae.callRuntimeStats(), dae.callNativeApiStatus() ]).then(function(base) {
+			var status = base[1] || {};
+			var resources = status.resources || {};
+			function loadResource(name) {
+				if (resources[name] !== true) return Promise.resolve(null);
+				return dae.callNativeApiGet(name).then(nativeApi.parse);
+			}
+			return Promise.all([
+				Promise.resolve(base[0] || {}),
+				Promise.resolve(status),
+				loadResource('config'),
+				loadResource('rules'),
+				loadResource('dns_rules')
+			]);
+		});
 	},
 
 	updateRuntime: function(next) {
@@ -154,6 +214,10 @@ return view.extend({
 	render: function(data) {
 		var initial = data[0] || {};
 		var native = data[1] || {};
+		var configGeneration = data[2] || null;
+		var rulesGeneration = data[3] || null;
+		var dnsRulesGeneration = data[4] || null;
+		var generations = generationSummary(configGeneration, rulesGeneration, dnsRulesGeneration);
 		this.prev = initial;
 
 		poll.add(L.bind(function() {
@@ -185,6 +249,9 @@ return view.extend({
 			E('h3', {}, _('eBPF interface counters')),
 			ifaceTable('dae0', initial.dae0),
 			ifaceTable('dae0peer', initial.dae0peer),
+			E('h3', {}, _('Native generation consistency')),
+			E('div', { 'class':'cbi-map-descr' }, _('Read-only consistency check across Native API config, traffic-rule and DNS-rule dictionaries. A single reported generation means these runtime dictionaries agree. This does not infer desired-vs-active state when the backend does not report it.')),
+			generationTable(generations, native),
 			E('h3', {}, _('Runtime capability matrix')),
 			E('div', { 'class': 'table' }, [
 				capabilityRow(_('Process / memory metrics'), _('Local'), { text: _('Available'), state: true }),
