@@ -44,16 +44,18 @@ The UI is designed around three rules:
 
 ## Screenshots
 
-Real-router screenshots will be added after the v0.14.2 OpenWrt validation pass. The README intentionally does not use generated mockups as production screenshots.
+The image below is a **UI design preview with sample state data**, based on the current v0.14.2 interface. It is not a real-router capture.
 
-Planned captures:
+![DAE Overview UI preview](docs/screenshots/overview-preview.svg)
+
+Real OpenWrt screenshots will be added after the v0.14.2 router validation pass. Planned captures:
 
 - Simplified Chinese **Overview**
 - Simplified Chinese **Runtime** with populated traffic charts
 - Simplified Chinese **DAE Version Manager**
 - Simplified Chinese **Configuration Files** editor
 
-See [docs/screenshots/README.md](docs/screenshots/README.md) for the capture and redaction checklist.
+See [docs/screenshots/README.md](docs/screenshots/README.md) for the preview note plus the real-device capture and redaction checklist.
 
 <!--
 ![Overview](docs/screenshots/overview-zh-cn.png)
