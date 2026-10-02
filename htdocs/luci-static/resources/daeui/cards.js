@@ -6,6 +6,23 @@ function protocolOf(url) {
 	return m ? m[1].toUpperCase() : _('Unknown');
 }
 
+function redactedLink(url) {
+	var raw=String(url||'');
+	var m=raw.match(/^([A-Za-z0-9+.-]+):\/\/(.*)$/);
+	if(!m) return raw;
+	var scheme=m[1].toLowerCase();
+	var rest=m[2];
+	var at=rest.indexOf('@');
+	if(at>=0)
+		return scheme+'://••••@'+rest.slice(at+1);
+
+	if(['vmess','ss','ssr'].indexOf(scheme)>=0) {
+		var hash=rest.indexOf('#');
+		return scheme+'://••••'+(hash>=0?rest.slice(hash):'');
+	}
+	return raw;
+}
+
 function parseEntries(block, kind) {
 	var out = [];
 	String(block || '').split(/\n/).forEach(function(line) {
@@ -81,6 +98,7 @@ function card(title, meta, body) {
 
 return baseclass.extend({
 	protocolOf:protocolOf,
+	redactedLink:redactedLink,
 	nodeCards:nodeCards,
 	subscriptionCards:subscriptionCards,
 	groupCards:groupCards,
