@@ -8,7 +8,7 @@ v0.14.3 is a stability and safe-editing release built on the v0.14.2 DAE Version
 - Syntax-aware group parsing: quoted apostrophes, `#` inside quoted values, regex text and multiple group filters are preserved as DAE/honk syntax.
 - Field-level staged edits for tagged managed nodes, subscriptions and group policy/filter values.
 - Optimistic revision protection for managed writes: a stale browser page cannot silently overwrite a newer managed file.
-- Copy Error and Recent Error Diagnostics with a 20-record, memory-only sanitized history.
+- Copy Error and Recent Error Diagnostics with a 20-record, sanitized history scoped to the current browser-tab session.
 - Complete Simplified Chinese strings for the new UI.
 
 ## Safety model
