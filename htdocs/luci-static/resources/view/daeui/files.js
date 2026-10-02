@@ -28,6 +28,7 @@ return view.extend({
 			if (this.editor) {
 				this.editor.setValue(res.content || '');
 				this.editor.clearHistory();
+				if (this.editor.daeClearDiagnostics) this.editor.daeClearDiagnostics();
 			} else {
 				var ta = document.getElementById('dae-file-editor');
 				if (ta) ta.value = res.content || '';
@@ -56,9 +57,19 @@ return view.extend({
 			ui.hideModal();
 			var msg = (res && (res.message || res.error)) || _('Operation finished.');
 			if (res && res.ok) {
+				if (this.editor && this.editor.daeClearDiagnostics) this.editor.daeClearDiagnostics();
 				dae.notify(msg, 'info');
 				return;
 			}
+
+			var firstDiagnostic = null;
+			if (this.editor && this.editor.daeSetDiagnostics)
+				firstDiagnostic = this.editor.daeSetDiagnostics((res && res.diagnostics) || [], this.currentPath);
+			if (firstDiagnostic !== null && this.editor) {
+				this.editor.setCursor({ line:firstDiagnostic, ch:0 });
+				this.editor.scrollIntoView({ line:firstDiagnostic, ch:0 }, 120);
+			}
+
 			var diagnostics = dae.diagnosticsNode(res && res.diagnostics);
 			if (diagnostics) {
 				ui.showModal(_('DAE validation failed'), [
@@ -71,7 +82,7 @@ return view.extend({
 				if (res && res.output) msg += '\n' + res.output;
 				dae.notify(msg, 'error');
 			}
-		});
+		}.bind(this));
 	},
 
 	createFile: function() {
@@ -119,6 +130,11 @@ return view.extend({
 			E('div', { 'class': 'cbi-map-descr' }, [
 				_('All .dae files below the main configuration directory are discovered automatically. Every write validates the complete main configuration so include relationships are checked as one unit.'),
 				E('br'), _('Base directory: '), E('code', {}, (data && data.base) || '/etc/dae')
+			]),
+			E('div', { 'class':'dae-editor-help' }, [
+				E('span', {}, [ E('strong', {}, _('Smart completion: ')), E('code', {}, 'Ctrl+Space') ]),
+				E('span', {}, _('Suggestions follow the current global/group/DNS/routing context and include configured proxy groups.')),
+				E('span', {}, _('Validation errors are marked in the editor gutter after a failed save.'))
 			]),
 			E('div', { 'class': 'cbi-page-actions', 'style': 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px' }, [
 				selector,

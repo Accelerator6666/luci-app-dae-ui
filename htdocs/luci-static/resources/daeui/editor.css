@@ -1,0 +1,68 @@
+.dae-completion-popup {
+	position: absolute;
+	z-index: 10050;
+	min-width: 340px;
+	max-width: min(560px, calc(100vw - 24px));
+	max-height: 300px;
+	overflow: auto;
+	padding: 4px;
+	border: 1px solid rgba(127, 127, 127, .35);
+	border-radius: 6px;
+	background: var(--background-color-high, #fff);
+	box-shadow: 0 8px 28px rgba(0, 0, 0, .22);
+}
+
+.dae-completion-row {
+	display: flex;
+	width: 100%;
+	gap: 12px;
+	align-items: baseline;
+	justify-content: space-between;
+	border: 0;
+	border-radius: 4px;
+	padding: 6px 8px;
+	background: transparent;
+	color: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.dae-completion-row:hover,
+.dae-completion-row.selected {
+	background: rgba(64, 128, 255, .16);
+}
+
+.dae-completion-label {
+	font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.dae-completion-detail {
+	font-size: .9em;
+	opacity: .72;
+	text-align: right;
+}
+
+.dae-diagnostic-gutter {
+	width: 12px;
+}
+
+.dae-diagnostic-marker {
+	color: #d33;
+	font-weight: 700;
+	cursor: help;
+}
+
+.dae-diagnostic-line {
+	background: rgba(220, 40, 40, .08);
+}
+
+.dae-editor-help {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin: 6px 0 10px;
+	font-size: .9em;
+	opacity: .8;
+}
