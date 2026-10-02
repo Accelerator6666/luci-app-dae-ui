@@ -627,6 +627,7 @@ v0.14.x 的架构与主要功能已经完成。
 
 详细版本记录请查看：
 
+- [RELEASE_NOTES_v0.14.2.md](RELEASE_NOTES_v0.14.2.md)
 - [RELEASE_NOTES_v0.14.0.md](RELEASE_NOTES_v0.14.0.md)
 - [CHANGELOG.md](CHANGELOG.md)
 
