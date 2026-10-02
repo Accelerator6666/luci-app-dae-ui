@@ -251,7 +251,9 @@ return view.extend({
 			renderNodeCards(data[0],runtimeData),
 			E('h3',{},_('Source configuration')),
 			managed.existingSections(data[0],['node','subscription']),
+			managed.taggedFieldEditor('nodes',data[1],_('Managed node field editor'),_('Node URI')),
 			managed.editor('nodes',data[1],_('Use one DAE node entry per line.'),nodeQuick),
+			managed.taggedFieldEditor('subscriptions',data[2],_('Managed subscription field editor'),_('Subscription URL')),
 			managed.editor('subscriptions',data[2],_('Use one tagged DAE subscription entry per line.'),subQuick)
 		]);
 	},
