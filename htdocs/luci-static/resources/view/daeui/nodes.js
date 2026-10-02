@@ -200,7 +200,7 @@ function renderNodeCards(all, runtimeData) {
 				n.name || n.protocol,
 				n.protocol + ' · ' + n.source,
 				E('div',{},[
-					E('code',{},n.value),
+					E('code',{},cards.redactedLink(n.value)),
 					rt ? E('div',{'class':'cbi-map-descr','style':'margin-top:6px'},nodeRuntimeMeta(rt)) : null
 				])
 			);
@@ -211,7 +211,7 @@ function renderNodeCards(all, runtimeData) {
 				s.name || _('Subscription'),
 				s.source,
 				E('div',{},[
-					E('code',{},s.value),
+					E('code',{},cards.redactedSubscription(s.value)),
 					subscriptionRuntimeNode(s.name,runtimeNodes)
 				])
 			);
