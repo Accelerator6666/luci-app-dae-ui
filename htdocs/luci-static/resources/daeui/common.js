@@ -49,6 +49,7 @@ var callNativeRoutingTrace = rpc.declare({
 var callVersionStatus = rpc.declare({ object: 'luci.daeui', method: 'version_status', expect: {} });
 var callVersionReleases = rpc.declare({ object: 'luci.daeui', method: 'version_releases', expect: {} });
 var callVersionDownload = rpc.declare({ object: 'luci.daeui', method: 'version_download', params: [ 'tag', 'asset' ], expect: {} });
+var callVersionImport = rpc.declare({ object: 'luci.daeui', method: 'version_import', params: [ 'label' ], expect: {} });
 var callVersionSwitch = rpc.declare({ object: 'luci.daeui', method: 'version_switch', params: [ 'slot' ], expect: {} });
 var callVersionDelete = rpc.declare({ object: 'luci.daeui', method: 'version_delete', params: [ 'slot' ], expect: {} });
 var callNativeProbeStart = rpc.declare({
@@ -155,6 +156,7 @@ return baseclass.extend({
 	callVersionStatus: callVersionStatus,
 	callVersionReleases: callVersionReleases,
 	callVersionDownload: callVersionDownload,
+	callVersionImport: callVersionImport,
 	callVersionSwitch: callVersionSwitch,
 	callVersionDelete: callVersionDelete,
 	callNativeProbeStart: callNativeProbeStart,
