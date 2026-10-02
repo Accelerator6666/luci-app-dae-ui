@@ -22,7 +22,7 @@ return view.extend({
 	},
 	render: function(data) {
 		var self = this, paused = false;
-		poll.add(function() { return paused ? Promise.resolve() : self.refresh(); }, 5);
+		poll.add(dae.visiblePoll(function() { return paused ? Promise.resolve() : self.refresh(); }), 5);
 		return E([], [
 			E('h2', {}, _('DAE Logs')),
 			E('div', { 'class': 'cbi-page-actions', 'style': 'display:flex;gap:8px;align-items:center;flex-wrap:wrap' }, [
