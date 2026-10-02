@@ -2760,3 +2760,140 @@ msgstr "无法将解压后的 dae 二进制标记为可执行"
 msgid "Custom dae archive extracted, smoke-tested, configuration-validated and installed into an immutable slot"
 msgstr "自定义 dae 压缩包已完成解压、冒烟测试和配置验证，并安装到不可变槽位"
 
+msgid "Clear recent errors"
+msgstr "清除最近错误"
+
+msgid "Copied error details to clipboard."
+msgstr "错误详情已复制到剪贴板。"
+
+msgid "Copied recent errors to clipboard."
+msgstr "最近错误已复制到剪贴板。"
+
+msgid "Copied staged content to clipboard."
+msgstr "暂存内容已复制到剪贴板。"
+
+msgid "Copy error"
+msgstr "复制错误"
+
+msgid "Copy recent errors"
+msgstr "复制最近错误"
+
+msgid "Copy staged content"
+msgstr "复制暂存内容"
+
+msgid "Current on-disk managed body"
+msgstr "当前磁盘上的托管内容"
+
+msgid "Edit field"
+msgstr "编辑字段"
+
+msgid "Edit fields"
+msgstr "编辑字段"
+
+msgid "Edit managed field: "
+msgstr "编辑托管字段："
+
+msgid "Edit managed group: "
+msgstr "编辑托管组："
+
+msgid "Field mode cannot add or remove filter lines; use the raw managed editor for that change."
+msgstr "字段模式不能新增或删除过滤条件行；此类更改请使用原始托管编辑器。"
+
+msgid "Field mode intentionally keeps the number of filter lines unchanged. Add or remove filters in the raw editor, then validate normally."
+msgstr "字段模式会刻意保持过滤条件行数不变。如需新增或删除过滤条件，请在原始编辑器中修改，然后按正常流程验证。"
+
+msgid "Field-level change staged; unrelated text was preserved."
+msgstr "字段级更改已暂存；无关文本保持不变。"
+
+msgid "Filters — one existing expression per line"
+msgstr "过滤条件——每行一个现有表达式"
+
+msgid "Group field changes staged; unrelated group text was preserved."
+msgstr "组字段更改已暂存；组内无关文本保持不变。"
+
+msgid "Group filters are treated as opaque DAE/honk expressions. Quoted apostrophes, regex syntax and filter text are preserved instead of being split or normalized."
+msgstr "组过滤条件按不透明的 DAE/honk 表达式处理。带引号的撇号、正则语法和过滤文本会原样保留，不会被拆分或规范化。"
+
+msgid "Managed file changed on disk"
+msgstr "磁盘上的托管文件已发生变化"
+
+msgid "Managed group field editor"
+msgstr "托管组字段编辑器"
+
+msgid "Managed node field editor"
+msgstr "托管节点字段编辑器"
+
+msgid "Managed subscription field editor"
+msgstr "托管订阅字段编辑器"
+
+msgid "No recent errors."
+msgstr "没有最近错误。"
+
+msgid "Node URI"
+msgstr "节点 URI"
+
+msgid "Only the latest 20 in-memory errors are kept. RPC arguments, secrets and request bodies are not recorded."
+msgstr "仅在内存中保留最近 20 条错误。不会记录 RPC 参数、密钥或请求正文。"
+
+msgid "Policy cannot be empty."
+msgstr "策略不能为空。"
+
+msgid "Recent error diagnostics"
+msgstr "最近错误诊断"
+
+msgid "Recent errors cleared."
+msgstr "最近错误已清除。"
+
+msgid "Recorded: "
+msgstr "已记录："
+
+msgid "Revision guard: "
+msgstr "修订保护："
+
+msgid "Stage field change"
+msgstr "暂存字段更改"
+
+msgid "Stage group changes"
+msgstr "暂存组更改"
+
+msgid "Subscription URL"
+msgstr "订阅 URL"
+
+msgid "The change is staged only. Preview diff, validation and optional hot reload still happen through the managed-section controls."
+msgstr "此更改仅会暂存。差异预览、验证以及可选的热重载仍通过托管区段控件执行。"
+
+msgid "The group changed while it was being edited. Reopen the editor and try again."
+msgstr "编辑期间该组已发生变化。请重新打开编辑器后再试。"
+
+msgid "The managed entry changed while it was being edited. Reopen the editor and try again."
+msgstr "编辑期间该托管条目已发生变化。请重新打开编辑器后再试。"
+
+msgid "The managed file changed after this page was loaded. Your staged changes were not written, so newer on-disk changes cannot be overwritten accidentally."
+msgstr "此页面加载后，托管文件已发生变化。你的暂存更改未写入，因此不会意外覆盖磁盘上的较新更改。"
+
+msgid "The managed value cannot be empty."
+msgstr "托管值不能为空。"
+
+msgid "These controls change only the selected quoted value in the staged managed body. Tags, comments, spacing and unrelated entries are preserved."
+msgstr "这些控件只修改暂存托管内容中选定的引号值。标签、注释、空格和无关条目都会保留。"
+
+msgid "This group cannot be edited safely with field controls. Use the raw managed editor."
+msgstr "无法使用字段控件安全编辑此组，请使用原始托管编辑器。"
+
+msgid "This managed entry is missing or duplicated. Use the raw managed editor to resolve it."
+msgstr "此托管条目缺失或存在重复，请使用原始托管编辑器处理。"
+
+msgid "Unable to copy error details."
+msgstr "无法复制错误详情。"
+
+msgid "Unable to copy staged content."
+msgstr "无法复制暂存内容。"
+
+msgid "Your staged body"
+msgstr "你的暂存内容"
+
+msgid "filter(s)"
+msgstr "个过滤条件"
+
+msgid "Managed file changed since this page was loaded; staged changes were not written"
+msgstr "托管文件在此页面加载后已发生变化；暂存更改未写入"
