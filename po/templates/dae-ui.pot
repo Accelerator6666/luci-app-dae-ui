@@ -2827,7 +2827,7 @@ msgstr ""
 msgid "Node URI"
 msgstr ""
 
-msgid "Only the latest 20 in-memory errors are kept. RPC arguments, secrets and request bodies are not recorded."
+msgid "Only the latest 20 sanitized errors are kept for this browser-tab session. RPC arguments, secrets and request bodies are not recorded."
 msgstr ""
 
 msgid "Policy cannot be empty."
