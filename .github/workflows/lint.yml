@@ -31,6 +31,38 @@ jobs:
             echo "OK $f"
           done
 
+      - name: Feature contract sanity
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          backend = Path('root/usr/share/rpcd/ucode/daeui.uc').read_text()
+          common = Path('htdocs/luci-static/resources/daeui/common.js').read_text()
+          acl = json.loads(Path('root/usr/share/rpcd/acl.d/luci-app-dae-ui.json').read_text())
+          menu = json.loads(Path('root/usr/share/luci/menu.d/luci-app-dae-ui.json').read_text())
+
+          write_methods = set(acl['luci-app-dae-ui']['write']['ubus']['luci.daeui'])
+          for method, symbol in [
+              ('version_import', 'callVersionImport'),
+              ('refresh_geodata_pins', 'callRefreshGeodataPins'),
+          ]:
+              assert f'{method}:' in backend, f'missing backend RPC {method}'
+              assert symbol in common, f'missing frontend RPC binding {symbol}'
+              assert method in write_methods, f'missing write ACL for {method}'
+
+          assert "return '/tmp/dae-ui-dae-upload.bin';" in backend, 'custom dae import must use the fixed upload path'
+          assert "version_import: {\n\t\t\targs: { label: 'string' }" in backend, 'version_import must not accept an arbitrary file path'
+          assert 'scripts/fetch-geo-data.sh' in backend
+          assert 'raw.githubusercontent.com/daeuniverse/dae/main/scripts/fetch-geo-data.sh' in backend
+
+          flow = menu.get('admin/services/dae-ui/flow-detail')
+          assert flow and flow.get('hidden') is True, 'flow detail route must remain hidden/capability-driven'
+          assert flow.get('action', {}).get('path') == 'daeui/flow-detail'
+
+          print('OK feature contracts')
+          PY
+
       - name: Ucode structural sanity
         run: |
           python3 - <<'PY'
