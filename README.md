@@ -141,6 +141,8 @@ They can be changed under **Services → DAE → Settings**.
 
 ## Planned v0.14
 
+- Context-aware CodeMirror completion for DAE sections, routing matchers, group policies and configured outbound groups, plus inline validation diagnostics in the editor gutter.
+- A Native generation-consistency panel that compares generation IDs reported by config, traffic-rule and DNS-rule dictionaries without inventing desired/active state the backend does not expose.
 - Optional local-binary import for custom dae builds, using the same smoke-test / config-validation / immutable-slot safety model.
 - A dedicated Flow detail page URL so deep links survive modal close/reload and can be shared within the LuCI session.
 - GeoData pin refresh automation tied to dae upstream changes.

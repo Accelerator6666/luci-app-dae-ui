@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Added contextual DAE completion to the local CodeMirror editor. `Ctrl+Space` suggests section-aware global, group, DNS and routing syntax and can complete configured proxy-group names after routing arrows/fallbacks.
+- Added inline validation diagnostics in the configuration editor gutter and automatic navigation to the first validation error in the active file while retaining the existing full diagnostics modal.
+- Added a read-only Native generation-consistency panel on Runtime. It compares generation IDs reported by available config, traffic-rule and DNS-rule dictionaries and explicitly avoids inferring desired-vs-active state when the backend does not report it.
+- DaedNext is now documented as a product-UX and RoutingA language-tooling reference; its application code and runtime are not bundled.
+
 ## 0.13.0 - 2026-09-29
 
 - Added a persistent DAE Version Manager page for installing and selecting multiple dae binaries without changing `.dae` configuration files.
