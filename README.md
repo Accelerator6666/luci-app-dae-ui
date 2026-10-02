@@ -42,6 +42,26 @@ The UI is designed around three rules:
 - Diagnostics, logs, backups and restore workflows
 - Security boundaries around Native API tokens and file access
 
+## Screenshots
+
+Real-router screenshots will be added after the v0.14.1 OpenWrt validation pass. The README intentionally does not use generated mockups as production screenshots.
+
+Planned captures:
+
+- Simplified Chinese **Overview**
+- Simplified Chinese **Runtime** with populated traffic charts
+- Simplified Chinese **DAE Version Manager**
+- Simplified Chinese **Configuration Files** editor
+
+See [docs/screenshots/README.md](docs/screenshots/README.md) for the capture and redaction checklist.
+
+<!--
+![Overview](docs/screenshots/overview-zh-cn.png)
+![Runtime](docs/screenshots/runtime-zh-cn.png)
+![DAE Version Manager](docs/screenshots/versions-zh-cn.png)
+![Configuration Editor](docs/screenshots/configuration-zh-cn.png)
+-->
+
 ## Interface
 
 The application appears under:
