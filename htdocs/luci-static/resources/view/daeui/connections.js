@@ -7,6 +7,10 @@
 'require daeui.native as native';
 'require daeui.flowtrace as flowtrace';
 
+function flowPageUrl(id) {
+	return L.url('admin/services/dae-ui/flow-detail')+'?id='+encodeURIComponent(String(id||''));
+}
+
 function flatten(data) {
 	var out = [];
 	[ ['tcp', data && data.tcp], ['udp', data && data.udp] ].forEach(function(pair) {
@@ -50,10 +54,17 @@ function buildGrid(rows, canOpenFlow, flowHandler) {
 			{ key:'down', title:_('Download'), numeric:true, value:function(c){ return Number(c.download_bytes_per_second || 0); }, render:function(c){ return native.humanRate(c.download_bytes_per_second); } },
 			{ key:'trace', title:_('Flow trace'), sortable:false, value:function(){return '';}, render:function(c) {
 				if(!canOpenFlow || !c.flow_id) return '-';
-				return E('button',{
-					'class':'btn cbi-button cbi-button-action',
-					'click':function(){return flowHandler(c);}
-				},_('Timeline'));
+				return E('span',{},[
+					E('button',{
+						'class':'btn cbi-button cbi-button-action',
+						'click':function(){return flowHandler(c);}
+					},_('Timeline')),
+					' ',
+					E('a',{
+						'class':'btn cbi-button',
+						'href':flowPageUrl(c.flow_id)
+					},_('Open page'))
+				]);
 			} }
 		]
 	});
@@ -135,7 +146,11 @@ return view.extend({
 						E('pre',{'style':'white-space:pre-wrap;max-height:420px;overflow:auto'},JSON.stringify(data,null,2))
 					])
 				]),
-				E('div',{'class':'right','style':'margin-top:12px'},E('button',{'class':'btn','click':ui.hideModal},_('Close')))
+				E('div',{'class':'right','style':'margin-top:12px'},[
+					E('button',{'class':'btn','click':ui.hideModal},_('Close')),
+					' ',
+					E('a',{'class':'btn cbi-button cbi-button-action','href':flowPageUrl(data.id||connection.flow_id)},_('Open detail page'))
+				])
 			]);
 		});
 	},
