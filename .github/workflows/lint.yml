@@ -156,6 +156,8 @@ jobs:
 
           assert 'Recent error diagnostics' in settings
           assert 'RPC arguments, secrets and request bodies are not recorded.' in settings
+          assert 'window.sessionStorage' in common
+          assert 'sanitizeErrorText' in common
 
           print('OK v0.14.3 stability/editor contracts')
           PY
