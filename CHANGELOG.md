@@ -8,7 +8,7 @@
 - Added field-level staged editors for tagged managed nodes and subscriptions; only the selected quoted URI value is replaced while tags, comments, spacing and unrelated entries remain unchanged.
 - Added field-level staged editing for managed group policy/filter values. Filter expressions are not tokenized or normalized, and field mode deliberately refuses filter-count changes so complex edits remain in the raw validated editor.
 - Added optimistic SHA256 revision guards to managed-section saves. If the managed file changes after the page loads, the backend refuses the stale write and returns the current body instead of overwriting newer changes.
-- Added Copy Error controls plus an in-memory Recent Error Diagnostics panel. Only the latest 20 sanitized records are retained; RPC arguments, secrets and request bodies are never stored.
+- Added Copy Error controls plus session-scoped Recent Error Diagnostics. Only the latest 20 sanitized records are retained for the current browser-tab session; RPC arguments, authentication tokens, secrets and request bodies are never stored.
 - Extended Simplified Chinese coverage and CI contract checks for the new polling, parser, conflict-protection and diagnostics behavior.
 
 ## 0.14.2 - 2026-10-02
