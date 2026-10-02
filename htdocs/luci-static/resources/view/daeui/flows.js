@@ -6,6 +6,10 @@
 'require daeui.native as native';
 'require daeui.flowtrace as flowtrace';
 
+function flowPageUrl(id) {
+	return L.url('admin/services/dae-ui/flow-detail')+'?id='+encodeURIComponent(String(id||''));
+}
+
 function network(f) {
 	return f.network || (f.input && f.input.network) || f.transport || '-';
 }
@@ -56,10 +60,18 @@ function buildGrid(rows, canResolveRule, resolver, detailHandler) {
 			{ key:'connection', title:_('Connection'), value:function(f){ return native.text(f.connection_id, ''); } },
 			{ key:'time', title:_('Time'), value:function(f){ return f.started_at || f.observed_at || ''; }, render:function(f){ return native.time(f.started_at || f.observed_at); } },
 			{ key:'trace', title:_('Trace'), sortable:false, value:function(){return '';}, render:function(f) {
-				return E('button',{
-					'class':'btn cbi-button cbi-button-action',
-					'click':function(){return detailHandler(f);}
-				},_('Timeline'));
+				if(!f.id) return '-';
+				return E('span',{},[
+					E('button',{
+						'class':'btn cbi-button cbi-button-action',
+						'click':function(){return detailHandler(f);}
+					},_('Timeline')),
+					' ',
+					E('a',{
+						'class':'btn cbi-button',
+						'href':flowPageUrl(f.id)
+					},_('Open page'))
+				]);
 			} }
 		]
 	});
@@ -142,7 +154,9 @@ return view.extend({
 			ui.showModal(_('Flow trace · ')+native.text(detail.id),[
 				body,
 				E('div',{'class':'right','style':'margin-top:12px'},[
-					E('button',{'class':'btn','click':ui.hideModal},_('Close'))
+					E('button',{'class':'btn','click':ui.hideModal},_('Close')),
+					' ',
+					E('a',{'class':'btn cbi-button cbi-button-action','href':flowPageUrl(detail.id)},_('Open detail page'))
 				])
 			]);
 		});
