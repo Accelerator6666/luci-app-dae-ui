@@ -12,6 +12,8 @@
 - Source node/subscription cards can correlate exact tags with the current Native node inventory, expose backend latency observations and expand subscription runtime members when a safe exact provider/subscription tag match exists.
 - Policy Groups now includes a visual staged group builder with exact source node tags, optional subscription tags, valid fixed(0)/min/min_moving_avg/min_avg10/random policy syntax and the existing diff-preview safety gate.
 - Policy cards can correlate exact group names to Native runtime group snapshots and display current TCP/UDP selections and member counts read-only.
+- Added a dedicated hidden retained-flow detail route (`flow-detail?id=...`) so flow traces can be reopened or shared within the LuCI session without depending on an open modal.
+- Native Flows and Native Connections now expose Open page links for backend-provided flow IDs while retaining the existing Timeline modal; the detail page uses the same generation-safe traffic/DNS rule association logic.
 
 ## 0.13.0 - 2026-09-29
 
