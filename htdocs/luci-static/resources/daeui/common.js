@@ -125,17 +125,46 @@ function localizeBackendResult(res) {
 	return res;
 }
 
-var errorHistory = [];
+var errorStorageKey = 'luci-dae-ui-error-history-v1';
+
+function sanitizeErrorText(value) {
+	var text = localizeBackendText(String(value || ''));
+	text = text.replace(/\bBearer\s+[A-Za-z0-9._~+\/=:-]+/gi, 'Bearer [redacted]');
+	text = text.replace(/([A-Za-z][A-Za-z0-9+.-]*:\/\/)[^@\s/]+@/g, '$1[redacted]@');
+	if (text.length > 1000) text = text.slice(0, 1000) + '…';
+	return text;
+}
+
+function loadErrorHistory() {
+	try {
+		if (typeof window === 'undefined' || !window.sessionStorage) return [];
+		var parsed = JSON.parse(window.sessionStorage.getItem(errorStorageKey) || '[]');
+		return Array.isArray(parsed) ? parsed.slice(-20) : [];
+	} catch (e) {
+		return [];
+	}
+}
+
+function persistErrorHistory() {
+	try {
+		if (typeof window !== 'undefined' && window.sessionStorage)
+			window.sessionStorage.setItem(errorStorageKey, JSON.stringify(errorHistory.slice(-20)));
+	} catch (e) {
+		/* Session storage may be unavailable; keep the in-memory copy. */
+	}
+}
+
+var errorHistory = loadErrorHistory();
 
 function rememberError(record) {
 	record = record || {};
 	var entry = {
 		time: new Date().toISOString(),
-		operation: String(record.operation || 'unknown'),
+		operation: String(record.operation || 'unknown').slice(0, 120),
 		status: Number(record.status || 0),
-		request_id: String(record.request_id || record.requestId || ''),
-		error: localizeBackendText(record.error || ''),
-		message: localizeBackendText(record.message || '')
+		request_id: String(record.request_id || record.requestId || '').slice(0, 160),
+		error: sanitizeErrorText(record.error || ''),
+		message: sanitizeErrorText(record.message || '')
 	};
 	var previous = errorHistory.length ? errorHistory[errorHistory.length - 1] : null;
 	if (previous && previous.operation === entry.operation && previous.status === entry.status &&
@@ -143,6 +172,7 @@ function rememberError(record) {
 		return previous;
 	errorHistory.push(entry);
 	if (errorHistory.length > 20) errorHistory.splice(0, errorHistory.length - 20);
+	persistErrorHistory();
 	return entry;
 }
 
@@ -205,7 +235,7 @@ function notify(msg, type) {
 	if (type === 'error') {
 		var latest = errorHistory.length ? errorHistory[errorHistory.length - 1] : null;
 		if (!latest || (latest.error !== text && latest.message !== text))
-			latest = rememberError({ operation:'notification', error:text });
+			latest = rememberError({ operation:'notification', error:String(text || '').split('\n')[0] });
 		ui.addNotification(null, E('div', {}, [
 			E('p', {}, text),
 			E('button', {
@@ -238,6 +268,7 @@ function recentErrors() {
 
 function clearRecentErrors() {
 	errorHistory.splice(0, errorHistory.length);
+	persistErrorHistory();
 }
 
 function copyRecentErrors() {
@@ -337,5 +368,6 @@ return baseclass.extend({
 	clearRecentErrors: clearRecentErrors,
 	copyRecentErrors: copyRecentErrors,
 	copyText: copyText,
-	errorText: errorText
+	errorText: errorText,
+	sanitizeErrorText: sanitizeErrorText
 });
