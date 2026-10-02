@@ -410,12 +410,12 @@ return view.extend({
 		this.prev = initial;
 		this.trafficHistory = [];
 
-		poll.add(L.bind(function() {
+		poll.add(dae.visiblePoll(L.bind(function() {
 			return dae.callRuntimeStats().then(this.updateRuntime.bind(this));
-		}, this), 2);
-		poll.add(L.bind(function() {
+		}, this)), 2);
+		poll.add(dae.visiblePoll(L.bind(function() {
 			return dae.callGetLog(250).then(this.updateLogHealth.bind(this));
-		}, this), 15);
+		}, this)), 15);
 
 		var connections = capState(native, 'connections');
 		var probes = capState(native, 'probes');
