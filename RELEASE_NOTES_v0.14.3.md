@@ -19,7 +19,7 @@ Managed saves carry the SHA256 revision observed when the page loaded. If the on
 
 Group filters are treated as opaque DAE/honk expressions. Field mode does not reinterpret regexes or quoted values and refuses to add/remove filter lines; structural changes remain available in the raw managed editor and still pass through full dae validation.
 
-Recent error history is kept only in the current browser page memory. RPC arguments, authentication tokens, secrets and request bodies are not recorded.
+Recent error history is kept only in session-scoped browser storage for the current tab so it survives LuCI page navigation but disappears with the tab session. RPC arguments, authentication tokens, secrets and request bodies are not recorded.
 
 ## Validation focus
 
