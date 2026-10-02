@@ -149,11 +149,11 @@ Implemented on main:
 - Source node and subscription cards can correlate exact tags with Native runtime latency/inventory data without rewriting source configuration.
 - Policy Groups now has a visual staged builder for exact node tags, subscription tags and supported policy syntax, while retaining Preview diff before writes.
 - Native runtime policy cards can display current TCP/UDP selection snapshots for exact group-name matches.
+- Retained flow traces now have a dedicated hidden detail route keyed by backend flow ID, with generation-safe rule links and direct Open page links from Flows and Connections.
 
 Still planned:
 
 - Optional local-binary import for custom dae builds, using the same smoke-test / config-validation / immutable-slot safety model.
-- A dedicated Flow detail page URL so deep links survive modal close/reload and can be shared within the LuCI session.
 - GeoData pin refresh automation tied to dae upstream changes.
 - More protocol-aware structured node/subscription forms while preserving raw DAE syntax.
 
