@@ -6,7 +6,7 @@ A modern, safety-oriented LuCI control plane for **dae** on OpenWrt.
 
 `luci-app-dae-ui` combines day-to-day dae configuration management, runtime observability, Native API integration, diagnostics, GeoData maintenance, and reboot-safe multi-version binary management in one LuCI application.
 
-> **Current version:** v0.14.1  
+> **Current version:** v0.14.2  
 > **Current status:** feature-complete for the v0.14.x scope; real-router validation is the remaining release gate.
 
 ## Why this project exists
@@ -44,7 +44,7 @@ The UI is designed around three rules:
 
 ## Screenshots
 
-Real-router screenshots will be added after the v0.14.1 OpenWrt validation pass. The README intentionally does not use generated mockups as production screenshots.
+Real-router screenshots will be added after the v0.14.2 OpenWrt validation pass. The README intentionally does not use generated mockups as production screenshots.
 
 Planned captures:
 
@@ -380,21 +380,33 @@ Before a release is installed, the backend:
 
 Downloading a release never activates it automatically.
 
-### Custom binaries
+### Local binary and archive import
 
-A trusted local dae executable may be imported.
+A trusted local dae executable can be imported directly from the browser. v0.14.2 also accepts official or custom archives, so users do not need to extract dae on another machine first.
 
-The backend:
+Supported inputs:
 
-- accepts only the fixed upload path;
-- rejects symlinks and non-regular files;
-- enforces a 1 KiB–128 MiB size range;
-- calculates SHA256;
-- smoke-tests the binary;
+- raw dae executable
+- `.zip`
+- `.tar.gz`
+- `.tgz`
+
+The Version Manager provides a drag-and-drop upload area as well as click-to-select behavior.
+
+For archive uploads, the backend:
+
+- keeps the upload destination fixed at `/tmp/dae-ui-dae-upload.bin`;
+- accepts only metadata such as the original filename through rpcd, never an arbitrary server-side path;
+- rejects unsafe archive member paths and archives with excessive entries;
+- requires exactly one `dae` or `dae-*` payload;
+- streams only that payload into a private temporary file instead of extracting the archive tree;
+- limits the extracted payload to 128 MiB;
+- calculates both archive SHA256 and binary SHA256;
+- smoke-tests the extracted binary;
 - validates the active service configuration;
-- stores it in an immutable SHA256-addressed slot.
+- stores the binary in an immutable SHA256-addressed slot.
 
-Importing does not activate the binary automatically.
+Manual uploads remain trust-based: the plugin does not claim that an offline archive is an official release merely because its filename looks official. Importing never activates the binary automatically.
 
 ### Reboot safety
 
@@ -559,7 +571,7 @@ The remaining release work is router-side validation, especially:
 - selected version persistence after reboot
 - Simplified Chinese rendering on a Chinese LuCI installation
 
-See [RELEASE_NOTES_v0.14.0.md](RELEASE_NOTES_v0.14.0.md) and [CHANGELOG.md](CHANGELOG.md) for detailed release history.
+See [RELEASE_NOTES_v0.14.2.md](RELEASE_NOTES_v0.14.2.md), [RELEASE_NOTES_v0.14.0.md](RELEASE_NOTES_v0.14.0.md) and [CHANGELOG.md](CHANGELOG.md) for detailed release history.
 
 ## Inspiration
 

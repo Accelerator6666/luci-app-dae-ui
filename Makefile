@@ -2,7 +2,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-dae-ui
-PKG_VERSION:=0.14.1
+PKG_VERSION:=0.14.2
 PKG_RELEASE:=1
 PKG_LICENSE:=GPL-3.0-only
 PKG_BUILD_DEPENDS:=luci-base/host

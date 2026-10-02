@@ -1472,43 +1472,175 @@ function vm_upload_path() {
 	return '/tmp/dae-ui-dae-upload.bin';
 }
 
-function vm_import_uploaded(s, label) {
+function vm_uploaded_kind(filename) {
+	let name = filename || '';
+	if (match(name, /\.zip$/i))
+		return 'zip';
+	if (match(name, /\.(tar\.gz|tgz)$/i))
+		return 'tar.gz';
+	if (match(name, /\.(tar\.xz|txz|tar\.zst|tzst|7z|rar)$/i))
+		return 'unsupported-archive';
+	return 'binary';
+}
+
+function vm_safe_archive_member(member) {
+	if (!member || match(member, /^\//) || match(member, /(^|\/)\.\.(\/|$)/))
+		return false;
+	return true;
+}
+
+function vm_archive_payload(listing) {
+	let candidate = '';
+	let count = 0;
+	for (let idx, raw in split(listing || '', '\n')) {
+		let member = trim(raw || '');
+		if (!member)
+			continue;
+
+		count++;
+		if (count > 500)
+			return { ok: false, error: 'Uploaded archive contains too many entries' };
+
+		if (!vm_safe_archive_member(member))
+			return { ok: false, error: 'Uploaded archive contains an unsafe path' };
+
+		if (match(member, /\/$/))
+			continue;
+
+		let parts = split(member, '/');
+		let base = length(parts) ? parts[length(parts) - 1] : '';
+		if (base != 'dae' && !match(base, /^dae-[A-Za-z0-9._+-]+$/))
+			continue;
+
+		if (candidate && candidate != member)
+			return { ok: false, error: 'Uploaded archive must contain exactly one dae executable' };
+
+		candidate = member;
+	}
+
+	if (!candidate)
+		return { ok: false, error: 'Uploaded archive must contain exactly one dae executable' };
+
+	return { ok: true, member: candidate };
+}
+
+function vm_prepare_uploaded(source, filename) {
+	let kind = vm_uploaded_kind(filename);
+	if (kind == 'unsupported-archive')
+		return { ok: false, error: 'Unsupported archive format; use a raw dae executable, .zip, .tar.gz or .tgz' };
+	if (kind == 'binary')
+		return { ok: true, path: source, kind: kind, archive_sha256: '', temp_dir: '' };
+
+	let archive_sha = trim(run("sha256sum " + shell_quote(source) + " | awk '{print $1}'").output);
+	if (!match(archive_sha, /^[A-Fa-f0-9]{64}$/))
+		return { ok: false, error: 'Unable to calculate uploaded archive SHA256' };
+
+	let tmp = '/tmp/dae-ui-upload-extract-' + pid() + '-' + stamp();
+	let prep = run('mkdir -m 700 -p ' + shell_quote(tmp));
+	if (prep.rc != 0)
+		return { ok: false, error: 'Unable to prepare archive extraction workspace', output: prep.output };
+
+	let list;
+	if (kind == 'zip')
+		list = run('unzip -Z1 ' + shell_quote(source) + ' 2>/dev/null | head -501');
+	else
+		list = run('tar -tzf ' + shell_quote(source) + ' 2>/dev/null | head -501');
+
+	let payload = vm_archive_payload(list.output);
+	if (!payload.ok) {
+		run('rm -rf ' + shell_quote(tmp));
+		return payload;
+	}
+
+	let candidate = tmp + '/dae';
+	let extract;
+	if (kind == 'zip')
+		extract = run('(ulimit -f 262144; unzip -p ' + shell_quote(source) + ' ' + shell_quote(payload.member) + ' > ' + shell_quote(candidate) + ')');
+	else
+		extract = run('(ulimit -f 262144; tar -xOzf ' + shell_quote(source) + ' ' + shell_quote(payload.member) + ' > ' + shell_quote(candidate) + ')');
+
+	if (extract.rc != 0) {
+		run('rm -rf ' + shell_quote(tmp));
+		return { ok: false, error: 'Unable to extract dae executable from uploaded archive', output: extract.output };
+	}
+
+	let st = stat(candidate);
+	let size = st ? +(st.size || 0) : 0;
+	if (size < 1024 || size > 134217728) {
+		run('rm -rf ' + shell_quote(tmp));
+		return { ok: false, error: 'Extracted dae binary size is outside the accepted 1 KiB to 128 MiB range', size: size };
+	}
+
+	let chmod = run('chmod 755 ' + shell_quote(candidate));
+	if (chmod.rc != 0) {
+		run('rm -rf ' + shell_quote(tmp));
+		return { ok: false, error: 'Unable to mark extracted dae binary executable', output: chmod.output };
+	}
+
+	return {
+		ok: true,
+		path: candidate,
+		kind: kind,
+		member: payload.member,
+		archive_sha256: archive_sha,
+		temp_dir: tmp
+	};
+}
+
+function vm_import_uploaded(s, label, filename) {
 	let source = vm_upload_path();
-	let cleanup = function() { run('rm -f ' + shell_quote(source)); };
+	let temp_dir = '';
+	let cleanup = function() {
+		run('rm -f ' + shell_quote(source));
+		if (temp_dir)
+			run('rm -rf ' + shell_quote(temp_dir));
+	};
 
 	let safe_file = run('test -f ' + shell_quote(source) + ' && test ! -L ' + shell_quote(source));
 	if (safe_file.rc != 0) {
 		cleanup();
-		return { ok: false, error: 'Uploaded dae binary is missing or is not a regular file' };
+		return { ok: false, error: 'Uploaded dae file is missing or is not a regular file' };
 	}
 
-	let st = stat(source);
-	let size = st ? +(st.size || 0) : 0;
-	if (size < 1024 || size > 134217728) {
+	let upload_stat = stat(source);
+	let upload_size = upload_stat ? +(upload_stat.size || 0) : 0;
+	if (upload_size < 1024 || upload_size > 134217728) {
 		cleanup();
-		return { ok: false, error: 'Uploaded dae binary size is outside the accepted 1 KiB to 128 MiB range', size: size };
+		return { ok: false, error: 'Uploaded dae file size is outside the accepted 1 KiB to 128 MiB range', size: upload_size };
 	}
 
-	let chmod = run('chmod 755 ' + shell_quote(source));
-	if (chmod.rc != 0) {
+	let prepared = vm_prepare_uploaded(source, filename || '');
+	if (!prepared.ok) {
 		cleanup();
-		return { ok: false, error: 'Unable to mark uploaded dae binary executable', output: chmod.output };
+		return prepared;
+	}
+	temp_dir = prepared.temp_dir || '';
+
+	let candidate = prepared.path;
+	if (prepared.kind == 'binary') {
+		let chmod = run('chmod 755 ' + shell_quote(candidate));
+		if (chmod.rc != 0) {
+			cleanup();
+			return { ok: false, error: 'Unable to mark uploaded dae binary executable', output: chmod.output };
+		}
+	} else {
+		run('rm -f ' + shell_quote(source));
 	}
 
-	let actual = trim(run("sha256sum " + shell_quote(source) + " | awk '{print $1}'").output);
+	let actual = trim(run("sha256sum " + shell_quote(candidate) + " | awk '{print $1}'").output);
 	if (!match(actual, /^[A-Fa-f0-9]{64}$/)) {
 		cleanup();
 		return { ok: false, error: 'Unable to calculate uploaded dae SHA256' };
 	}
 
-	let smoke = vm_candidate_version(source);
+	let smoke = vm_candidate_version(candidate);
 	if (!smoke.ok) {
 		cleanup();
 		return { ok: false, error: 'Uploaded file failed the dae execution smoke test', output: smoke.output };
 	}
 
 	let cfg = vm_service_config(s);
-	let val = validate(source, cfg);
+	let val = validate(candidate, cfg);
 	if (val.rc != 0) {
 		cleanup();
 		return {
@@ -1543,6 +1675,8 @@ function vm_import_uploaded(s, label) {
 				path: target,
 				version: smoke.version,
 				sha256: actual,
+				archive_sha256: prepared.archive_sha256 || '',
+				archive_type: prepared.kind != 'binary' ? prepared.kind : '',
 				config_file: cfg,
 				message: 'This exact custom dae binary is already installed'
 			};
@@ -1556,17 +1690,27 @@ function vm_import_uploaded(s, label) {
 		return { ok: false, error: 'Unable to create custom version slot', output: prep.output };
 	}
 
-	let mv = run('mv ' + shell_quote(source) + ' ' + shell_quote(target) + ' && chmod 755 ' + shell_quote(target));
+	let mv = run('mv ' + shell_quote(candidate) + ' ' + shell_quote(target) + ' && chmod 755 ' + shell_quote(target));
 	if (mv.rc != 0) {
 		cleanup();
 		run('rmdir ' + shell_quote(dir) + ' 2>/dev/null');
 		return { ok: false, error: 'Unable to install uploaded dae binary', output: mv.output };
 	}
 
+	let clean_filename = replace(trim(filename || ''), /[^A-Za-z0-9._+-]/g, '_');
+	if (length(clean_filename) > 96) clean_filename = substr(clean_filename, 0, 96);
+
 	writefile(dir + '/source.txt',
-		'type=custom-upload\nlabel=' + clean_label + '\nsha256=' + actual + '\nversion=' + smoke.version + '\n'
+		'type=' + (prepared.kind == 'binary' ? 'custom-upload' : 'custom-upload-archive') + '\n' +
+		'label=' + clean_label + '\n' +
+		'filename=' + clean_filename + '\n' +
+		'archive_type=' + (prepared.kind == 'binary' ? '' : prepared.kind) + '\n' +
+		'archive_sha256=' + (prepared.archive_sha256 || '') + '\n' +
+		'sha256=' + actual + '\n' +
+		'version=' + smoke.version + '\n'
 	);
 	run('chmod 600 ' + shell_quote(dir + '/source.txt'));
+	cleanup();
 
 	return {
 		ok: true,
@@ -1574,8 +1718,13 @@ function vm_import_uploaded(s, label) {
 		path: target,
 		version: smoke.version,
 		sha256: actual,
+		archive_sha256: prepared.archive_sha256 || '',
+		archive_type: prepared.kind != 'binary' ? prepared.kind : '',
+		archive_member: prepared.member || '',
 		config_file: cfg,
-		message: 'Custom dae binary smoke-tested, configuration-validated and installed into an immutable slot'
+		message: prepared.kind == 'binary'
+			? 'Custom dae binary smoke-tested, configuration-validated and installed into an immutable slot'
+			: 'Custom dae archive extracted, smoke-tested, configuration-validated and installed into an immutable slot'
 	};
 }
 
@@ -2324,9 +2473,9 @@ return {
 		},
 
 		version_import: {
-			args: { label: 'string' },
+			args: { label: 'string', filename: 'string' },
 			call: function(req) {
-				return vm_import_uploaded(settings(), req.args.label || '');
+				return vm_import_uploaded(settings(), req.args.label || '', req.args.filename || '');
 			}
 		},
 

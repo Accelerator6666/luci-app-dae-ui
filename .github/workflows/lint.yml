@@ -103,7 +103,11 @@ jobs:
               assert method in write_methods, f'missing write ACL for {method}'
 
           assert "return '/tmp/dae-ui-dae-upload.bin';" in backend, 'custom dae import must use the fixed upload path'
-          assert "version_import: {\n\t\t\targs: { label: 'string' }" in backend, 'version_import must not accept an arbitrary file path'
+          assert "version_import: {\n\t\t\targs: { label: 'string', filename: 'string' }" in backend, 'version_import must accept metadata only, never an arbitrary file path'
+          assert "return '/tmp/dae-ui-dae-upload.bin';" in backend, 'archive import must keep the fixed upload path'
+          assert "Unsupported archive format; use a raw dae executable, .zip, .tar.gz or .tgz" in backend
+          assert "ulimit -f 262144" in backend, 'archive extraction must be size-bounded'
+          assert "Uploaded archive contains an unsafe path" in backend, 'archive path traversal guard missing'
           assert 'scripts/fetch-geo-data.sh' in backend
           assert 'raw.githubusercontent.com/daeuniverse/dae/main/scripts/fetch-geo-data.sh' in backend
 
