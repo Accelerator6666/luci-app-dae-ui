@@ -98,6 +98,132 @@ function resourceButton(title, path, available) {
 	}, title);
 }
 
+function trafficPanel(title, id, note) {
+	return E('div', {
+		'class':'cbi-section',
+		'style':'display:inline-block;vertical-align:top;width:min(760px,100%);margin:0 10px 10px 0;padding:12px'
+	}, [
+		E('h4', { 'style':'margin:0 0 4px' }, title),
+		E('div', { 'class':'cbi-map-descr', 'id':id + '-summary' }, _('Waiting for samples…')),
+		E('canvas', {
+			'id':id + '-canvas',
+			'width':'720',
+			'height':'170',
+			'style':'display:block;width:100%;height:170px;margin-top:8px'
+		}),
+		E('div', { 'class':'cbi-map-descr', 'style':'display:flex;gap:14px;flex-wrap:wrap;margin-top:6px' }, [
+			E('span', {}, [ E('strong', {}, 'RX'), ' · ', _('download direction on dae0') ]),
+			E('span', {}, [ E('strong', {}, 'TX'), ' · ', _('upload direction on dae0') ]),
+			note ? E('span', {}, note) : null
+		])
+	]);
+}
+
+function trafficWindow(history, horizon, now) {
+	var cutoff = Number(now || 0) - Number(horizon || 0);
+	return (history || []).filter(function(sample) {
+		return Number(sample.ts || 0) >= cutoff;
+	});
+}
+
+function trafficStats(samples) {
+	if (!samples.length) return { rxAvg:0, txAvg:0, rxPeak:0, txPeak:0, rxNow:0, txNow:0 };
+	var rx=0, tx=0, rxPeak=0, txPeak=0;
+	samples.forEach(function(sample) {
+		var r=Number(sample.rx || 0), t=Number(sample.tx || 0);
+		rx += r; tx += t;
+		if (r > rxPeak) rxPeak = r;
+		if (t > txPeak) txPeak = t;
+	});
+	var last=samples[samples.length-1] || {};
+	return {
+		rxAvg:rx/samples.length,
+		txAvg:tx/samples.length,
+		rxPeak:rxPeak,
+		txPeak:txPeak,
+		rxNow:Number(last.rx || 0),
+		txNow:Number(last.tx || 0)
+	};
+}
+
+function drawTraffic(id, history, horizon, now) {
+	var canvas=document.getElementById(id + '-canvas');
+	var summary=document.getElementById(id + '-summary');
+	if (!canvas || !summary) return;
+
+	var samples=trafficWindow(history,horizon,now);
+	if (!samples.length) {
+		summary.textContent=_('Waiting for samples…');
+		return;
+	}
+
+	var stats=trafficStats(samples);
+	summary.textContent=
+		_('Now RX ') + humanRate(stats.rxNow) + ' · ' + _('TX ') + humanRate(stats.txNow) +
+		' · ' + _('Avg RX ') + humanRate(stats.rxAvg) + ' · ' + _('TX ') + humanRate(stats.txAvg) +
+		' · ' + _('Peak RX ') + humanRate(stats.rxPeak) + ' · ' + _('TX ') + humanRate(stats.txPeak);
+
+	var rect=canvas.getBoundingClientRect();
+	var cssWidth=Math.max(320,Math.floor(rect.width || 720));
+	var cssHeight=170;
+	var ratio=Math.max(1,Math.min(2,window.devicePixelRatio || 1));
+	if (canvas.width !== Math.floor(cssWidth*ratio) || canvas.height !== Math.floor(cssHeight*ratio)) {
+		canvas.width=Math.floor(cssWidth*ratio);
+		canvas.height=Math.floor(cssHeight*ratio);
+	}
+	var ctx=canvas.getContext('2d');
+	if (!ctx) return;
+	ctx.setTransform(ratio,0,0,ratio,0,0);
+	ctx.clearRect(0,0,cssWidth,cssHeight);
+
+	var styles=window.getComputedStyle(document.documentElement);
+	var grid=styles.getPropertyValue('--border-color-medium') || 'rgba(127,127,127,.22)';
+	var rxColor=styles.getPropertyValue('--primary-color-medium') || styles.getPropertyValue('--primary-color') || '#2563eb';
+	var txColor=styles.getPropertyValue('--warning-color-medium') || '#d97706';
+	var textColor=styles.getPropertyValue('--text-color-medium') || styles.getPropertyValue('--text-color') || '#666';
+	var pad={ left:58, right:10, top:10, bottom:24 };
+	var w=cssWidth-pad.left-pad.right;
+	var h=cssHeight-pad.top-pad.bottom;
+	var max=1;
+	samples.forEach(function(sample) {
+		max=Math.max(max,Number(sample.rx||0),Number(sample.tx||0));
+	});
+
+	ctx.strokeStyle=grid.trim() || 'rgba(127,127,127,.22)';
+	ctx.lineWidth=1;
+	for (var g=0; g<=4; g++) {
+		var gy=pad.top+h*g/4;
+		ctx.beginPath();
+		ctx.moveTo(pad.left,gy);
+		ctx.lineTo(pad.left+w,gy);
+		ctx.stroke();
+	}
+
+	ctx.fillStyle=textColor.trim() || '#666';
+	ctx.font='11px sans-serif';
+	ctx.textAlign='right';
+	ctx.fillText(humanRate(max),pad.left-6,pad.top+4);
+	ctx.fillText('0 B/s',pad.left-6,pad.top+h+4);
+	ctx.textAlign='left';
+	ctx.fillText('-'+horizon+'s',pad.left,pad.top+h+18);
+	ctx.textAlign='right';
+	ctx.fillText(_('now'),pad.left+w,pad.top+h+18);
+
+	function line(key,color) {
+		ctx.strokeStyle=color.trim() || color;
+		ctx.lineWidth=2;
+		ctx.beginPath();
+		samples.forEach(function(sample,index) {
+			var age=Math.max(0,Number(now||0)-Number(sample.ts||0));
+			var x=pad.left+w*(1-Math.min(horizon,age)/horizon);
+			var y=pad.top+h*(1-Math.min(max,Number(sample[key]||0))/max);
+			if(index===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+		});
+		ctx.stroke();
+	}
+	line('rx',rxColor);
+	line('tx',txColor);
+}
 
 function nativeGeneration(parsed) {
 	if (!parsed || !parsed.ok || !parsed.data) return '';
@@ -199,20 +325,34 @@ return view.extend({
 			if (el) el.textContent = vals[id];
 		});
 
+		var trafficSample = null;
 		[ 'dae0', 'dae0peer' ].forEach(function(name) {
 			var cur = next[name] || {};
 			var old = prev ? (prev[name] || {}) : {};
+			var rxRate = rate(cur.rx_bytes, old.rx_bytes, cur.present, old.present);
+			var txRate = rate(cur.tx_bytes, old.tx_bytes, cur.present, old.present);
 			var st = document.getElementById('rt-' + name + '-state');
 			if (st) dom.content(st, dae.badge(cur.present ? _('Present') : _('Missing'), !!cur.present));
 			var rx = document.getElementById('rt-' + name + '-rx-rate');
-			if (rx) rx.textContent = humanRate(rate(cur.rx_bytes, old.rx_bytes, cur.present, old.present));
+			if (rx) rx.textContent = humanRate(rxRate);
 			var tx = document.getElementById('rt-' + name + '-tx-rate');
-			if (tx) tx.textContent = humanRate(rate(cur.tx_bytes, old.tx_bytes, cur.present, old.present));
+			if (tx) tx.textContent = humanRate(txRate);
 			var total = document.getElementById('rt-' + name + '-total');
 			if (total) total.textContent = humanBytes(cur.rx_bytes) + ' / ' + humanBytes(cur.tx_bytes);
 			var pk = document.getElementById('rt-' + name + '-packets');
 			if (pk) pk.textContent = String(cur.rx_packets || 0) + ' / ' + String(cur.tx_packets || 0);
+			if (name === 'dae0' && cur.present)
+				trafficSample = { ts:Number(next.timestamp || 0), rx:rxRate, tx:txRate };
 		});
+
+		if (trafficSample && trafficSample.ts > 0) {
+			this.trafficHistory = (this.trafficHistory || []).filter(function(sample) {
+				return sample.ts >= trafficSample.ts - 300;
+			});
+			this.trafficHistory.push(trafficSample);
+			drawTraffic('rt-traffic-60', this.trafficHistory, 60, trafficSample.ts);
+			drawTraffic('rt-traffic-300', this.trafficHistory, 300, trafficSample.ts);
+		}
 
 		this.prev = next;
 	},
@@ -225,6 +365,7 @@ return view.extend({
 		var dnsRulesGeneration = data[4] || null;
 		var generations = generationSummary(configGeneration, rulesGeneration, dnsRulesGeneration);
 		this.prev = initial;
+		this.trafficHistory = [];
 
 		poll.add(L.bind(function() {
 			return dae.callRuntimeStats().then(this.updateRuntime.bind(this));
@@ -255,6 +396,12 @@ return view.extend({
 			E('h3', {}, _('eBPF interface counters')),
 			ifaceTable('dae0', initial.dae0),
 			ifaceTable('dae0peer', initial.dae0peer),
+			E('h3', {}, _('Live dae0 traffic trend')),
+			E('div', { 'class':'cbi-map-descr' }, _('The charts are calculated locally from dae0 kernel byte counters every 2 seconds. History starts when this Runtime page is opened and is not persisted.')),
+			E('div', {}, [
+				trafficPanel(_('Last 60 seconds'), 'rt-traffic-60', _('High-resolution short window')),
+				trafficPanel(_('Last 5 minutes'), 'rt-traffic-300', _('Rolling in-page history'))
+			]),
 			E('h3', {}, _('Native generation consistency')),
 			E('div', { 'class':'cbi-map-descr' }, _('Read-only consistency check across Native API config, traffic-rule and DNS-rule dictionaries. A single reported generation means these runtime dictionaries agree. This does not infer desired-vs-active state when the backend does not report it.')),
 			generationTable(generations, native),
