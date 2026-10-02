@@ -202,6 +202,10 @@ return view.extend({
 					E('div',{'style':'margin-top:4px'},versionBadges(item,status))
 				]),
 				E('td',{'class':'td'},item.version||'-'),
+				E('td',{'class':'td'},[
+					E('code',{},item.source_type||'unknown'),
+					item.source_label?E('div',{'class':'cbi-map-descr'},item.source_label):null
+				]),
 				E('td',{'class':'td'},E('code',{},item.path||'-')),
 				E('td',{'class':'td'},humanBytes(item.size)),
 				E('td',{'class':'td'},E('code',{},item.sha256||'-')),
@@ -223,6 +227,7 @@ return view.extend({
 			rows.push(E('tr',{'class':'tr'},[
 				E('td',{'class':'td'},E('code',{},'system')),
 				E('td',{'class':'td'},status.system_external_version||'-'),
+				E('td',{'class':'td'},E('code',{},'system')),
 				E('td',{'class':'td'},E('code',{},'/usr/bin/dae')),
 				E('td',{'class':'td'},'-'),
 				E('td',{'class':'td'},'-'),
@@ -234,6 +239,7 @@ return view.extend({
 			E('div',{'class':'tr table-titles'},[
 				E('div',{'class':'th'},_('Slot')),
 				E('div',{'class':'th'},_('Version')),
+				E('div',{'class':'th'},_('Source')),
 				E('div',{'class':'th'},_('Path')),
 				E('div',{'class':'th'},_('Size')),
 				E('div',{'class':'th'},_('SHA256')),
