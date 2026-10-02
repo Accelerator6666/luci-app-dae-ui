@@ -85,6 +85,7 @@ var callGetManagedSection = rpc.declare({ object: 'luci.daeui', method: 'get_man
 var callSaveManagedSection = rpc.declare({ object: 'luci.daeui', method: 'save_managed_section', params: [ 'kind', 'body', 'apply' ], expect: {} });
 var callGeodataStatus = rpc.declare({ object: 'luci.daeui', method: 'geodata_status', expect: {} });
 var callUpdateGeodata = rpc.declare({ object: 'luci.daeui', method: 'update_geodata', expect: {} });
+var callRefreshGeodataPins = rpc.declare({ object: 'luci.daeui', method: 'refresh_geodata_pins', expect: {} });
 var callPreviewManagedSection = rpc.declare({ object: 'luci.daeui', method: 'preview_managed_section', params: [ 'kind', 'body' ], expect: {} });
 
 function notify(msg, type) {
@@ -168,6 +169,7 @@ return baseclass.extend({
 	callSaveManagedSection: callSaveManagedSection,
 	callGeodataStatus: callGeodataStatus,
 	callUpdateGeodata: callUpdateGeodata,
+	callRefreshGeodataPins: callRefreshGeodataPins,
 	callPreviewManagedSection: callPreviewManagedSection,
 	notify: notify,
 	badge: badge,
