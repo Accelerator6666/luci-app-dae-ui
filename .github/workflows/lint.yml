@@ -45,9 +45,9 @@ jobs:
           current = None
           for line in text.splitlines():
               if line.startswith('msgid "'):
-                  current = bytes(line[7:-1], 'utf-8').decode('unicode_escape')
+                  current = json.loads(line[len('msgid '):])
               elif line.startswith('msgstr "') and current is not None:
-                  value = bytes(line[8:-1], 'utf-8').decode('unicode_escape')
+                  value = json.loads(line[len('msgstr '):])
                   if current:
                       pairs[current] = value
                   current = None
