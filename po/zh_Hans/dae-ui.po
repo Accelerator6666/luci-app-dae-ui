@@ -2832,8 +2832,8 @@ msgstr "没有最近错误。"
 msgid "Node URI"
 msgstr "节点 URI"
 
-msgid "Only the latest 20 in-memory errors are kept. RPC arguments, secrets and request bodies are not recorded."
-msgstr "仅在内存中保留最近 20 条错误。不会记录 RPC 参数、密钥或请求正文。"
+msgid "Only the latest 20 sanitized errors are kept for this browser-tab session. RPC arguments, secrets and request bodies are not recorded."
+msgstr "仅在当前浏览器标签页会话中保留最近 20 条已脱敏错误。不会记录 RPC 参数、密钥或请求正文。"
 
 msgid "Policy cannot be empty."
 msgstr "策略不能为空。"
