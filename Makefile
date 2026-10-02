@@ -2,8 +2,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-dae-ui
-PKG_VERSION:=0.13.0
-PKG_RELEASE:=2
+PKG_VERSION:=0.14.0
+PKG_RELEASE:=1
 PKG_LICENSE:=GPL-3.0-only
 
 include $(INCLUDE_DIR)/package.mk
