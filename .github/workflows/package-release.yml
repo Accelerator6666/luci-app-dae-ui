@@ -10,8 +10,6 @@ on:
       - "po/**"
       - ".github/workflows/package-release.yml"
   push:
-    branches:
-      - "feature/v0.14.1-i18n-zh-hans"
     tags:
       - "v*"
 
@@ -248,29 +246,6 @@ jobs:
           path: release/*
           if-no-files-found: error
           retention-days: 14
-
-      - name: Publish v0.14.1 test package
-        if: github.ref == 'refs/heads/feature/v0.14.1-i18n-zh-hans'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v0.14.1
-          target_commitish: ${{ github.sha }}
-          name: v0.14.1
-          prerelease: true
-          generate_release_notes: true
-          body: |
-            OpenWrt 25.12.x test package for luci-app-dae-ui v0.14.1.
-
-            This pre-release is published before final real-router validation so the APK can be installed and tested directly.
-
-            Included assets:
-            - luci-app-dae-ui-0.14.1-r1.apk
-            - SHA256SUMS
-            - INSTALL.txt
-          files: |
-            release/*.apk
-            release/SHA256SUMS
-            release/INSTALL.txt
 
       - name: Publish tagged release package
         if: startsWith(github.ref, 'refs/tags/')
