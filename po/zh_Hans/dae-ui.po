@@ -1404,3 +1404,915 @@ msgstr "警告标记"
 msgid "Yes"
 msgstr "是"
 
+msgid " and accepts only numeric release versions plus 64-hex SHA256 values. The download URLs remain fixed to the v2fly GeoIP and domain-list-community release repositories."
+msgstr "，并且只接受纯数字版本号和 64 位十六进制 SHA256。下载地址固定为 v2fly GeoIP 与 domain-list-community 的发布仓库。"
+
+msgid " is not present in the requested dictionary list."
+msgstr " 不存在于请求的规则字典列表中。"
+
+msgid " is not present in this complete dictionary."
+msgstr " 不存在于当前完整规则字典中。"
+
+msgid ", but this page currently exposes generation "
+msgstr "，但当前页面展示的是运行代次 "
+
+msgid ". No cross-generation DNS rule association is made."
+msgstr "。不会跨运行代次关联 DNS 规则。"
+
+msgid ". No cross-generation rule association is made."
+msgstr "。不会跨运行代次关联规则。"
+
+msgid ". The backend-provided flow_id is authoritative; this UI does not fabricate a flow for unrecorded connections."
+msgstr "。以后端提供的 flow_id 为准；对于未记录 flow 的连接，本 UI 不会虚构流量记录。"
+
+msgid "A compatible Native API discovery endpoint was detected. Resource availability above comes from /api/v1/capabilities when that endpoint is publicly readable."
+msgstr "已检测到兼容的 Native API 发现接口。上方资源可用性来自 /api/v1/capabilities（当该接口可公开读取时）。"
+
+msgid "A tagged subscription remains a normal DAE subscription URI. The form validates the tag and requires an explicit URI scheme before staging."
+msgstr "带标签的订阅仍然是普通 DAE 订阅 URI。暂存前，表单会验证标签并要求 URI 中明确包含协议 scheme。"
+
+msgid "accepted release assets: "
+msgstr "允许的发布资源："
+
+msgid "action"
+msgstr "操作"
+
+msgid "Activate this dae version and restart the dae service when it is currently enabled/running? The current configuration will not be modified."
+msgstr "启用此 dae 版本，并在 dae 服务当前已启用或正在运行时重启服务？当前配置不会被修改。"
+
+msgid "Addresses"
+msgstr "地址"
+
+msgid "All "
+msgstr "全部 "
+
+msgid "Answers"
+msgstr "应答"
+
+msgid "api_major=1 or a Bearer authentication challenge matches the Doona-compatible discovery model."
+msgstr "api_major=1，或者 Bearer 认证挑战符合 Doona 兼容的发现模型。"
+
+msgid "Attempt ID"
+msgstr "尝试 ID"
+
+msgid "Base directory: "
+msgstr "基础目录："
+
+msgid "Batch "
+msgstr "批次 "
+
+msgid "batch size: "
+msgstr "批次大小："
+
+msgid "best TCP"
+msgstr "最佳 TCP"
+
+msgid "Boot guard warning: "
+msgstr "启动守卫警告："
+
+msgid "bounded probe operations."
+msgstr "受限探测任务。"
+
+msgid "Build URI"
+msgstr "生成 URI"
+
+msgid "cache"
+msgstr "缓存"
+
+msgid "cache mode: "
+msgstr "缓存模式："
+
+msgid "Cached"
+msgstr "已缓存"
+
+msgid "Carrier transport"
+msgstr "承载传输"
+
+msgid "Chain"
+msgstr "链路"
+
+msgid "Clear"
+msgstr "清空"
+
+msgid "Clear the configured dae log file?"
+msgstr "清空当前配置的 dae 日志文件？"
+
+msgid "Comma-separated, for example A,AAAA,HTTPS."
+msgstr "使用逗号分隔，例如 A,AAAA,HTTPS。"
+
+msgid "Completed "
+msgstr "已完成 "
+
+msgid "Complex protocols keep their standard share-link syntax. The protocol selector validates the URI scheme before staging; the simple builder below can generate HTTP(S) and SOCKS links. Nothing is written until the managed-section save/apply controls are used."
+msgstr "复杂协议继续使用标准分享链接语法。暂存前协议选择器会验证 URI scheme；下方简单构建器可生成 HTTP(S) 和 SOCKS 链接。在使用托管配置段的保存/应用操作之前，不会写入任何内容。"
+
+msgid "Config generation"
+msgstr "配置运行代次"
+
+msgid "Connection"
+msgstr "连接"
+
+msgid "Connection ID"
+msgstr "连接 ID"
+
+msgid "Current dae process"
+msgstr "当前 dae 进程"
+
+msgid "Current group selection plus outbound counters when available. Policy selection remains read-only; the only active operation on this page is an explicitly requested bounded group health probe."
+msgstr "显示当前策略组选择以及可用时的出站计数。策略选择保持只读；本页面唯一会主动执行的操作，是用户明确请求的受限策略组健康探测。"
+
+msgid "Current rule dictionary is unavailable."
+msgstr "当前规则字典不可用。"
+
+msgid "Current rules generation"
+msgstr "当前规则运行代次"
+
+msgid "dae binary"
+msgstr "dae 二进制"
+
+msgid "DAE Logs"
+msgstr "DAE 日志"
+
+msgid "DAE UI managed section"
+msgstr "DAE UI 托管配置段"
+
+msgid "dae0 missing"
+msgstr "dae0 缺失"
+
+msgid "Datapath"
+msgstr "数据路径"
+
+msgid "Decision"
+msgstr "决策"
+
+msgid "Destination"
+msgstr "目标"
+
+msgid "Detailed Connections, node latency, routing rules, runtime policy selection, flows and DNS telemetry are enabled only when the Native API explicitly reports those resources."
+msgstr "只有 Native API 明确上报对应资源可用时，才会启用详细连接、节点延迟、路由规则、运行时策略选择、流量记录和 DNS 遥测。"
+
+msgid "Detected locations"
+msgstr "检测到的位置"
+
+msgid "Dial IP"
+msgstr "拨号 IP"
+
+msgid "Dial mode"
+msgstr "拨号模式"
+
+msgid "Diff: "
+msgstr "差异："
+
+msgid "Direct members: "
+msgstr "直接成员："
+
+msgid "DNS cache"
+msgstr "DNS 缓存"
+
+msgid "DNS log"
+msgstr "DNS 日志"
+
+msgid "DNS rules generation"
+msgstr "DNS 规则运行代次"
+
+msgid "Domain is optional when destination IP is supplied."
+msgstr "提供目标 IP 时，域名可以留空。"
+
+msgid "Domain source"
+msgstr "域名来源"
+
+msgid "Done."
+msgstr "完成。"
+
+msgid "Download"
+msgstr "下载"
+
+msgid "Download and verify this official dae release? It will be installed into a version slot but will not be activated automatically."
+msgstr "下载并验证此 dae 官方版本？它会安装到版本槽位中，但不会自动启用。"
+
+msgid "download direction on dae0"
+msgstr "dae0 下载方向"
+
+msgid "Download the currently persisted GeoData pins, verify SHA256, back up existing files and atomically replace them?"
+msgstr "使用当前已持久化的 GeoData 固定版本下载文件、验证 SHA256、备份现有文件并以原子方式替换？"
+
+msgid "Dropped records: "
+msgstr "丢弃记录数："
+
+msgid "Edits are validated with dae before they are accepted. Save & Apply creates a timestamped backup, validates, then uses dae hot reload. A failed validation or reload restores the previous configuration."
+msgstr "编辑内容在接受前会先由 dae 验证。“保存并应用”会创建带时间戳的备份、执行验证，然后使用 dae 热重载；如果验证或重载失败，会自动恢复上一份配置。"
+
+msgid "Effective outbound"
+msgstr "实际出站"
+
+msgid "Effective target"
+msgstr "实际目标"
+
+msgid "Eligible"
+msgstr "符合条件"
+
+msgid "Ended"
+msgstr "已结束"
+
+msgid "Enter a DNS domain."
+msgstr "请输入 DNS 域名。"
+
+msgid "Enter a domain or destination IP."
+msgstr "请输入域名或目标 IP。"
+
+msgid "Enter a username when a password is used in the simple proxy builder."
+msgstr "在简单代理构建器中使用密码时，请同时输入用户名。"
+
+msgid "Evaluation ID"
+msgstr "评估 ID"
+
+msgid "Evaluations"
+msgstr "评估记录"
+
+msgid "Exact node tags"
+msgstr "精确节点标签"
+
+msgid "Existing definitions remain untouched. Cards are a best-effort summary of standard one-line entries; advanced syntax is still preserved in the source view."
+msgstr "现有定义不会被修改。卡片仅尽力汇总标准单行条目；高级语法仍会完整保留在源配置视图中。"
+
+msgid "Expires"
+msgstr "过期时间"
+
+msgid "Fallback"
+msgstr "回退"
+
+msgid "Fetch dae upstream scripts/fetch-geo-data.sh and persist only its pinned GeoData versions and SHA256 values? No GeoData file is downloaded by this step."
+msgstr "获取 dae 上游的 scripts/fetch-geo-data.sh，并仅保存其中固定的 GeoData 版本与 SHA256？此步骤不会下载任何 GeoData 文件。"
+
+msgid "Flow Detail · "
+msgstr "流量详情 · "
+
+msgid "Flow route generation"
+msgstr "流量路由运行代次"
+
+msgid "Flow trace · "
+msgstr "流量追踪 · "
+
+msgid "Forced upstream"
+msgstr "强制上游"
+
+msgid "From evaluation"
+msgstr "来源评估"
+
+msgid "Future dashboard directory"
+msgstr "未来仪表盘目录"
+
+msgid "generation "
+msgstr "运行代次 "
+
+msgid "Generation matches, but DNS rule ID "
+msgstr "运行代次一致，但 DNS 规则 ID "
+
+msgid "Generation matches, but rule ID "
+msgstr "运行代次一致，但规则 ID "
+
+msgid "Generation mismatch. This retained flow must not be joined to the current rule dictionary."
+msgstr "运行代次不匹配。此保留流量记录不能与当前规则字典关联。"
+
+msgid "Generation: "
+msgstr "运行代次："
+
+msgid "geoip.dat"
+msgstr "geoip.dat"
+
+msgid "geosite.dat"
+msgstr "geosite.dat"
+
+msgid "group name"
+msgstr "策略组名称"
+
+msgid "Group name must be a safe DAE identifier."
+msgstr "策略组名称必须是安全的 DAE 标识符。"
+
+msgid "Group probes use only direct members and automatically split them into sequential jobs that satisfy the backend-advertised member/result limits."
+msgstr "策略组探测只使用直接成员，并会根据后端上报的成员数/结果数限制自动拆分为顺序执行的任务。"
+
+msgid "groups"
+msgstr "策略组"
+
+msgid "Health updated"
+msgstr "健康状态已更新"
+
+msgid "Host and a valid port are required."
+msgstr "必须填写主机和有效端口。"
+
+msgid "host or IP"
+msgstr "主机或 IP"
+
+msgid "Index"
+msgstr "序号"
+
+msgid "Init script"
+msgstr "启动脚本"
+
+msgid "Input"
+msgstr "输入"
+
+msgid "Install target"
+msgstr "安装目标"
+
+msgid "Instance ID"
+msgstr "实例 ID"
+
+msgid "IP is optional when domain is supplied."
+msgstr "提供域名时，IP 可以留空。"
+
+msgid "kind"
+msgstr "类型"
+
+msgid "Latest backup: "
+msgstr "最近备份："
+
+msgid "Leaf node"
+msgstr "叶节点"
+
+msgid "line(s)"
+msgstr "行"
+
+msgid "List"
+msgstr "列表"
+
+msgid "Loading retained flow detail for this connection…"
+msgstr "正在加载此连接对应的保留流量详情…"
+
+msgid "Loading retained flow detail…"
+msgstr "正在加载保留流量详情…"
+
+msgid "Local"
+msgstr "本地"
+
+msgid "Log file"
+msgstr "日志文件"
+
+msgid "Lookup ID"
+msgstr "查询 ID"
+
+msgid "Mark"
+msgstr "标记"
+
+msgid "Match"
+msgstr "匹配条件"
+
+msgid "max members/job: "
+msgstr "每任务最大成员数："
+
+msgid "max results/job: "
+msgstr "每任务最大结果数："
+
+msgid "member(s)"
+msgstr "成员"
+
+msgid "members"
+msgstr "成员"
+
+msgid "Milestone"
+msgstr "里程碑"
+
+msgid "Missing inputs"
+msgstr "缺少输入参数"
+
+msgid "Must"
+msgstr "必须匹配"
+
+msgid "Native node inventory has additional server pages. Latency labels in the visual builder are therefore partial."
+msgstr "Native 节点清单还有后续服务器页，因此可视化构建器中的延迟标签仅代表部分数据。"
+
+msgid "Native runtime correlation enabled. Exact tagged nodes and subscription/provider tags are joined to the current runtime inventory."
+msgstr "已启用 Native 运行时关联。精确匹配的节点标签以及订阅/提供方标签会与当前运行时清单关联。"
+
+msgid "Native runtime node data is unavailable; source cards remain fully usable without it."
+msgstr "Native 运行时节点数据不可用；源配置卡片仍可正常使用。"
+
+msgid "Native runtime pages"
+msgstr "Native 运行时页面"
+
+msgid "Native runtime policy correlation is available for exact group names. Current TCP/UDP selections are shown as a read-only snapshot."
+msgstr "可按精确策略组名称关联 Native 运行时策略。当前 TCP/UDP 选择以只读快照显示。"
+
+msgid "Native runtime policy data is unavailable; source policy editing is unaffected."
+msgstr "Native 运行时策略数据不可用；不会影响源策略配置编辑。"
+
+msgid "network"
+msgstr "网络"
+
+msgid "No .dae files found."
+msgstr "未找到 .dae 文件。"
+
+msgid "No compatible Native API discovery response is currently available. Native-only rows remain disabled rather than showing inferred or fabricated runtime data."
+msgstr "当前没有可用的兼容 Native API 发现响应。仅 Native API 的条目会保持禁用，而不会显示推断或伪造的运行时数据。"
+
+msgid "No compatible transport is available for this probe kind."
+msgstr "此探测类型没有可用的兼容传输方式。"
+
+msgid "No existing matching sections were found."
+msgstr "未找到已有的匹配配置段。"
+
+msgid "No log entries found."
+msgstr "未找到日志记录。"
+
+msgid "No matching section was found in the active .dae files."
+msgstr "在当前生效的 .dae 文件中未找到匹配配置段。"
+
+msgid "No recognized top-level DAE sections"
+msgstr "未识别到顶层 DAE 配置段"
+
+msgid "No release asset matching this router architecture was returned."
+msgstr "没有返回与当前路由器架构匹配的发布资源。"
+
+msgid "No retained traffic-route step proves the generation for this flow rule. The summary rule_id is therefore not joined to the current dictionary."
+msgstr "没有保留的流量路由步骤能够证明此流量规则对应的运行代次，因此摘要中的 rule_id 不会与当前规则字典关联。"
+
+msgid "No subscription filter"
+msgstr "无订阅筛选"
+
+msgid "Node link must contain a URI scheme such as vless:// or ss://."
+msgstr "节点链接必须包含 URI scheme，例如 vless:// 或 ss://。"
+
+msgid "Node tag may contain only letters, numbers, dot, underscore and hyphen."
+msgstr "节点标签只能包含字母、数字、点、下划线和连字符。"
+
+msgid "not a locally discovered source"
+msgstr "不是本地发现的来源"
+
+msgid "Not cached"
+msgstr "未缓存"
+
+msgid "Not probed"
+msgstr "未探测"
+
+msgid "now"
+msgstr "当前"
+
+msgid "Observed by"
+msgstr "观测来源"
+
+msgid "Open matching rule"
+msgstr "打开匹配规则"
+
+msgid "Opened from connection "
+msgstr "从连接打开 "
+
+msgid "Operation finished."
+msgstr "操作已完成。"
+
+msgid "operations: "
+msgstr "任务数："
+
+msgid "optional advanced filter, e.g. name(keyword: 'HK')"
+msgstr "可选高级筛选，例如 name(keyword: 'HK')"
+
+msgid "Optional label for this custom dae binary:"
+msgstr "请输入此自定义 dae 二进制的可选标签："
+
+msgid "optional tag"
+msgstr "可选标签"
+
+msgid "outbound"
+msgstr "出站"
+
+msgid "Outbound / upstream"
+msgstr "出站 / 上游"
+
+msgid "password (optional)"
+msgstr "密码（可选）"
+
+msgid "Path: "
+msgstr "路径："
+
+msgid "Paths and integration settings for this LuCI package."
+msgstr "此 LuCI 插件的路径和集成设置。"
+
+msgid "Pause"
+msgstr "暂停"
+
+msgid "Performed"
+msgstr "已执行"
+
+msgid "Pin refresh reads only "
+msgstr "固定版本刷新仅读取 "
+
+msgid "Plane"
+msgstr "平面"
+
+msgid "Policy"
+msgstr "策略"
+
+msgid "Policy cards summarize common group syntax. Existing groups remain user-owned and are never rewritten by the quick editor."
+msgstr "策略卡片用于汇总常见策略组语法。已有策略组始终由用户管理，快速编辑器不会重写它们。"
+
+msgid "Policy: "
+msgstr "策略："
+
+msgid "port"
+msgstr "端口"
+
+msgid "Preparing diff preview…"
+msgstr "正在准备差异预览…"
+
+msgid "Probe accepted without operation_id."
+msgstr "探测请求已接受，但没有返回 operation_id。"
+
+msgid "Probe choices come from the backend capability document. Every probe is manually opened and submitted; no probe runs on page load or polling."
+msgstr "探测选项来自后端能力文档。每次探测都必须由用户手动打开并提交；页面加载或轮询不会自动运行探测。"
+
+msgid "Probe completed. Selection changed: TCP "
+msgstr "探测完成。选择已变化：TCP "
+
+msgid "Probe failed. "
+msgstr "探测失败："
+
+msgid "Probe group: "
+msgstr "探测策略组："
+
+msgid "Probe is "
+msgstr "探测状态为 "
+
+msgid "Probe node: "
+msgstr "探测节点："
+
+msgid "Process stopped"
+msgstr "进程已停止"
+
+msgid "protocol"
+msgstr "协议"
+
+msgid "Protocol-aware node staging"
+msgstr "协议感知节点暂存"
+
+msgid "provider"
+msgstr "提供方"
+
+msgid "Purpose"
+msgstr "用途"
+
+msgid "Question"
+msgstr "查询"
+
+msgid "Raw operation"
+msgstr "原始任务数据"
+
+msgid "Read-only consistency check across Native API config, traffic-rule and DNS-rule dictionaries. Consistency is claimed only when at least two available dictionaries report the same generation. This does not infer desired-vs-active state when the backend does not report it."
+msgstr "只读检查 Native API 配置、流量规则字典和 DNS 规则字典之间的运行代次一致性。只有至少两个可用字典上报相同运行代次时才判定为一致；当后端未上报时，不会推断期望状态与实际状态。"
+
+msgid "Read-only structural view inspired by Doona. Editing remains centralized in Configuration so validation and rollback stay atomic."
+msgstr "受 Doona 启发的只读结构化视图。编辑仍集中在“配置”页面，以保证验证和回退操作的原子性。"
+
+msgid "Reading retained flow evidence and current rule dictionary…"
+msgstr "正在读取保留流量证据和当前规则字典…"
+
+msgid "Reason"
+msgstr "原因"
+
+msgid "Refresh"
+msgstr "刷新"
+
+msgid "Reply received"
+msgstr "已收到应答"
+
+msgid "Request rules: "
+msgstr "请求规则："
+
+msgid "Reroute"
+msgstr "重路由"
+
+msgid "Resolution"
+msgstr "解析结果"
+
+msgid "Resolve flow rule"
+msgstr "解析流量规则"
+
+msgid "Resolved DNS rule"
+msgstr "已解析 DNS 规则"
+
+msgid "Resolved flow rule"
+msgstr "已解析流量规则"
+
+msgid "Resolved node"
+msgstr "已解析节点"
+
+msgid "Resolved rule"
+msgstr "已解析规则"
+
+msgid "Response rules: "
+msgstr "响应规则："
+
+msgid "Results completed before the failure: "
+msgstr "失败前已完成的结果："
+
+msgid "Resume"
+msgstr "继续"
+
+msgid "Revision"
+msgstr "修订版本"
+
+msgid "Route evaluations"
+msgstr "路由评估"
+
+msgid "Routed outbound"
+msgstr "路由出站"
+
+msgid "Router architecture: "
+msgstr "路由器架构："
+
+msgid "Rule evaluations"
+msgstr "规则评估"
+
+msgid "Rule expression"
+msgstr "规则表达式"
+
+msgid "Rule source"
+msgstr "规则来源"
+
+msgid "Rules checked"
+msgstr "已检查规则"
+
+msgid "Rules: "
+msgstr "规则："
+
+msgid "Running batch "
+msgstr "正在运行批次 "
+
+msgid "Runtime members"
+msgstr "运行时成员"
+
+msgid "Runtime node found; no latency observation reported"
+msgstr "已找到运行时节点；未上报延迟观测"
+
+msgid "runtime node(s)"
+msgstr "运行时节点"
+
+msgid "Runtime snapshot: "
+msgstr "运行时快照："
+
+msgid "Score"
+msgstr "评分"
+
+msgid "Select at least one node/subscription or enter an advanced filter."
+msgstr "请至少选择一个节点/订阅，或输入高级筛选条件。"
+
+msgid "Select exact source node tags and/or a subscription tag. Multiple filter lines use DAE group OR semantics. The generated text is only staged in the managed editor below; Preview diff remains available before any write."
+msgstr "选择精确的源节点标签和/或订阅标签。多行筛选使用 DAE 策略组的 OR 语义。生成的文本只会暂存在下方托管编辑器中；任何写入前都可以先“预览差异”。"
+
+msgid "Selected IP"
+msgstr "选定 IP"
+
+msgid "Selected protocol does not match the node URI scheme."
+msgstr "所选协议与节点 URI scheme 不匹配。"
+
+msgid "Selection candidates"
+msgstr "候选选择"
+
+msgid "Selection changed: TCP "
+msgstr "选择已变化：TCP "
+
+msgid "Selection path"
+msgstr "选择路径"
+
+msgid "Server address"
+msgstr "服务器地址"
+
+msgid "Shareable retained-flow view. The flow ID in the URL is the only requested identity. Rule links are still generation-qualified and are created only when retained evidence matches the current dictionary generation."
+msgstr "可共享的保留流量视图。URL 中的 Flow ID 是唯一请求标识；规则链接仍会校验运行代次，只有保留证据与当前规则字典的运行代次一致时才会生成链接。"
+
+msgid "Simple HTTP / SOCKS URI builder"
+msgstr "简单 HTTP / SOCKS URI 构建器"
+
+msgid "Simulation DNS"
+msgstr "模拟 DNS"
+
+msgid "Simulation result · generation "
+msgstr "模拟结果 · 运行代次 "
+
+msgid "Socket descriptor count"
+msgstr "Socket 文件描述符数量"
+
+msgid "source_id not mapped by Native config"
+msgstr "source_id 未在 Native 配置中映射"
+
+msgid "ss process sockets"
+msgstr "ss 进程 Socket"
+
+msgid "ss unavailable"
+msgstr "ss 不可用"
+
+msgid "Staged diff: "
+msgstr "暂存差异："
+
+msgid "Started"
+msgstr "已开始"
+
+msgid "state"
+msgstr "状态"
+
+msgid "status"
+msgstr "状态"
+
+msgid "Steps are ordered by seq. Generation IDs belong to the recorded evidence. traffic and dns_upstream steps use the traffic rule dictionary; dns_request and dns_response use the DNS rule dictionary. Links appear only on an exact generation match."
+msgstr "步骤按 seq 排序。运行代次 ID 属于记录下来的证据；traffic 和 dns_upstream 步骤使用流量规则字典，dns_request 和 dns_response 使用 DNS 规则字典。只有运行代次完全一致时才显示链接。"
+
+msgid "Steps are rendered from retained backend evidence. No routing decision is simulated on this page."
+msgstr "步骤根据后端保留的证据呈现，本页面不会模拟任何路由决策。"
+
+msgid "Submitting probe for "
+msgstr "正在提交探测："
+
+msgid "Subscription staging"
+msgstr "订阅暂存"
+
+msgid "subscription tag"
+msgstr "订阅标签"
+
+msgid "Subscription tag"
+msgstr "订阅标签"
+
+msgid "Subscription tag may contain only letters, numbers, dot, underscore and hyphen."
+msgstr "订阅标签只能包含字母、数字、点、下划线和连字符。"
+
+msgid "Subscription URL must contain an explicit URI scheme."
+msgstr "订阅 URL 必须明确包含 URI scheme。"
+
+msgid "Target"
+msgstr "目标"
+
+msgid "Target kind"
+msgstr "目标类型"
+
+msgid "TCP: "
+msgstr "TCP："
+
+msgid "The advertised probe limits do not allow this group request."
+msgstr "后端上报的探测限制不允许执行此次策略组请求。"
+
+msgid "The backend accepted the probe but did not return an operation_id."
+msgstr "后端已接受探测，但未返回 operation_id。"
+
+msgid "The backend does not advertise a usable probe kind/IP combination."
+msgstr "后端没有上报可用的探测类型/IP 组合。"
+
+msgid "The capabilities endpoint requires authentication. Store the Native API token above to enable authenticated read-only runtime resources."
+msgstr "能力接口需要认证。请在上方保存 Native API Token，以启用经过认证的只读运行时资源。"
+
+msgid "The capabilities endpoint requires authentication. This LuCI UI never extracts native_api.secret from dae configuration; configure the separate root-only token on the Native API page if token mode is desired."
+msgstr "能力接口需要认证。本 LuCI UI 永远不会从 dae 配置中提取 native_api.secret；如需 Token 模式，请在 Native API 页面单独配置仅 root 可读的 Token。"
+
+msgid "The configured listener may be absent, stopped, unreachable, unauthenticated, or not implement the shared Native API contract."
+msgstr "已配置的监听端可能不存在、已停止、不可达、未认证，或没有实现共享的 Native API 协议。"
+
+msgid "The dae service and this LuCI package currently point at different configuration files. Version switching validates the service file, because that is what OpenWrt will actually start after reboot."
+msgstr "dae 服务与此 LuCI 插件当前指向不同的配置文件。版本切换会验证服务实际使用的配置文件，因为 OpenWrt 重启后真正启动的是该文件。"
+
+msgid "The flow trace is available, but the current DNS rule dictionary could not be loaded: "
+msgstr "流量追踪可用，但无法加载当前 DNS 规则字典："
+
+msgid "The flow trace is available, but the current traffic rule dictionary could not be loaded: "
+msgstr "流量追踪可用，但无法加载当前流量规则字典："
+
+msgid "The generation matches, but this rule ID is not present in the complete current dictionary."
+msgstr "运行代次一致，但该规则 ID 不存在于当前完整规则字典中。"
+
+msgid "The group probe is explicit network activity. Direct members are split into bounded jobs using the backend-advertised member/result limits. Jobs run sequentially; no batch is submitted until the previous operation finishes."
+msgstr "策略组探测属于明确的网络活动。直接成员会根据后端上报的成员数/结果数限制拆分为受限任务；任务顺序执行，上一批结束前不会提交下一批。"
+
+msgid "The Native API still returns HTTP 401 with the stored token. Check that it matches native_api.secret."
+msgstr "使用已保存 Token 时 Native API 仍返回 HTTP 401。请确认它与 native_api.secret 一致。"
+
+msgid "The probe operation is still nonterminal after 60 seconds. No polling continues in the background after this dialog is closed."
+msgstr "探测任务 60 秒后仍未进入终态。关闭此对话框后不会继续在后台轮询。"
+
+msgid "The requested DNS route evidence belongs to generation "
+msgstr "请求的 DNS 路由证据属于运行代次 "
+
+msgid "The requested DNS rule list is invalid."
+msgstr "请求的 DNS 规则列表无效。"
+
+msgid "The requested flow evidence belongs to generation "
+msgstr "请求的流量证据属于运行代次 "
+
+msgid "The retained flow is available, but the current DNS rule dictionary could not be loaded: "
+msgstr "保留流量记录可用，但无法加载当前 DNS 规则字典："
+
+msgid "The retained flow is available, but the current traffic rule dictionary could not be loaded: "
+msgstr "保留流量记录可用，但无法加载当前流量规则字典："
+
+msgid "The retained traffic-route evidence and the current rule dictionary share the same generation."
+msgstr "保留的流量路由证据与当前规则字典属于同一运行代次。"
+
+msgid "The rpcd backend probes /api and /api/v1/capabilities locally. It never extracts native_api.secret from dae configuration. An optional token entered below is stored outside UCI in /etc/dae-ui/native-api.token with root-only permissions and is never returned to browser JavaScript."
+msgstr "rpcd 后端会在本机探测 /api 和 /api/v1/capabilities。它不会从 dae 配置中提取 native_api.secret。下方输入的可选 Token 会保存在 UCI 之外的 /etc/dae-ui/native-api.token 中，仅 root 可读，并且绝不会返回给浏览器 JavaScript。"
+
+msgid "The runtime inventory has additional server pages, so this card summary is partial."
+msgstr "运行时清单还有后续服务器页，因此当前卡片摘要只包含部分数据。"
+
+msgid "The server cursor expired or is no longer valid. Restart the live snapshot before loading more."
+msgstr "服务器游标已过期或失效。请先重新开始实时快照，再加载更多数据。"
+
+msgid "The table summarizes one-line rules in evaluation order. Complex multiline rules remain visible in Source configuration."
+msgstr "表格按评估顺序汇总单行规则；复杂的多行规则仍会完整显示在“源配置”中。"
+
+msgid "The uploaded file will be executed for a version smoke test and then used to validate the active dae configuration. Only continue with a binary you trust. It will not be activated automatically."
+msgstr "上传的文件会先在路由器上执行版本冒烟测试，然后用于验证当前 dae 配置。仅在你信任该二进制时继续；它不会被自动启用。"
+
+msgid "The visual builder stages exact node/subscription filters and valid DAE policy syntax. Advanced filters can still be edited directly before previewing or applying."
+msgstr "可视化构建器会暂存精确的节点/订阅筛选条件和有效的 DAE 策略语法。预览或应用前仍可直接编辑高级筛选条件。"
+
+msgid "These are bounded diagnostic operations from the shared Native API contract. Routing Trace is a hypothetical simulation, not a recorded flow. DNS Query performs a diagnostic resolution and does not flush or delete cache entries."
+msgstr "这些是共享 Native API 协议中的受限诊断操作。“路由模拟”属于假设性模拟，不是已记录的流量；“DNS 查询”执行诊断解析，不会清空或删除缓存条目。"
+
+msgid "This DNS rule was opened with generation-qualified retained route evidence."
+msgstr "此 DNS 规则通过带运行代次校验的保留路由证据打开。"
+
+msgid "This group has no usable advertised probe combination or no direct members."
+msgstr "此策略组没有可用的探测组合，或没有直接成员。"
+
+msgid "This Native API resource is explicitly unavailable."
+msgstr "Native API 已明确标记此资源不可用。"
+
+msgid "This probe is explicit network activity and may update backend health observations or automatic selections. Nothing runs until you press Run probe."
+msgstr "此探测属于明确的网络活动，并可能更新后端健康观测或自动选择。在你点击“运行探测”之前不会执行任何操作。"
+
+msgid "This resource has not been reported as available by the Native API."
+msgstr "Native API 尚未上报此资源可用。"
+
+msgid "This rule was opened with a generation-qualified flow association."
+msgstr "此规则通过带运行代次校验的流量关联打开。"
+
+msgid "To evaluation"
+msgstr "目标评估"
+
+msgid "Trace"
+msgstr "追踪"
+
+msgid "Trace status: "
+msgstr "追踪状态："
+
+msgid "Trace status: complete"
+msgstr "追踪状态：完整"
+
+msgid "Traffic rules generation"
+msgstr "流量规则运行代次"
+
+msgid "type"
+msgstr "类型"
+
+msgid "UDP: "
+msgstr "UDP："
+
+msgid "Unable to generate diff."
+msgstr "无法生成差异。"
+
+msgid "Unable to load release list."
+msgstr "无法加载版本列表。"
+
+msgid "Unable to read configuration file."
+msgstr "无法读取配置文件。"
+
+msgid "Unnamed"
+msgstr "未命名"
+
+msgid "Update flow: fixed upstream pin source → persisted version/SHA256 → download to /tmp → SHA256 verify → backup existing files → atomic replace. It never uses an unverified latest/download URL."
+msgstr "更新流程：固定上游版本来源 → 持久化版本/SHA256 → 下载到 /tmp → 验证 SHA256 → 备份现有文件 → 原子替换。整个流程不会使用未经验证的 latest/download URL。"
+
+msgid "Upload"
+msgstr "上传"
+
+msgid "upload direction on dae0"
+msgstr "dae0 上传方向"
+
+msgid "upstream"
+msgstr "上游"
+
+msgid "Upstream / result"
+msgstr "上游 / 结果"
+
+msgid "Upstream cards summarize common DNS entries. Nested request/response routing remains visible in the full source blocks."
+msgstr "上游卡片用于汇总常见 DNS 条目；嵌套的请求/响应路由仍会完整显示在源配置块中。"
+
+msgid "Upstream transport"
+msgstr "上游传输"
+
+msgid "Use one DAE node entry per line."
+msgstr "每行填写一个 DAE 节点条目。"
+
+msgid "Use one tagged DAE subscription entry per line."
+msgstr "每行填写一个带标签的 DAE 订阅条目。"
+
+msgid "Use this only for Native API token mode. The value is sent once from this LuCI page to rpcd, written with mode 0600, and then used only by server-side curl requests. The field is always blank when this page is reopened."
+msgstr "仅在 Native API Token 模式下使用。该值只会从此 LuCI 页面发送一次到 rpcd，以 0600 权限写入文件，之后仅供服务端 curl 请求使用。重新打开页面时，此输入框始终为空。"
+
+msgid "username (optional)"
+msgstr "用户名（可选）"
+
+msgid "Verification"
+msgstr "验证"
+
+msgid "Visual group builder"
+msgstr "可视化策略组构建器"
+
+msgid "When DAE Version Manager is enabled, /usr/bin/dae is a persistent managed runner and this custom path is ignored by backend service actions."
+msgstr "启用 DAE 版本管理后，/usr/bin/dae 会成为持久化托管运行器，后端服务操作将忽略此自定义路径。"
+
