@@ -1365,6 +1365,117 @@ function vm_candidate_version(path) {
 	return { ok: r.rc == 0 && !!trim(r.output), version: trim(split(r.output || '', '\n')[0] || ''), output: r.output };
 }
 
+function vm_upload_path() {
+	return '/tmp/dae-ui-dae-upload.bin';
+}
+
+function vm_import_uploaded(s, label) {
+	let source = vm_upload_path();
+	let cleanup = function() { run('rm -f ' + shell_quote(source)); };
+
+	let safe_file = run('test -f ' + shell_quote(source) + ' && test ! -L ' + shell_quote(source));
+	if (safe_file.rc != 0) {
+		cleanup();
+		return { ok: false, error: 'Uploaded dae binary is missing or is not a regular file' };
+	}
+
+	let st = stat(source);
+	let size = st ? +(st.size || 0) : 0;
+	if (size < 1024 || size > 134217728) {
+		cleanup();
+		return { ok: false, error: 'Uploaded dae binary size is outside the accepted 1 KiB to 128 MiB range', size: size };
+	}
+
+	let chmod = run('chmod 755 ' + shell_quote(source));
+	if (chmod.rc != 0) {
+		cleanup();
+		return { ok: false, error: 'Unable to mark uploaded dae binary executable', output: chmod.output };
+	}
+
+	let actual = trim(run("sha256sum " + shell_quote(source) + " | awk '{print $1}'").output);
+	if (!match(actual, /^[A-Fa-f0-9]{64}$/)) {
+		cleanup();
+		return { ok: false, error: 'Unable to calculate uploaded dae SHA256' };
+	}
+
+	let smoke = vm_candidate_version(source);
+	if (!smoke.ok) {
+		cleanup();
+		return { ok: false, error: 'Uploaded file failed the dae execution smoke test', output: smoke.output };
+	}
+
+	let cfg = vm_service_config(s);
+	let val = validate(source, cfg);
+	if (val.rc != 0) {
+		cleanup();
+		return {
+			ok: false,
+			error: 'Uploaded dae binary is incompatible with the current service configuration',
+			output: val.output,
+			diagnostics: validation_diagnostics(s, val.output),
+			config_file: cfg
+		};
+	}
+
+	let clean_label = replace(trim(label || ''), /[^A-Za-z0-9._-]/g, '_');
+	if (!clean_label) clean_label = 'upload';
+	if (length(clean_label) > 48) clean_label = substr(clean_label, 0, 48);
+
+	let slot = 'custom-' + clean_label + '-' + substr(actual, 0, 12);
+	if (!vm_safe_slot(slot)) {
+		cleanup();
+		return { ok: false, error: 'Unable to derive a safe custom version slot' };
+	}
+
+	let dir = vm_root() + '/' + slot;
+	let target = dir + '/dae';
+	let existing = stat(target);
+	if (existing) {
+		let installed_sha = trim(run("sha256sum " + shell_quote(target) + " 2>/dev/null | awk '{print $1}'").output);
+		cleanup();
+		if (installed_sha == actual) {
+			return {
+				ok: true,
+				slot: slot,
+				path: target,
+				version: smoke.version,
+				sha256: actual,
+				config_file: cfg,
+				message: 'This exact custom dae binary is already installed'
+			};
+		}
+		return { ok: false, error: 'Custom version slot already exists with different content; refusing to overwrite it' };
+	}
+
+	let prep = run('mkdir -p ' + shell_quote(dir));
+	if (prep.rc != 0) {
+		cleanup();
+		return { ok: false, error: 'Unable to create custom version slot', output: prep.output };
+	}
+
+	let mv = run('mv ' + shell_quote(source) + ' ' + shell_quote(target) + ' && chmod 755 ' + shell_quote(target));
+	if (mv.rc != 0) {
+		cleanup();
+		run('rmdir ' + shell_quote(dir) + ' 2>/dev/null');
+		return { ok: false, error: 'Unable to install uploaded dae binary', output: mv.output };
+	}
+
+	writefile(dir + '/source.txt',
+		'type=custom-upload\nlabel=' + clean_label + '\nsha256=' + actual + '\nversion=' + smoke.version + '\n'
+	);
+	run('chmod 600 ' + shell_quote(dir + '/source.txt'));
+
+	return {
+		ok: true,
+		slot: slot,
+		path: target,
+		version: smoke.version,
+		sha256: actual,
+		config_file: cfg,
+		message: 'Custom dae binary smoke-tested, configuration-validated and installed into an immutable slot'
+	};
+}
+
 function vm_release_digest(tag, asset) {
 	let api = 'https://api.github.com/repos/daeuniverse/dae/releases/tags/' + tag;
 	let r = run(
@@ -2100,6 +2211,13 @@ return {
 			args: { tag: 'string', asset: 'string' },
 			call: function(req) {
 				return vm_install_release(settings(), req.args.tag || '', req.args.asset || '');
+			}
+		},
+
+		version_import: {
+			args: { label: 'string' },
+			call: function(req) {
+				return vm_import_uploaded(settings(), req.args.label || '');
 			}
 		},
 
