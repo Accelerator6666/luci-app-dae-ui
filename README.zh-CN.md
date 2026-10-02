@@ -546,6 +546,28 @@ CI 会检查当前前端和菜单字符串是否缺少简体中文翻译。
 
 ## 构建与安装
 
+### GitHub Release 安装包
+
+对于 OpenWrt 25.12.x，创建 `v*` 版本 Tag 后，GitHub Actions 会使用官方 OpenWrt 25.12.5 SDK 自动构建 APK，并将以下文件直接上传到对应 GitHub Release：
+
+```text
+luci-app-dae-ui-<version>-r1.apk
+SHA256SUMS
+INSTALL.txt
+```
+
+该插件包为架构无关包（`PKGARCH=all`），但要求系统中已经安装 `dae` 以及声明的 LuCI/rpcd 依赖，或者这些依赖能够从当前软件源获取。
+
+GitHub Release 中的 APK 并不是由 OpenWrt 官方发行版密钥签名，因此下载到路由器后需要明确允许本地非官方包：
+
+```sh
+apk add --allow-untrusted /tmp/luci-app-dae-ui-<version>-r1.apk
+```
+
+Release 工作流在发布前还会检查 Git Tag 与 Makefile 中的 `PKG_VERSION` 是否完全一致，避免错版本打包。
+
+### 从源码构建
+
 可以将仓库复制或克隆到 OpenWrt build tree 中，例如：
 
 ```sh
