@@ -23,6 +23,21 @@ function redactedLink(url) {
 	return raw;
 }
 
+function redactedSubscription(url) {
+	var raw=String(url||'');
+	var m=raw.match(/^([A-Za-z0-9+.-]+):\/\/(.*)$/);
+	if(!m) return raw;
+	var scheme=m[1].toLowerCase();
+	var rest=m[2];
+	if(scheme==='http'||scheme==='https') {
+		var authority=rest.split('/')[0]||'';
+		var at=authority.lastIndexOf('@');
+		if(at>=0) authority=authority.slice(at+1);
+		return scheme+'://'+authority+'/…';
+	}
+	return scheme+'://••••';
+}
+
 function parseEntries(block, kind) {
 	var out = [];
 	String(block || '').split(/\n/).forEach(function(line) {
@@ -99,6 +114,7 @@ function card(title, meta, body) {
 return baseclass.extend({
 	protocolOf:protocolOf,
 	redactedLink:redactedLink,
+	redactedSubscription:redactedSubscription,
 	nodeCards:nodeCards,
 	subscriptionCards:subscriptionCards,
 	groupCards:groupCards,
