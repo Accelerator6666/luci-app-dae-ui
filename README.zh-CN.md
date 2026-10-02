@@ -44,6 +44,26 @@
 - 日志、诊断、备份和恢复
 - Native API Token 与本地文件访问安全边界
 
+## 界面截图
+
+v0.14.1 完成 OpenWrt 真机验证后，会在这里加入**真实路由器界面截图**。README 不会使用生成式预览图冒充正式运行截图。
+
+计划展示：
+
+- 简体中文 **概览**
+- 简体中文 **运行状态**，包含已经采集到数据的流量曲线
+- 简体中文 **DAE 版本管理**
+- 简体中文 **配置文件** CodeMirror 编辑器
+
+截图和脱敏要求见 [docs/screenshots/README.md](docs/screenshots/README.md)。
+
+<!--
+![概览](docs/screenshots/overview-zh-cn.png)
+![运行状态](docs/screenshots/runtime-zh-cn.png)
+![DAE 版本管理](docs/screenshots/versions-zh-cn.png)
+![配置编辑器](docs/screenshots/configuration-zh-cn.png)
+-->
+
 ## 界面结构
 
 插件入口：
