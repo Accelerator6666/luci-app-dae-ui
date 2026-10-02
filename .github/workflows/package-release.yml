@@ -249,14 +249,14 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Publish package to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/') || (github.ref == 'refs/heads/feature/v0.14.1-i18n-zh-hans' && github.event.head_commit.message == 'release: publish v0.14.1 APK')
+      - name: Publish v0.14.1 test package
+        if: github.ref == 'refs/heads/feature/v0.14.1-i18n-zh-hans'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v0.14.1' }}
+          tag_name: v0.14.1
           target_commitish: ${{ github.sha }}
           name: v0.14.1
-          prerelease: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          prerelease: true
           generate_release_notes: true
           body: |
             OpenWrt 25.12.x test package for luci-app-dae-ui v0.14.1.
@@ -267,6 +267,18 @@ jobs:
             - luci-app-dae-ui-0.14.1-r1.apk
             - SHA256SUMS
             - INSTALL.txt
+          files: |
+            release/*.apk
+            release/SHA256SUMS
+            release/INSTALL.txt
+
+      - name: Publish tagged release package
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
           files: |
             release/*.apk
             release/SHA256SUMS
