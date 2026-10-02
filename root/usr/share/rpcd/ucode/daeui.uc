@@ -260,6 +260,12 @@ function include_status(s) {
 	return { enabled: enabled, pattern: enabled ? 'config.d/*.dae' : '' };
 }
 
+function file_revision(path) {
+	if (!path || !stat(path)) return 'absent';
+	let hash = trim(run("sha256sum " + shell_quote(path) + " 2>/dev/null | awk '{print $1}'").output);
+	return match(hash, /^[A-Fa-f0-9]{64}$/) ? hash : 'unknown';
+}
+
 function managed_spec(kind) {
 	let map = {
 		nodes: { file: 'config.d/dae-ui-nodes.dae', section: 'node' },
@@ -312,11 +318,12 @@ function get_managed(s, kind) {
 		section: spec.section,
 		body: managed_body(content, spec.section),
 		exists: !!stat(path),
+		revision: file_revision(path),
 		include_enabled: inc.enabled
 	};
 }
 
-function save_managed(s, kind, body, apply) {
+function save_managed(s, kind, body, apply, revision) {
 	let spec = managed_spec(kind);
 	if (!spec) return { ok: false, error: 'Unsupported managed section' };
 	if (!include_status(s).enabled)
@@ -326,6 +333,19 @@ function save_managed(s, kind, body, apply) {
 
 	let path = resolve_config_file(s, spec.file, false);
 	if (!path) return { ok: false, error: 'Invalid managed path' };
+
+	let current_revision = file_revision(path);
+	if (revision && revision != current_revision) {
+		let current = stat(path) ? (readfile(path) || '') : '';
+		return {
+			ok: false,
+			conflict: true,
+			error: 'Managed file changed since this page was loaded; staged changes were not written',
+			revision: current_revision,
+			current_body: managed_body(current, spec.section)
+		};
+	}
+
 	run('mkdir -p ' + shell_quote(dirname(path)));
 
 	let existed = !!stat(path);
@@ -351,7 +371,7 @@ function save_managed(s, kind, body, apply) {
 		}
 	}
 
-	return { ok: true, path: spec.file, backup: b, message: apply ? 'Managed section validated and hot-reloaded' : 'Managed section saved and validated' };
+	return { ok: true, path: spec.file, backup: b, revision: file_revision(path), message: apply ? 'Managed section validated and hot-reloaded' : 'Managed section saved and validated' };
 }
 
 function preview_managed(s, kind, body) {
@@ -2334,9 +2354,9 @@ return {
 		},
 
 		save_managed_section: {
-			args: { kind: 'string', body: 'string', apply: 'bool' },
+			args: { kind: 'string', body: 'string', apply: 'bool', revision: 'string' },
 			call: function(req) {
-				return save_managed(settings(), req.args.kind || '', req.args.body || '', !!req.args.apply);
+				return save_managed(settings(), req.args.kind || '', req.args.body || '', !!req.args.apply, req.args.revision || '');
 			}
 		},
 
