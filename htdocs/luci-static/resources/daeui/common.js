@@ -203,7 +203,9 @@ function localizedCall(name, fn) {
 function notify(msg, type) {
 	var text = localizeBackendText(msg) || _('Operation completed.');
 	if (type === 'error') {
-		var latest = errorHistory.length ? errorHistory[errorHistory.length - 1] : rememberError({ operation:'notification', error:text });
+		var latest = errorHistory.length ? errorHistory[errorHistory.length - 1] : null;
+		if (!latest || (latest.error !== text && latest.message !== text))
+			latest = rememberError({ operation:'notification', error:text });
 		ui.addNotification(null, E('div', {}, [
 			E('p', {}, text),
 			E('button', {
