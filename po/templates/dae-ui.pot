@@ -2755,3 +2755,140 @@ msgstr ""
 msgid "Custom dae archive extracted, smoke-tested, configuration-validated and installed into an immutable slot"
 msgstr ""
 
+msgid "Clear recent errors"
+msgstr ""
+
+msgid "Copied error details to clipboard."
+msgstr ""
+
+msgid "Copied recent errors to clipboard."
+msgstr ""
+
+msgid "Copied staged content to clipboard."
+msgstr ""
+
+msgid "Copy error"
+msgstr ""
+
+msgid "Copy recent errors"
+msgstr ""
+
+msgid "Copy staged content"
+msgstr ""
+
+msgid "Current on-disk managed body"
+msgstr ""
+
+msgid "Edit field"
+msgstr ""
+
+msgid "Edit fields"
+msgstr ""
+
+msgid "Edit managed field: "
+msgstr ""
+
+msgid "Edit managed group: "
+msgstr ""
+
+msgid "Field mode cannot add or remove filter lines; use the raw managed editor for that change."
+msgstr ""
+
+msgid "Field mode intentionally keeps the number of filter lines unchanged. Add or remove filters in the raw editor, then validate normally."
+msgstr ""
+
+msgid "Field-level change staged; unrelated text was preserved."
+msgstr ""
+
+msgid "Filters — one existing expression per line"
+msgstr ""
+
+msgid "Group field changes staged; unrelated group text was preserved."
+msgstr ""
+
+msgid "Group filters are treated as opaque DAE/honk expressions. Quoted apostrophes, regex syntax and filter text are preserved instead of being split or normalized."
+msgstr ""
+
+msgid "Managed file changed on disk"
+msgstr ""
+
+msgid "Managed group field editor"
+msgstr ""
+
+msgid "Managed node field editor"
+msgstr ""
+
+msgid "Managed subscription field editor"
+msgstr ""
+
+msgid "No recent errors."
+msgstr ""
+
+msgid "Node URI"
+msgstr ""
+
+msgid "Only the latest 20 in-memory errors are kept. RPC arguments, secrets and request bodies are not recorded."
+msgstr ""
+
+msgid "Policy cannot be empty."
+msgstr ""
+
+msgid "Recent error diagnostics"
+msgstr ""
+
+msgid "Recent errors cleared."
+msgstr ""
+
+msgid "Recorded: "
+msgstr ""
+
+msgid "Revision guard: "
+msgstr ""
+
+msgid "Stage field change"
+msgstr ""
+
+msgid "Stage group changes"
+msgstr ""
+
+msgid "Subscription URL"
+msgstr ""
+
+msgid "The change is staged only. Preview diff, validation and optional hot reload still happen through the managed-section controls."
+msgstr ""
+
+msgid "The group changed while it was being edited. Reopen the editor and try again."
+msgstr ""
+
+msgid "The managed entry changed while it was being edited. Reopen the editor and try again."
+msgstr ""
+
+msgid "The managed file changed after this page was loaded. Your staged changes were not written, so newer on-disk changes cannot be overwritten accidentally."
+msgstr ""
+
+msgid "The managed value cannot be empty."
+msgstr ""
+
+msgid "These controls change only the selected quoted value in the staged managed body. Tags, comments, spacing and unrelated entries are preserved."
+msgstr ""
+
+msgid "This group cannot be edited safely with field controls. Use the raw managed editor."
+msgstr ""
+
+msgid "This managed entry is missing or duplicated. Use the raw managed editor to resolve it."
+msgstr ""
+
+msgid "Unable to copy error details."
+msgstr ""
+
+msgid "Unable to copy staged content."
+msgstr ""
+
+msgid "Your staged body"
+msgstr ""
+
+msgid "filter(s)"
+msgstr ""
+
+msgid "Managed file changed since this page was loaded; staged changes were not written"
+msgstr ""
