@@ -225,6 +225,37 @@ function drawTraffic(id, history, horizon, now) {
 	line('tx',txColor);
 }
 
+function summarizeLog(raw) {
+	var output=String(raw&&raw.output||'');
+	var lines=output ? output.split(/\r?\n/).filter(Boolean) : [];
+	var warnings=0, errors=0;
+	lines.forEach(function(line) {
+		if (/\b(?:ERROR|FATAL|PANIC)\b/i.test(line) || /\blevel=(?:error|fatal|panic)\b/i.test(line))
+			errors++;
+		else if (/\bWARN(?:ING)?\b/i.test(line) || /\blevel=warn(?:ing)?\b/i.test(line))
+			warnings++;
+	});
+	return { lines:lines.length, warnings:warnings, errors:errors };
+}
+
+function logHealthTable(summary) {
+	summary=summary||{lines:0,warnings:0,errors:0};
+	return E('div', { 'class':'table' }, [
+		E('div', { 'class':'tr' }, [
+			E('div', { 'class':'td left', 'style':'width:260px;font-weight:600' }, _('Recent log sample')),
+			E('div', { 'class':'td left', 'id':'rt-log-lines' }, String(summary.lines)+' '+_('line(s)'))
+		]),
+		E('div', { 'class':'tr' }, [
+			E('div', { 'class':'td left', 'style':'width:260px;font-weight:600' }, _('Warning markers')),
+			E('div', { 'class':'td left' }, E('span', { 'id':'rt-log-warn' }, dae.badge(String(summary.warnings),summary.warnings?'WARN':true)))
+		]),
+		E('div', { 'class':'tr' }, [
+			E('div', { 'class':'td left', 'style':'width:260px;font-weight:600' }, _('Error / fatal markers')),
+			E('div', { 'class':'td left' }, E('span', { 'id':'rt-log-error' }, dae.badge(String(summary.errors),summary.errors?false:true)))
+		])
+	]);
+}
+
 function nativeGeneration(parsed) {
 	if (!parsed || !parsed.ok || !parsed.data) return '';
 	var value = parsed.data.generation_id;
@@ -277,7 +308,7 @@ function generationTable(summary, status) {
 
 return view.extend({
 	load: function() {
-		return Promise.all([ dae.callRuntimeStats(), dae.callNativeApiStatus() ]).then(function(base) {
+		return Promise.all([ dae.callRuntimeStats(), dae.callNativeApiStatus(), dae.callGetLog(250) ]).then(function(base) {
 			var status = base[1] || {};
 			var resources = status.resources || {};
 			function loadResource(name) {
@@ -289,9 +320,20 @@ return view.extend({
 				Promise.resolve(status),
 				loadResource('config'),
 				loadResource('rules'),
-				loadResource('dns_rules')
+				loadResource('dns_rules'),
+				Promise.resolve(base[2] || {})
 			]);
 		});
+	},
+
+	updateLogHealth: function(raw) {
+		var summary=summarizeLog(raw);
+		var lines=document.getElementById('rt-log-lines');
+		if(lines) lines.textContent=String(summary.lines)+' '+_('line(s)');
+		var warn=document.getElementById('rt-log-warn');
+		if(warn) dom.content(warn,dae.badge(String(summary.warnings),summary.warnings?'WARN':true));
+		var err=document.getElementById('rt-log-error');
+		if(err) dom.content(err,dae.badge(String(summary.errors),summary.errors?false:true));
 	},
 
 	updateRuntime: function(next) {
@@ -363,6 +405,7 @@ return view.extend({
 		var configGeneration = data[2] || null;
 		var rulesGeneration = data[3] || null;
 		var dnsRulesGeneration = data[4] || null;
+		var logSummary = summarizeLog(data[5] || {});
 		var generations = generationSummary(configGeneration, rulesGeneration, dnsRulesGeneration);
 		this.prev = initial;
 		this.trafficHistory = [];
@@ -370,6 +413,9 @@ return view.extend({
 		poll.add(L.bind(function() {
 			return dae.callRuntimeStats().then(this.updateRuntime.bind(this));
 		}, this), 2);
+		poll.add(L.bind(function() {
+			return dae.callGetLog(250).then(this.updateLogHealth.bind(this));
+		}, this), 15);
 
 		var connections = capState(native, 'connections');
 		var probes = capState(native, 'probes');
@@ -405,6 +451,10 @@ return view.extend({
 			E('h3', {}, _('Native generation consistency')),
 			E('div', { 'class':'cbi-map-descr' }, _('Read-only consistency check across Native API config, traffic-rule and DNS-rule dictionaries. Consistency is claimed only when at least two available dictionaries report the same generation. This does not infer desired-vs-active state when the backend does not report it.')),
 			generationTable(generations, native),
+			E('h3', {}, _('Recent WARN / ERROR summary')),
+			E('div', { 'class':'cbi-map-descr' }, _('Counts are derived from the most recent 250 dae log lines using explicit WARN/WARNING and ERROR/FATAL/PANIC markers. This is a compact signal, not a replacement for the full log page.')),
+			logHealthTable(logSummary),
+			E('p', {}, E('a', { 'class':'btn cbi-button', 'href':L.url('admin/services/dae-ui/logs') }, _('Open full logs'))),
 			E('h3', {}, _('Runtime capability matrix')),
 			E('div', { 'class': 'table' }, [
 				capabilityRow(_('Process / memory metrics'), _('Local'), { text: _('Available'), state: true }),
