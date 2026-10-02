@@ -31,6 +31,57 @@ jobs:
             echo "OK $f"
           done
 
+      - name: Simplified Chinese i18n coverage
+        run: |
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          po_path = Path('po/zh_Hans/dae-ui.po')
+          text = po_path.read_text(encoding='utf-8')
+
+          pairs = {}
+          current = None
+          for line in text.splitlines():
+              if line.startswith('msgid "'):
+                  current = bytes(line[7:-1], 'utf-8').decode('unicode_escape')
+              elif line.startswith('msgstr "') and current is not None:
+                  value = bytes(line[8:-1], 'utf-8').decode('unicode_escape')
+                  if current:
+                      pairs[current] = value
+                  current = None
+
+          assert pairs, 'Simplified Chinese catalog is empty'
+          empty = sorted(k for k, v in pairs.items() if not v)
+          assert not empty, f'untranslated zh_Hans msgids: {empty[:20]}'
+
+          required = set()
+          pattern = re.compile(r"_\(\s*(['\"])((?:\\.|(?!\1).)*)\1\s*\)", re.S)
+
+          for path in Path('htdocs/luci-static/resources').rglob('*.js'):
+              source = path.read_text(encoding='utf-8')
+              for m in pattern.finditer(source):
+                  value = m.group(2)
+                  value = value.replace("\\'", "'").replace('\\"', '"').replace('\\n', '\n')
+                  required.add(value)
+
+          menu = json.loads(Path('root/usr/share/luci/menu.d/luci-app-dae-ui.json').read_text())
+          for item in menu.values():
+              title = item.get('title')
+              if title:
+                  required.add(title)
+
+          missing = sorted(s for s in required if s not in pairs)
+          assert not missing, 'missing zh_Hans translations:\n' + '\n'.join(missing[:50])
+
+          makefile = Path('Makefile').read_text()
+          assert 'dae-ui.zh-cn.lmo' in makefile, 'Makefile must install bundled zh-cn LMO catalog'
+          assert 'po/zh_Hans/dae-ui.po' in makefile, 'Makefile must compile the zh_Hans PO catalog'
+
+          print(f'OK zh_Hans coverage: {len(required)} frontend/menu strings, {len(pairs)} catalog entries')
+          PY
+
       - name: Feature contract sanity
         run: |
           python3 - <<'PY'
