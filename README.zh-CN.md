@@ -46,16 +46,18 @@
 
 ## 界面截图
 
-v0.14.2 完成 OpenWrt 真机验证后，会在这里加入**真实路由器界面截图**。README 不会使用生成式预览图冒充正式运行截图。
+下面是当前 v0.14.2 界面的**UI 预览图（示例状态数据）**，用于展示布局与交互结构，不代表真机实时数据。
 
-计划展示：
+![DAE 概览 UI 预览](docs/screenshots/overview-preview.svg)
+
+完成 OpenWrt 真机验证后，还会补充真实运行截图。计划展示：
 
 - 简体中文 **概览**
 - 简体中文 **运行状态**，包含已经采集到数据的流量曲线
 - 简体中文 **DAE 版本管理**
 - 简体中文 **配置文件** CodeMirror 编辑器
 
-截图和脱敏要求见 [docs/screenshots/README.md](docs/screenshots/README.md)。
+预览图说明、真机截图要求和脱敏规则见 [docs/screenshots/README.md](docs/screenshots/README.md)。
 
 <!--
 ![概览](docs/screenshots/overview-zh-cn.png)
