@@ -1,5 +1,7 @@
 # luci-app-dae-ui
 
+**English** | [简体中文](README.zh-CN.md)
+
 A modern LuCI management UI for **dae**, designed from three references without cloning any one of them:
 
 - `QiuSimons/luci-app-honk`: OpenWrt package layout, rpcd/Ucode patterns, service lifecycle integration.
