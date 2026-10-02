@@ -6,7 +6,7 @@ A modern, safety-oriented LuCI control plane for **dae** on OpenWrt.
 
 `luci-app-dae-ui` combines day-to-day dae configuration management, runtime observability, Native API integration, diagnostics, GeoData maintenance, and reboot-safe multi-version binary management in one LuCI application.
 
-> **Current version:** v0.14.2  
+> **Current version:** v0.14.3  
 > **Current status:** feature-complete for the v0.14.x scope; real-router validation is the remaining release gate.
 
 ## Why this project exists
@@ -44,11 +44,11 @@ The UI is designed around three rules:
 
 ## Screenshots
 
-The image below is a **UI design preview with sample state data**, based on the current v0.14.2 interface. It is not a real-router capture.
+The image below is a **UI design preview with sample state data**, based on the current v0.14.3 interface. It is not a real-router capture.
 
 ![DAE Overview UI preview](docs/screenshots/overview-preview.svg)
 
-Real OpenWrt screenshots will be added after the v0.14.2 router validation pass. Planned captures:
+Real OpenWrt screenshots will be added after the v0.14.3 router validation pass. Planned captures:
 
 - Simplified Chinese **Overview**
 - Simplified Chinese **Runtime** with populated traffic charts
@@ -573,7 +573,7 @@ The remaining release work is router-side validation, especially:
 - selected version persistence after reboot
 - Simplified Chinese rendering on a Chinese LuCI installation
 
-See [RELEASE_NOTES_v0.14.2.md](RELEASE_NOTES_v0.14.2.md), [RELEASE_NOTES_v0.14.0.md](RELEASE_NOTES_v0.14.0.md) and [CHANGELOG.md](CHANGELOG.md) for detailed release history.
+See [RELEASE_NOTES_v0.14.3.md](RELEASE_NOTES_v0.14.3.md), [RELEASE_NOTES_v0.14.2.md](RELEASE_NOTES_v0.14.2.md), [RELEASE_NOTES_v0.14.0.md](RELEASE_NOTES_v0.14.0.md) and [CHANGELOG.md](CHANGELOG.md) for detailed release history.
 
 ## Inspiration
 
