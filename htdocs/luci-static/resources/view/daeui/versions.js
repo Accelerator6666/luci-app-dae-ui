@@ -151,40 +151,6 @@ return view.extend({
 		});
 	},
 
-	importLocalFile:function(){
-		return ui.uploadFile(
-			'/tmp/dae-ui-dae-upload.bin',
-			null,
-			_('Accepted: raw dae executable, .zip, .tar.gz or .tgz')
-		).then(function(info){
-			if(!info) return;
-			var fake={name:info.name||'dae',size:Number(info.size||0)};
-			var suggested=(fake.name||'custom')
-				.replace(/\.(tar\.gz|tgz|zip)$/i,'')
-				.replace(/^dae[-_.]?/i,'')
-				.replace(/[^A-Za-z0-9._-]/g,'_')||'custom';
-			var label=window.prompt(_('Optional label for this custom dae file:'),suggested);
-			if(label===null) return;
-
-			if(!window.confirm(_('The uploaded file may contain an executable that will be run for a version smoke test and then used to validate the active dae configuration. Only continue with a file you trust. It will not be activated automatically.')))
-				return;
-
-			ui.showModal(_('Import custom dae file'),[
-				E('p',{'class':'spinning'},[
-					_('Inspecting the upload, extracting archives when needed, smoke-testing dae and validating the active service configuration…'),
-					E('div',{'style':'margin-top:8px'},E('code',{},fake.name))
-				])
-			]);
-
-			return dae.callVersionImport(label||'',fake.name||'').then(function(result){
-				resultModal(_('Import custom dae file'),result,this.reloadStatus.bind(this));
-			}.bind(this));
-		}.bind(this)).catch(function(err){
-			ui.hideModal();
-			dae.notify((err&&err.message)||String(err),'error');
-		});
-	},
-
 	renderUploadZone:function(){
 		var self=this;
 		var input=E('input',{
@@ -403,11 +369,7 @@ return view.extend({
 				E('h3',{},_('Import custom dae file')),
 				E('div',{'class':'cbi-map-descr'},_('Upload a trusted raw dae executable or an archive containing exactly one dae executable. Supported archives are .zip, .tar.gz and .tgz. The backend extracts only the selected dae payload into a private temporary file, enforces 1 KiB–128 MiB limits, runs a version smoke test, validates the active service configuration and derives the immutable slot name from the binary SHA256. Import never activates the binary automatically.')),
 				E('div',{'class':'alert-message warning'},_('Security note: validating an uploaded dae file requires executing the extracted or raw binary on the router. Import only files you trust and that match this router CPU/ABI.')),
-				this.renderUploadZone(),
-				E('div',{'style':'margin-top:10px'},E('button',{
-					'class':'btn cbi-button cbi-button-action',
-					'click':ui.createHandlerFn(this,this.importLocalFile)
-				},_('Browse and Upload DAE File')))
+				this.renderUploadZone()
 			]),
 
 			E('div',{'class':'cbi-section'},[
