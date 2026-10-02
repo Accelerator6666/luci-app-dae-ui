@@ -51,6 +51,7 @@
           "clear_native_token",
           "native_probe_start",
           "version_download",
+          "version_import",
           "version_switch",
           "version_delete"
         ],
