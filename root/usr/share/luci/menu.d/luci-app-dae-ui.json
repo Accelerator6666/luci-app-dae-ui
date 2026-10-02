@@ -210,5 +210,13 @@
       "type": "view",
       "path": "daeui/versions"
     }
+  },
+  "admin/services/dae-ui/flow-detail": {
+    "title": "Flow Detail",
+    "hidden": true,
+    "action": {
+      "type": "view",
+      "path": "daeui/flow-detail"
+    }
   }
 }
