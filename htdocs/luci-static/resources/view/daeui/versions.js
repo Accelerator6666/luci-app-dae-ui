@@ -2,6 +2,8 @@
 'require view';
 'require ui';
 'require dom';
+'require request';
+'require rpc';
 'require daeui.common as dae';
 
 function row(k,v) {
@@ -36,6 +38,9 @@ function resultModal(title,res,reloadFn) {
 			res.slot?row(_('Slot'),E('code',{},res.slot)):null,
 			res.version?row(_('Version'),E('code',{},res.version)):null,
 			res.sha256?row(_('SHA256'),E('code',{},res.sha256)):null,
+			res.archive_type?row(_('Archive type'),E('code',{},res.archive_type)):null,
+			res.archive_sha256?row(_('Archive SHA256'),E('code',{},res.archive_sha256)):null,
+			res.archive_member?row(_('Archive payload'),E('code',{},res.archive_member)):null,
 			res.config_file?row(_('Validated config'),E('code',{},res.config_file)):null,
 			res.restarted===false?E('div',{'class':'alert-message notice'},_('The service is disabled/stopped, so the selection is persisted but has not yet been runtime-confirmed.')):null,
 			E('div',{'class':'right'},E('button',{
@@ -89,25 +94,132 @@ return view.extend({
 		}.bind(this));
 	},
 
-	importLocalBinary:function(){
-		var label=window.prompt(_('Optional label for this custom dae binary:'),'custom');
-		if(label===null) return;
-		if(!window.confirm(_('The uploaded file will be executed for a version smoke test and then used to validate the active dae configuration. Only continue with a binary you trust. It will not be activated automatically.')))
-			return;
+	uploadCandidateFile:function(file){
+		if(!file) return Promise.resolve();
 
-		return ui.uploadFile('/tmp/dae-ui-dae-upload.bin').then(function(info){
-			ui.showModal(_('Import custom dae binary'),[
+		if(file.size<1024||file.size>134217728) {
+			dae.notify(_('The dae upload must be between 1 KiB and 128 MiB.'),'error');
+			return Promise.resolve();
+		}
+
+		var suggested=(file.name||'custom')
+			.replace(/\.(tar\.gz|tgz|zip)$/i,'')
+			.replace(/^dae[-_.]?/i,'')
+			.replace(/[^A-Za-z0-9._-]/g,'_')||'custom';
+		var label=window.prompt(_('Optional label for this custom dae file:'),suggested);
+		if(label===null) return Promise.resolve();
+
+		if(!window.confirm(_('The uploaded file may contain an executable that will be run for a version smoke test and then used to validate the active dae configuration. Only continue with a file you trust. It will not be activated automatically.')))
+			return Promise.resolve();
+
+		var progress=E('div',{'class':'cbi-progressbar','title':'0%'},E('div',{'style':'width:0'}));
+		var status=E('p',{},_('Uploading dae file…'));
+		ui.showModal(_('Import custom dae file'),[status,progress,E('p',{},E('code',{},file.name||'-'))]);
+
+		var data=new FormData();
+		data.append('sessionid',rpc.getSessionID());
+		data.append('filename','/tmp/dae-ui-dae-upload.bin');
+		data.append('filedata',file);
+
+		return request.post(L.env.cgi_base+'/cgi-upload',data,{
+			timeout:0,
+			progress:function(ev){
+				if(!ev.total) return;
+				var pct=(ev.loaded/ev.total)*100;
+				progress.setAttribute('title',pct.toFixed(2)+'%');
+				if(progress.firstElementChild)
+					progress.firstElementChild.style.width=pct.toFixed(2)+'%';
+			}
+		}).then(function(res){
+			var reply=res.json();
+			if(reply&&reply.failure)
+				throw new Error(reply.message||reply.failure);
+
+			ui.showModal(_('Import custom dae file'),[
 				E('p',{'class':'spinning'},[
-					_('Smoke-testing the uploaded binary and validating the active service configuration…'),
-					info&&info.name?E('div',{'style':'margin-top:8px'},E('code',{},info.name)):null
+					_('Inspecting the upload, extracting archives when needed, smoke-testing dae and validating the active service configuration…'),
+					E('div',{'style':'margin-top:8px'},E('code',{},file.name||'-'))
 				])
 			]);
-			return dae.callVersionImport(label||'').then(function(res){
-				resultModal(_('Import custom dae binary'),res,this.reloadStatus.bind(this));
+
+			return dae.callVersionImport(label||'',file.name||'').then(function(result){
+				resultModal(_('Import custom dae file'),result,this.reloadStatus.bind(this));
 			}.bind(this));
 		}.bind(this)).catch(function(err){
+			ui.hideModal();
 			dae.notify((err&&err.message)||String(err),'error');
 		});
+	},
+
+	importLocalFile:function(){
+		return ui.uploadFile(
+			'/tmp/dae-ui-dae-upload.bin',
+			null,
+			_('Accepted: raw dae executable, .zip, .tar.gz or .tgz')
+		).then(function(info){
+			if(!info) return;
+			var fake={name:info.name||'dae',size:Number(info.size||0)};
+			var suggested=(fake.name||'custom')
+				.replace(/\.(tar\.gz|tgz|zip)$/i,'')
+				.replace(/^dae[-_.]?/i,'')
+				.replace(/[^A-Za-z0-9._-]/g,'_')||'custom';
+			var label=window.prompt(_('Optional label for this custom dae file:'),suggested);
+			if(label===null) return;
+
+			if(!window.confirm(_('The uploaded file may contain an executable that will be run for a version smoke test and then used to validate the active dae configuration. Only continue with a file you trust. It will not be activated automatically.')))
+				return;
+
+			ui.showModal(_('Import custom dae file'),[
+				E('p',{'class':'spinning'},[
+					_('Inspecting the upload, extracting archives when needed, smoke-testing dae and validating the active service configuration…'),
+					E('div',{'style':'margin-top:8px'},E('code',{},fake.name))
+				])
+			]);
+
+			return dae.callVersionImport(label||'',fake.name||'').then(function(result){
+				resultModal(_('Import custom dae file'),result,this.reloadStatus.bind(this));
+			}.bind(this));
+		}.bind(this)).catch(function(err){
+			ui.hideModal();
+			dae.notify((err&&err.message)||String(err),'error');
+		});
+	},
+
+	renderUploadZone:function(){
+		var self=this;
+		var input=E('input',{
+			'type':'file',
+			'style':'display:none',
+			'change':function(ev){
+				var file=ev.currentTarget.files&&ev.currentTarget.files[0];
+				if(file) self.uploadCandidateFile(file);
+				ev.currentTarget.value='';
+			}
+		});
+
+		var zone=E('div',{
+			'style':'border:2px dashed var(--border-color-medium,#999);border-radius:8px;padding:22px;text-align:center;cursor:pointer;margin-top:10px',
+			'click':function(){input.click();},
+			'dragover':function(ev){
+				ev.preventDefault();
+				ev.currentTarget.style.borderStyle='solid';
+			},
+			'dragleave':function(ev){
+				ev.currentTarget.style.borderStyle='dashed';
+			},
+			'drop':function(ev){
+				ev.preventDefault();
+				ev.currentTarget.style.borderStyle='dashed';
+				var file=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0];
+				if(file) self.uploadCandidateFile(file);
+			}
+		},[
+			E('div',{'style':'font-size:1.05em;font-weight:600;margin-bottom:6px'},_('Drop a dae binary or archive here')),
+			E('div',{'class':'cbi-map-descr'},_('or click to choose a file')),
+			E('div',{'style':'margin-top:8px'},E('code',{},_('Accepted: raw dae executable, .zip, .tar.gz, .tgz')))
+		]);
+
+		return E('div',{},[input,zone,E('div',{'class':'cbi-map-descr','style':'margin-top:8px'},_('Archives are inspected without writing their internal paths. Exactly one dae or dae-* executable must be present. Extraction is limited to 128 MiB.'))]);
 	},
 
 	installRelease:function(tag,asset){
@@ -288,13 +400,14 @@ return view.extend({
 			]),
 
 			E('div',{'class':'cbi-section'},[
-				E('h3',{},_('Import custom dae binary')),
-				E('div',{'class':'cbi-map-descr'},_('Upload a trusted local dae executable into an immutable custom version slot. The backend accepts only the fixed temporary upload path, enforces a 1 KiB–128 MiB size bound, executes a version smoke test, validates the active service configuration and derives the slot name from the SHA256. Import never activates the binary automatically.')),
-				E('div',{'class':'alert-message warning'},_('Security note: validating a custom binary requires executing it on the router. Import only binaries you trust and that match this router CPU/ABI.')),
-				E('button',{
+				E('h3',{},_('Import custom dae file')),
+				E('div',{'class':'cbi-map-descr'},_('Upload a trusted raw dae executable or an archive containing exactly one dae executable. Supported archives are .zip, .tar.gz and .tgz. The backend extracts only the selected dae payload into a private temporary file, enforces 1 KiB–128 MiB limits, runs a version smoke test, validates the active service configuration and derives the immutable slot name from the binary SHA256. Import never activates the binary automatically.')),
+				E('div',{'class':'alert-message warning'},_('Security note: validating an uploaded dae file requires executing the extracted or raw binary on the router. Import only files you trust and that match this router CPU/ABI.')),
+				this.renderUploadZone(),
+				E('div',{'style':'margin-top:10px'},E('button',{
 					'class':'btn cbi-button cbi-button-action',
-					'click':ui.createHandlerFn(this,this.importLocalBinary)
-				},_('Upload & Validate Custom Binary'))
+					'click':ui.createHandlerFn(this,this.importLocalFile)
+				},_('Browse and Upload DAE File')))
 			]),
 
 			E('div',{'class':'cbi-section'},[
