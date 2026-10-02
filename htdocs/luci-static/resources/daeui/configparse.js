@@ -30,6 +30,24 @@ function lineRanges(text) {
 	return out;
 }
 
+function unescapeQuoted(value, quote) {
+	value = String(value || '');
+	var out = '';
+	for (var i = 0; i < value.length; i++) {
+		var ch = value.charAt(i);
+		if (ch === '\\' && i + 1 < value.length) {
+			var next = value.charAt(i + 1);
+			if (next === quote || next === '\\') {
+				out += next;
+				i++;
+				continue;
+			}
+		}
+		out += ch;
+	}
+	return out;
+}
+
 function parseTaggedLine(line, lineStart) {
 	var part = splitComment(line);
 	var code = part.code;
@@ -48,7 +66,8 @@ function parseTaggedLine(line, lineStart) {
 	return {
 		name:m[2],
 		quote:quote,
-		value:code.slice(open + 1, close),
+		value:unescapeQuoted(code.slice(open + 1, close), quote),
+		rawValue:code.slice(open + 1, close),
 		valueStart:lineStart + open + 1,
 		valueEnd:lineStart + close,
 		lineStart:lineStart,
