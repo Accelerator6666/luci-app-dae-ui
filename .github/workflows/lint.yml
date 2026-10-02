@@ -118,6 +118,48 @@ jobs:
           print('OK feature contracts')
           PY
 
+      - name: v0.14.3 stability and editing contracts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          common = Path('htdocs/luci-static/resources/daeui/common.js').read_text()
+          managed = Path('htdocs/luci-static/resources/daeui/managed.js').read_text()
+          parser = Path('htdocs/luci-static/resources/daeui/configparse.js').read_text()
+          backend = Path('root/usr/share/rpcd/ucode/daeui.uc').read_text()
+          settings = Path('htdocs/luci-static/resources/view/daeui/settings.js').read_text()
+
+          assert 'function visiblePoll' in common
+          assert "params: [ 'kind', 'body', 'apply', 'revision' ]" in common
+          assert 'function rememberError' in common
+          assert 'copyRecentErrors' in common
+
+          for rel in [
+              'overview.js', 'runtime.js', 'logs.js', 'connections.js',
+              'flows.js', 'native-nodes.js', 'runtime-policies.js', 'dns-runtime.js'
+          ]:
+              text = Path('htdocs/luci-static/resources/view/daeui', rel).read_text()
+              assert 'poll.add' in text and 'dae.visiblePoll' in text, f'visibility-aware polling missing from {rel}'
+
+          for symbol in ['splitComment', 'parseTaggedEntries', 'replaceTaggedValue', 'parseGroups', 'replaceGroupFields']:
+              assert f'{symbol}:' in parser, f'missing config parser export {symbol}'
+
+          assert 'taggedFieldEditor' in managed
+          assert 'groupFieldEditor' in managed
+          assert 'revision:(managed && managed.revision)' in managed
+
+          assert 'function file_revision(path)' in backend
+          assert 'revision: file_revision(path)' in backend
+          assert 'current_revision = file_revision(path)' in backend
+          assert 'staged changes were not written' in backend
+          assert "revision: 'string'" in backend
+
+          assert 'Recent error diagnostics' in settings
+          assert 'RPC arguments, secrets and request bodies are not recorded.' in settings
+
+          print('OK v0.14.3 stability/editor contracts')
+          PY
+
       - name: Ucode structural sanity
         run: |
           python3 - <<'PY'
