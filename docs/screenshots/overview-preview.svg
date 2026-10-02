@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1000" viewBox="0 0 1440 1000">
+  <defs>
+    <style>
+      .bg{fill:#f4f6f8}.top{fill:#1f2b35}.panel{fill:#fff;stroke:#cfd6dd;stroke-width:1}.sub{fill:#f8fafb}.txt{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#273444}.muted{fill:#6b7a89}.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.h1{font-size:28px;font-weight:700}.h2{font-size:18px;font-weight:700}.nav{font-size:14px}.row{font-size:14px}.label{font-weight:700}.tab{font-size:14px}.small{font-size:12px}.btn{font-size:13px;font-weight:700;fill:#fff}.code{fill:#0e1319}.line{stroke:#e2e7eb;stroke-width:1}.blue{fill:#1771cf}.green{fill:#e7f8ec;stroke:#7fd79a}.greenText{fill:#15743c;font-size:12px;font-weight:700}.tag{fill:#eef5fc;stroke:#98bde6}.tagText{fill:#2670b7;font-size:12px}.amber{fill:#fff5d9;stroke:#e7c861}.amberText{fill:#8b6714;font-size:12px}.codepill{fill:#f4f6f8;stroke:#d8dde3}.codeText{fill:#42505f;font-size:13px}.btnBlue{fill:#2978c9}.btnGreen{fill:#2a9d49}.btnRed{fill:#d6242f}.btnGray{fill:#ffffff;stroke:#bac5cf}
+    </style>
+  </defs>
+  <rect class="bg" width="1440" height="1000"/>
+  <rect class="top" width="1440" height="48"/>
+  <text class="txt" x="26" y="31" fill="#fff" font-size="18" font-weight="700">OpenWrt</text>
+  <text x="122" y="30" fill="#d2d8de" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Status</text>
+  <text x="186" y="30" fill="#d2d8de" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">System</text>
+  <text x="252" y="30" fill="#d2d8de" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Network</text>
+  <text x="326" y="30" fill="#fff" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14" font-weight="700">Services</text>
+  <text x="402" y="30" fill="#d2d8de" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">VPN</text>
+  <text x="1275" y="30" fill="#c7d0d7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12">OpenWrt 25.12.3 · x86_64</text>
+
+  <text class="txt muted small" x="36" y="80">Services › DAE</text>
+  <text class="txt h1" x="36" y="116">DAE</text>
+  <rect class="tag" x="92" y="96" rx="12" width="138" height="24"/><text class="txt tagText" x="104" y="112">luci-app-dae-ui v0.14.2</text>
+  <rect class="amber" x="244" y="96" rx="12" width="162" height="24"/><text class="txt amberText" x="257" y="112">UI Preview · sample data</text>
+
+  <rect class="panel" x="36" y="132" width="1368" height="820" rx="6"/>
+  <text class="txt tab" x="56" y="157" fill="#1a66b3" font-weight="700">Overview</text>
+  <line x1="44" y1="172" x2="124" y2="172" stroke="#2e7fd3" stroke-width="3"/>
+  <text class="txt tab" x="136" y="157">Runtime</text>
+  <text class="txt tab" x="209" y="157">Configuration Files</text>
+  <text class="txt tab" x="344" y="157">Main Config</text>
+  <text class="txt tab" x="442" y="157">Nodes</text>
+  <text class="txt tab" x="507" y="157">Policies</text>
+  <text class="txt tab" x="576" y="157">Routing</text>
+  <text class="txt tab" x="641" y="157">DNS</text>
+  <text class="txt tab" x="691" y="157">All Sections</text>
+  <text class="txt tab" x="789" y="157">Backups</text>
+  <text class="txt tab" x="866" y="157">Config Sources</text>
+  <text class="txt tab" x="975" y="157">GeoData</text>
+  <text class="txt tab" x="1049" y="157">Diagnostics</text>
+  <text class="txt tab" x="1144" y="157">Logs</text>
+  <text class="txt tab" x="1192" y="157">Native API</text>
+  <text class="txt tab" x="56" y="197">DAE Versions</text>
+  <text class="txt tab" x="162" y="197">Settings</text>
+  <line x1="36" y1="214" x2="1404" y2="214" class="line"/>
+
+  <text class="txt h2" x="60" y="252">DAE Overview</text>
+  <text class="txt muted" x="60" y="274" font-size="14">Live process, configuration and network state. Refreshes automatically every 5 seconds.</text>
+
+  <rect class="panel" x="60" y="295" width="650" height="455" rx="6"/>
+  <rect class="sub" x="60" y="295" width="650" height="42" rx="6"/>
+  <text class="txt label" x="74" y="321" font-size="15">Service &amp; Binary</text>
+  <line class="line" x1="60" y1="337" x2="710" y2="337"/>
+  <line class="line" x1="270" y1="337" x2="270" y2="750"/>
+  <g class="txt row">
+    <text x="74" y="365" class="label">Service</text>
+    <rect class="green" x="282" y="347" width="82" height="22" rx="11"/><circle cx="296" cy="358" r="4" fill="#1e8c47"/><text class="greenText" x="306" y="362">Running</text>
+    <text x="74" y="407" class="label">PID</text><text x="282" y="407">1843</text>
+    <text x="74" y="449" class="label">Memory</text><text x="282" y="449">42.6 MiB</text>
+    <text x="74" y="491" class="label">Process uptime</text><text x="282" y="491">3d 4h 21m</text>
+    <text x="74" y="533" class="label">Version</text><text x="282" y="533">detected at runtime</text>
+    <text x="74" y="575" class="label">Binary entry point</text><rect class="codepill" x="282" y="555" width="118" height="24" rx="4"/><text class="mono codeText" x="292" y="572">/usr/bin/dae</text>
+    <text x="74" y="617" class="label">Version manager</text><rect class="green" x="282" y="598" width="82" height="22" rx="11"/><circle cx="296" cy="609" r="4" fill="#1e8c47"/><text class="greenText" x="306" y="613">Enabled</text>
+    <text x="74" y="659" class="label">Selected slot</text><rect class="codepill" x="282" y="639" width="74" height="24" rx="4"/><text class="mono codeText" x="292" y="656">system</text>
+    <text x="74" y="701" class="label">Last-good slot</text><rect class="codepill" x="282" y="681" width="74" height="24" rx="4"/><text class="mono codeText" x="292" y="698">system</text>
+    <text x="74" y="739" class="label">Running binary</text><rect class="codepill" x="282" y="719" width="290" height="24" rx="4"/><text class="mono codeText" x="292" y="736">/usr/lib/dae-ui/versions/system/dae</text>
+  </g>
+  <g class="line"><line x1="60" y1="379" x2="710" y2="379"/><line x1="60" y1="421" x2="710" y2="421"/><line x1="60" y1="463" x2="710" y2="463"/><line x1="60" y1="505" x2="710" y2="505"/><line x1="60" y1="547" x2="710" y2="547"/><line x1="60" y1="589" x2="710" y2="589"/><line x1="60" y1="631" x2="710" y2="631"/><line x1="60" y1="673" x2="710" y2="673"/><line x1="60" y1="715" x2="710" y2="715"/></g>
+
+  <rect class="panel" x="728" y="295" width="650" height="455" rx="6"/>
+  <rect class="sub" x="728" y="295" width="650" height="42" rx="6"/>
+  <text class="txt label" x="742" y="321" font-size="15">Configuration &amp; Runtime</text>
+  <line class="line" x1="728" y1="337" x2="1378" y2="337"/><line class="line" x1="938" y1="337" x2="938" y2="750"/>
+  <g class="txt row">
+    <text x="742" y="365" class="label">Configuration</text><rect class="codepill" x="950" y="345" width="172" height="24" rx="4"/><text class="mono codeText" x="960" y="362">/etc/dae/config.dae</text>
+    <text x="742" y="407" class="label">Discovered .dae files</text><text x="950" y="407">4</text>
+    <text x="742" y="449" class="label">Validation</text><rect class="green" x="950" y="430" width="58" height="22" rx="11"/><circle cx="964" cy="441" r="4" fill="#1e8c47"/><text class="greenText" x="974" y="445">Valid</text>
+    <text x="742" y="491" class="label">eBPF interface dae0</text><rect class="green" x="950" y="472" width="75" height="22" rx="11"/><circle cx="964" cy="483" r="4" fill="#1e8c47"/><text class="greenText" x="974" y="487">Present</text>
+    <text x="742" y="533" class="label">Native API</text><rect class="green" x="950" y="514" width="82" height="22" rx="11"/><circle cx="964" cy="525" r="4" fill="#1e8c47"/><text class="greenText" x="974" y="529">Available</text>
+    <text x="742" y="575" class="label">Runtime generation</text><rect class="green" x="950" y="556" width="88" height="22" rx="11"/><circle cx="964" cy="567" r="4" fill="#1e8c47"/><text class="greenText" x="974" y="571">Consistent</text>
+    <rect class="codepill" x="950" y="582" width="230" height="24" rx="4"/><text class="mono codeText" x="960" y="599">config=42 · rules=42 · dns=42</text>
+    <text x="742" y="641" class="label">Default route</text><rect class="codepill" x="950" y="621" width="236" height="24" rx="4"/><text class="mono codeText" x="960" y="638">default via 10.0.0.1 dev eth0</text>
+    <text x="742" y="693" class="label">Latest backup</text><rect class="codepill" x="950" y="673" width="186" height="24" rx="4"/><text class="mono codeText" x="960" y="690">2026-10-02_15-41-08</text>
+  </g>
+  <g class="line"><line x1="728" y1="379" x2="1378" y2="379"/><line x1="728" y1="421" x2="1378" y2="421"/><line x1="728" y1="463" x2="1378" y2="463"/><line x1="728" y1="505" x2="1378" y2="505"/><line x1="728" y1="547" x2="1378" y2="547"/><line x1="728" y1="610" x2="1378" y2="610"/><line x1="728" y1="655" x2="1378" y2="655"/><line x1="728" y1="708" x2="1378" y2="708"/></g>
+
+  <rect class="panel" x="60" y="770" width="1318" height="120" rx="6"/>
+  <rect class="sub" x="60" y="770" width="1318" height="40" rx="6"/><text class="txt label" x="74" y="795" font-size="15">Interfaces</text>
+  <rect class="code" x="74" y="823" width="1290" height="54" rx="6"/>
+  <text x="88" y="846" fill="#e4ebf2" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="12">dae0: flags=4163&lt;UP,BROADCAST,RUNNING,MULTICAST&gt; mtu 1500 · RX 21.7 GiB · TX 8.4 GiB</text>
+  <text x="88" y="865" fill="#e4ebf2" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="12">dae0peer: UP · RUNNING</text>
+
+  <rect class="btnGreen" x="960" y="908" width="58" height="32" rx="4"/><text class="btn" x="974" y="929">Start</text>
+  <rect class="btnBlue" x="1028" y="908" width="98" height="32" rx="4"/><text class="btn" x="1041" y="929">Hot Reload</text>
+  <rect class="btnBlue" x="1136" y="908" width="76" height="32" rx="4"/><text class="btn" x="1150" y="929">Restart</text>
+  <rect class="btnGray" x="1222" y="908" width="78" height="32" rx="4"/><text x="1235" y="929" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="700" fill="#42505f">Suspend</text>
+  <rect class="btnRed" x="1310" y="908" width="54" height="32" rx="4"/><text class="btn" x="1323" y="929">Stop</text>
+</svg>
