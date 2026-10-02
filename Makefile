@@ -69,8 +69,9 @@ endef
 define Package/luci-app-dae-ui/postrm
 #!/bin/sh
 
-rm -f "$${IPKG_INSTROOT}/etc/dae-ui/native-api.token"
-rmdir "$${IPKG_INSTROOT}/etc/dae-ui" 2>/dev/null || true
+rm -f "${IPKG_INSTROOT}/etc/dae-ui/native-api.token"
+rm -f "${IPKG_INSTROOT}/etc/dae-ui/geodata-pins"
+rmdir "${IPKG_INSTROOT}/etc/dae-ui" 2>/dev/null || true
 
 if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ -L /usr/bin/dae ] && [ "$$(readlink /usr/bin/dae 2>/dev/null)" = "/usr/libexec/dae-ui/dae-runner" ] && [ -x /usr/lib/dae-ui/versions/system/dae ]; then
