@@ -1,8 +1,10 @@
 # README screenshot plan
 
-These files are reserved for **real OpenWrt router screenshots** of luci-app-dae-ui v0.14.1.
+This directory contains one explicitly labeled UI design preview plus reserved filenames for **real OpenWrt router screenshots**.
 
-Do not replace them with mockups or generated previews in the public README.
+- `overview-preview.svg` is a synthetic layout preview with sample data. It may be shown in the public README only when clearly labeled as a preview.
+- `overview-zh-cn.png`, `runtime-zh-cn.png`, `versions-zh-cn.png`, and `configuration-zh-cn.png` remain reserved for real v0.14.2 router captures.
+- Never present generated/sample data as live router telemetry.
 
 ## Required captures
 
@@ -32,7 +34,7 @@ Do not replace them with mockups or generated previews in the public README.
 
 ## Capture rules
 
-- Use real router output from the v0.14.1 build.
+- Use real router output from the v0.14.2 build.
 - Prefer 16:9 or a wide desktop browser viewport.
 - Keep the LuCI theme consistent across screenshots.
 - Avoid browser extensions or unrelated UI overlays.
