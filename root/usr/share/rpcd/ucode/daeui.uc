@@ -402,14 +402,103 @@ function geodata_target_dir() {
 	return '/usr/share/v2ray';
 }
 
-function geodata_pins() {
+function geodata_pin_file() {
+	return '/etc/dae-ui/geodata-pins';
+}
+
+function geodata_upstream_source() {
+	return 'https://raw.githubusercontent.com/daeuniverse/dae/main/scripts/fetch-geo-data.sh';
+}
+
+function geodata_build_pins(geoip_version, geoip_sha256, geosite_version, geosite_sha256, source, fetched_at) {
+	if (!match(geoip_version || '', /^[0-9]{8,20}$/) ||
+		!match(geosite_version || '', /^[0-9]{8,20}$/) ||
+		!match(geoip_sha256 || '', /^[A-Fa-f0-9]{64}$/) ||
+		!match(geosite_sha256 || '', /^[A-Fa-f0-9]{64}$/))
+		return null;
+
 	return {
-		geoip_version: '202609050329',
-		geoip_sha256: '1cba1f0982cf62502fa079c66047c3d0c608196da5b3305671e68f60e917a482',
-		geoip_url: 'https://github.com/v2fly/geoip/releases/download/202609050329/geoip.dat',
-		geosite_version: '20260908094002',
-		geosite_sha256: '35ed26a24cafa1256bd7261414224b7bcef5c944cea7760e172b030a8b266450',
-		geosite_url: 'https://github.com/v2fly/domain-list-community/releases/download/20260908094002/dlc.dat'
+		geoip_version: geoip_version,
+		geoip_sha256: geoip_sha256,
+		geoip_url: 'https://github.com/v2fly/geoip/releases/download/' + geoip_version + '/geoip.dat',
+		geosite_version: geosite_version,
+		geosite_sha256: geosite_sha256,
+		geosite_url: 'https://github.com/v2fly/domain-list-community/releases/download/' + geosite_version + '/dlc.dat',
+		source: source || 'builtin',
+		source_url: geodata_upstream_source(),
+		fetched_at: fetched_at || ''
+	};
+}
+
+function geodata_builtin_pins() {
+	return geodata_build_pins(
+		'202609050329',
+		'1cba1f0982cf62502fa079c66047c3d0c608196da5b3305671e68f60e917a482',
+		'20260908094002',
+		'35ed26a24cafa1256bd7261414224b7bcef5c944cea7760e172b030a8b266450',
+		'builtin',
+		''
+	);
+}
+
+function geodata_parse_pin_text(content, source) {
+	let gi_ver = match(content || '', /(^|\n)GEOIP_VERSION="?([0-9]{8,20})"?\s*($|\n)/);
+	let gi_sha = match(content || '', /(^|\n)GEOIP_SHA256="?([A-Fa-f0-9]{64})"?\s*($|\n)/);
+	let gs_ver = match(content || '', /(^|\n)GEOSITE_VERSION="?([0-9]{8,20})"?\s*($|\n)/);
+	let gs_sha = match(content || '', /(^|\n)GEOSITE_SHA256="?([A-Fa-f0-9]{64})"?\s*($|\n)/);
+	let fetched = match(content || '', /(^|\n)FETCHED_AT="?([0-9T:+Z-]+)"?\s*($|\n)/);
+	if (!gi_ver || !gi_sha || !gs_ver || !gs_sha) return null;
+	return geodata_build_pins(
+		gi_ver[2], gi_sha[2], gs_ver[2], gs_sha[2],
+		source || 'refreshed',
+		fetched ? fetched[2] : ''
+	);
+}
+
+function geodata_pins() {
+	let saved = readfile(geodata_pin_file()) || '';
+	let parsed = geodata_parse_pin_text(saved, 'refreshed');
+	return parsed || geodata_builtin_pins();
+}
+
+function refresh_geodata_pins() {
+	let url = geodata_upstream_source();
+	let r = run(
+		"curl --fail --location --silent --show-error --retry 2 --connect-timeout 8 --max-time 20 " +
+		"-H 'User-Agent: luci-app-dae-ui' " + shell_quote(url)
+	);
+	if (r.rc != 0)
+		return { ok: false, error: 'Unable to fetch dae upstream GeoData pin source', output: r.output, source_url: url };
+
+	let parsed = geodata_parse_pin_text(r.output, 'upstream');
+	if (!parsed)
+		return { ok: false, error: 'dae upstream GeoData pin source did not contain the expected pinned version/SHA256 declarations', source_url: url };
+
+	let fetched_at = trim(run("date -u '+%Y-%m-%dT%H:%M:%SZ'").output);
+	let body =
+		'GEOIP_VERSION=' + parsed.geoip_version + '\n' +
+		'GEOIP_SHA256=' + parsed.geoip_sha256 + '\n' +
+		'GEOSITE_VERSION=' + parsed.geosite_version + '\n' +
+		'GEOSITE_SHA256=' + parsed.geosite_sha256 + '\n' +
+		'FETCHED_AT=' + fetched_at + '\n';
+
+	let prep = run('mkdir -p /etc/dae-ui && chmod 700 /etc/dae-ui');
+	if (prep.rc != 0)
+		return { ok: false, error: 'Unable to prepare GeoData pin state directory', output: prep.output };
+
+	let w = write_atomic(geodata_pin_file(), body);
+	if (!w.ok) return w;
+
+	let saved = geodata_parse_pin_text(body, 'refreshed');
+	return {
+		ok: true,
+		pins: saved,
+		changed:
+			saved.geoip_version != geodata_builtin_pins().geoip_version ||
+			saved.geoip_sha256 != geodata_builtin_pins().geoip_sha256 ||
+			saved.geosite_version != geodata_builtin_pins().geosite_version ||
+			saved.geosite_sha256 != geodata_builtin_pins().geosite_sha256,
+		message: 'GeoData pins refreshed from dae upstream scripts/fetch-geo-data.sh'
 	};
 }
 
@@ -2104,6 +2193,12 @@ return {
 		update_geodata: {
 			call: function() {
 				return update_geodata();
+			}
+		},
+
+		refresh_geodata_pins: {
+			call: function() {
+				return refresh_geodata_pins();
 			}
 		},
 
