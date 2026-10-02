@@ -25,7 +25,7 @@ return view.extend({
 				E('div', { 'class':'cbi-section' }, [
 					E('h3', {}, _('Recent error diagnostics')),
 					E('div', { 'class':'cbi-map-descr' }, [
-						_('Only the latest 20 in-memory errors are kept. RPC arguments, secrets and request bodies are not recorded.'),
+						_('Only the latest 20 sanitized errors are kept for this browser-tab session. RPC arguments, secrets and request bodies are not recorded.'),
 						' ',
 						_('Recorded: '), count
 					]),
