@@ -1323,12 +1323,26 @@ function vm_slot_info(s, slot) {
 
 	let ver = version(path);
 	let sha = trim(run('sha256sum ' + shell_quote(path) + " 2>/dev/null | awk '{print $1}'").output);
+	let meta = readfile(vm_root() + '/' + slot + '/source.txt') || '';
+	let source_type = slot == 'system' || match(slot, /^system-prev-/) ? 'system' : '';
+	let source_label = '';
+	let mt = match(meta, /(^|\n)type=([^\n]+)/);
+	let ml = match(meta, /(^|\n)label=([^\n]+)/);
+	let tag = match(meta, /(^|\n)tag=([^\n]+)/);
+	let asset = match(meta, /(^|\n)asset=([^\n]+)/);
+	if (mt) source_type = trim(mt[2]);
+	if (!source_type && tag) source_type = 'official-release';
+	if (ml) source_label = trim(ml[2]);
+	else if (tag) source_label = trim(tag[2]) + (asset ? ' / ' + trim(asset[2]) : '');
+
 	return {
 		slot: slot,
 		path: path,
 		version: ver,
 		sha256: sha,
 		size: st.size || 0,
+		source_type: source_type || 'unknown',
+		source_label: source_label,
 		selected: slot == vm_selected(),
 		last_good: slot == vm_last_good(),
 		system: slot == 'system'
