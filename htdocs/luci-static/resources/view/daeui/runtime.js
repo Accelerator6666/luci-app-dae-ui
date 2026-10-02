@@ -403,7 +403,7 @@ return view.extend({
 				trafficPanel(_('Last 5 minutes'), 'rt-traffic-300', _('Rolling in-page history'))
 			]),
 			E('h3', {}, _('Native generation consistency')),
-			E('div', { 'class':'cbi-map-descr' }, _('Read-only consistency check across Native API config, traffic-rule and DNS-rule dictionaries. A single reported generation means these runtime dictionaries agree. This does not infer desired-vs-active state when the backend does not report it.')),
+			E('div', { 'class':'cbi-map-descr' }, _('Read-only consistency check across Native API config, traffic-rule and DNS-rule dictionaries. Consistency is claimed only when at least two available dictionaries report the same generation. This does not infer desired-vs-active state when the backend does not report it.')),
 			generationTable(generations, native),
 			E('h3', {}, _('Runtime capability matrix')),
 			E('div', { 'class': 'table' }, [
