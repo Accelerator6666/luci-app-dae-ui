@@ -88,8 +88,51 @@ var callUpdateGeodata = rpc.declare({ object: 'luci.daeui', method: 'update_geod
 var callRefreshGeodataPins = rpc.declare({ object: 'luci.daeui', method: 'refresh_geodata_pins', expect: {} });
 var callPreviewManagedSection = rpc.declare({ object: 'luci.daeui', method: 'preview_managed_section', params: [ 'kind', 'body' ], expect: {} });
 
+function localizeBackendText(msg) {
+	if (typeof msg !== 'string' || !msg)
+		return msg;
+
+	var translated = _(msg);
+	if (translated !== msg)
+		return translated;
+
+	var prefixes = [
+		'Action completed: ',
+		'Download failed: ',
+		'SHA256 mismatch: ',
+		'Unable to backup existing ',
+		'Unable to install ',
+		'Native API returned HTTP '
+	];
+
+	for (var i = 0; i < prefixes.length; i++) {
+		if (msg.indexOf(prefixes[i]) === 0)
+			return _(prefixes[i]) + msg.slice(prefixes[i].length);
+	}
+
+	return msg;
+}
+
+function localizeBackendResult(res) {
+	if (!res || typeof res !== 'object')
+		return res;
+
+	if (typeof res.message === 'string')
+		res.message = localizeBackendText(res.message);
+	if (typeof res.error === 'string')
+		res.error = localizeBackendText(res.error);
+
+	return res;
+}
+
+function localizedCall(fn) {
+	return function() {
+		return fn.apply(null, arguments).then(localizeBackendResult);
+	};
+}
+
 function notify(msg, type) {
-	ui.addNotification(null, E('p', {}, msg || _('Operation completed.')), type || 'info');
+	ui.addNotification(null, E('p', {}, localizeBackendText(msg) || _('Operation completed.')), type || 'info');
 }
 
 function badge(text, state) {
@@ -129,48 +172,50 @@ function diagnosticsNode(items) {
 }
 
 return baseclass.extend({
-	callStatus: callStatus,
-	callRuntimeStats: callRuntimeStats,
-	callService: callService,
-	callGetConfig: callGetConfig,
-	callSaveConfig: callSaveConfig,
-	callApplyConfig: callApplyConfig,
-	callRestoreLast: callRestoreLast,
-	callGetSections: callGetSections,
-	callListConfigFiles: callListConfigFiles,
-	callGetConfigFile: callGetConfigFile,
-	callSaveConfigFile: callSaveConfigFile,
-	callCreateConfigFile: callCreateConfigFile,
-	callListBackups: callListBackups,
-	callDiffBackup: callDiffBackup,
-	callRestoreBackup: callRestoreBackup,
-	callGetLog: callGetLog,
-	callClearLog: callClearLog,
-	callDiagnose: callDiagnose,
-	callNativeApiStatus: callNativeApiStatus,
-	callNativeApiGet: callNativeApiGet,
-	callNativeAuthStatus: callNativeAuthStatus,
-	callSetNativeToken: callSetNativeToken,
-	callClearNativeToken: callClearNativeToken,
-	callNativeDnsQuery: callNativeDnsQuery,
-	callNativeRoutingTrace: callNativeRoutingTrace,
-	callVersionStatus: callVersionStatus,
-	callVersionReleases: callVersionReleases,
-	callVersionDownload: callVersionDownload,
-	callVersionImport: callVersionImport,
-	callVersionSwitch: callVersionSwitch,
-	callVersionDelete: callVersionDelete,
-	callNativeProbeStart: callNativeProbeStart,
-	callNativeOperationGet: callNativeOperationGet,
-	callNativeGroupGet: callNativeGroupGet,
-	callNativeFlowGet: callNativeFlowGet,
-	callIncludeStatus: callIncludeStatus,
-	callGetManagedSection: callGetManagedSection,
-	callSaveManagedSection: callSaveManagedSection,
-	callGeodataStatus: callGeodataStatus,
-	callUpdateGeodata: callUpdateGeodata,
-	callRefreshGeodataPins: callRefreshGeodataPins,
-	callPreviewManagedSection: callPreviewManagedSection,
+	callStatus: localizedCall(callStatus),
+	callRuntimeStats: localizedCall(callRuntimeStats),
+	callService: localizedCall(callService),
+	callGetConfig: localizedCall(callGetConfig),
+	callSaveConfig: localizedCall(callSaveConfig),
+	callApplyConfig: localizedCall(callApplyConfig),
+	callRestoreLast: localizedCall(callRestoreLast),
+	callGetSections: localizedCall(callGetSections),
+	callListConfigFiles: localizedCall(callListConfigFiles),
+	callGetConfigFile: localizedCall(callGetConfigFile),
+	callSaveConfigFile: localizedCall(callSaveConfigFile),
+	callCreateConfigFile: localizedCall(callCreateConfigFile),
+	callListBackups: localizedCall(callListBackups),
+	callDiffBackup: localizedCall(callDiffBackup),
+	callRestoreBackup: localizedCall(callRestoreBackup),
+	callGetLog: localizedCall(callGetLog),
+	callClearLog: localizedCall(callClearLog),
+	callDiagnose: localizedCall(callDiagnose),
+	callNativeApiStatus: localizedCall(callNativeApiStatus),
+	callNativeApiGet: localizedCall(callNativeApiGet),
+	callNativeAuthStatus: localizedCall(callNativeAuthStatus),
+	callSetNativeToken: localizedCall(callSetNativeToken),
+	callClearNativeToken: localizedCall(callClearNativeToken),
+	callNativeDnsQuery: localizedCall(callNativeDnsQuery),
+	callNativeRoutingTrace: localizedCall(callNativeRoutingTrace),
+	callVersionStatus: localizedCall(callVersionStatus),
+	callVersionReleases: localizedCall(callVersionReleases),
+	callVersionDownload: localizedCall(callVersionDownload),
+	callVersionImport: localizedCall(callVersionImport),
+	callVersionSwitch: localizedCall(callVersionSwitch),
+	callVersionDelete: localizedCall(callVersionDelete),
+	callNativeProbeStart: localizedCall(callNativeProbeStart),
+	callNativeOperationGet: localizedCall(callNativeOperationGet),
+	callNativeGroupGet: localizedCall(callNativeGroupGet),
+	callNativeFlowGet: localizedCall(callNativeFlowGet),
+	callIncludeStatus: localizedCall(callIncludeStatus),
+	callGetManagedSection: localizedCall(callGetManagedSection),
+	callSaveManagedSection: localizedCall(callSaveManagedSection),
+	callGeodataStatus: localizedCall(callGeodataStatus),
+	callUpdateGeodata: localizedCall(callUpdateGeodata),
+	callRefreshGeodataPins: localizedCall(callRefreshGeodataPins),
+	callPreviewManagedSection: localizedCall(callPreviewManagedSection),
+	localizeBackendText: localizeBackendText,
+	localizeBackendResult: localizeBackendResult,
 	notify: notify,
 	badge: badge,
 	bytesFromKiB: bytesFromKiB,

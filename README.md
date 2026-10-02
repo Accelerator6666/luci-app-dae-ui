@@ -1,134 +1,533 @@
 # luci-app-dae-ui
 
-A modern LuCI management UI for **dae**, designed from three references without cloning any one of them:
+**English** | [简体中文](README.zh-CN.md)
 
-- `QiuSimons/luci-app-honk`: OpenWrt package layout, rpcd/Ucode patterns, service lifecycle integration.
-- `Zakkaus/doona`: information architecture and UX ideas such as activity/status, connections, DNS, policies, routing, nodes, config and logs.
-- Doona docs/API contract: a capability-driven model for future dae native API integration.
+A modern, safety-oriented LuCI control plane for **dae** on OpenWrt.
 
-## Design principle
+`luci-app-dae-ui` combines day-to-day dae configuration management, runtime observability, Native API integration, diagnostics, GeoData maintenance, and reboot-safe multi-version binary management in one LuCI application.
 
-This package must be useful **today** with normal dae installations. It therefore manages what dae already exposes locally: process state, config files, `dae validate`, `dae reload`, logs and system diagnostics. It does **not** fabricate Doona resources that dae does not currently expose.
+> **Current version:** v0.14.1  
+> **Current status:** feature-complete for the v0.14.x scope; real-router validation is the remaining release gate.
 
-When dae implements the shared daeuniverse native API contract, the Native API page becomes the integration point for connections, DNS telemetry, policy selection, route traces, activity history and other runtime resources.
+## Why this project exists
 
-## v0.13.0
+Existing dae frontends tend to focus on either configuration editing or runtime visibility. This project aims to provide both, while keeping OpenWrt operational safety as the primary constraint.
 
-- Live Overview with process, memory, version, config validation, discovered config-file count and eBPF interface state.
-- Runtime Dashboard with 2-second polling for process CPU, memory, process uptime, socket FDs and `dae0`/`dae0peer` interface counters.
-- Start / stop / restart / hot reload / suspend controls.
-- Added a persistent **DAE Version Manager** under **Services → DAE → DAE Versions**.
-  - Keeps each installed binary in an immutable slot below `/usr/lib/dae-ui/versions/<slot>/dae`.
-  - Official releases are discovered from `daeuniverse/dae` only on demand and filtered to assets matching the router architecture.
-  - x86_64 can choose the upstream v1, v2/SSE and v3/AVX2 release assets; unsupported CPU variants are rejected by the execution smoke test before installation.
-  - Downloads are accepted only after a trusted SHA256 from fresh GitHub release metadata or the official `.dgst` asset matches the archive.
-  - The extracted binary must execute successfully and run `dae validate` against the **actual OpenWrt dae service config** before it is installed.
-  - Downloading a version never activates it automatically.
-  - **Activate & Restart** validates again, persists the selected slot, restarts dae and verifies that `/proc/<pid>/exe` points at the requested slot before marking it **last-good**.
-  - A failed runtime restart automatically restores the previous last-good/system slot and restarts dae.
-  - Version switching never moves, rewrites or deletes the user's `.dae` configuration files.
-- Reboot-safe binary selection:
-  - The original package-managed `/usr/bin/dae` is copied into the protected `system` slot before the manager first takes control.
-  - `/usr/bin/dae` then becomes a stable runner that dispatches to the persisted selected slot, so the existing OpenWrt `/etc/init.d/dae` remains unchanged.
-  - `/etc/init.d/dae-ui-version` runs at **START=98**, before the upstream dae service at **START=99**.
-  - On every boot it validates the persisted selected binary against the service configuration; if that fails it tries **last-good**, then the captured **system** binary.
-  - A fallback changes only the selected binary state; it does not roll back or alter configuration text.
-  - If the normal dae package later overwrites `/usr/bin/dae`, the boot guard captures that new package binary as the new `system` slot, preserves the previous system binary in an immutable `system-prev-*` rollback slot, and reinstalls the runner.
-  - Backend validate/reload operations call the selected slot directly, so a package overwrite of `/usr/bin/dae` cannot silently change LuCI's active binary before reboot.
-  - Start/Restart actions repair the runner first when version management is enabled.
-  - Removing luci-app-dae-ui restores the captured system binary to `/usr/bin/dae` when the managed runner still owns that path.
-- Local CodeMirror DAE editor with line numbers, DAE syntax highlighting, bracket matching, auto-close and folding.
-- Include-aware multi-file configuration manager for `.dae` files under the active config directory.
-- Safe configuration writes:
-  - timestamped backup before write;
-  - `dae validate` before acceptance;
-  - hot reload after apply;
-  - automatic rollback when validation or reload fails.
-- Dedicated Nodes, Policies, Routing and DNS control pages with source-file attribution, visual cards/tables and safe staged managed sections.
-- All Sections view for `global`, `subscription`, `node`, `group`, `routing`, `dns`, `experimental` blocks across discovered `.dae` files.
-- Backup history with per-file diff, restore+validate and restore+reload.
-- Safe managed config files under `config.d/dae-ui-*.dae`; the UI refuses managed writes unless the main config already includes `config.d/*.dae`.
-- Quick staging forms for nodes, subscriptions, policy groups and routing rules; DNS gets a safe split-DNS template plus raw staged editing.
-- Best-effort cards for nodes/subscriptions/policies, a routing summary table and DNS upstream cards; complex syntax always remains visible in source blocks.
-- Staged diff preview before managed-section writes.
-- Overview includes process uptime, discovered interfaces and the current default route; live CPU moved to Runtime where it is calculated from process CPU-tick deltas between polls.
-- Config Sources page showing discovered files and recognized section ownership.
-- GeoData status detection plus a verified updater that downloads dae-upstream pinned versions, validates SHA256, backs up existing files and atomically replaces them.
-- Diagnostics page for process, validation, `dae0` and default route.
-- Live log page with refresh, pause and clear.
-- Native API discovery page that probes `/api` and `/api/v1/capabilities` locally without extracting `native_api.secret` from dae configuration.
-- Native runtime pages remain conservative: connection close, group selection, DNS cache mutation and arbitrary Native API writes are not exposed. The only active Native operations are explicit diagnostic routing trace, diagnostic DNS query, and user-requested bounded probes.
-- Runtime capability matrix that clearly separates local telemetry from Native-API-only resources such as detailed connections, node probes, policy runtime selection, flows, routing trace and DNS telemetry.
-- Capability-driven hidden runtime pages for Connections, Nodes & Latency, Runtime Policies, Flows and DNS Runtime. Runtime only exposes entry buttons when `/api/v1/capabilities` reports the corresponding resource as available.
-- A whitelisted read-only Native API gateway: the LuCI frontend can request only known GET resources and cannot supply arbitrary URLs or invoke Native API mutations.
-- Optional Native API token mode:
-  - the token is entered once in LuCI;
-  - stored outside UCI at `/etc/dae-ui/native-api.token`;
-  - directory mode 0700 and token mode 0600;
-  - never returned by rpcd to browser JavaScript;
-  - never copied from `native_api.secret` automatically;
-  - used only by server-side curl through a temporary root-only curl config;
-  - removed when the package is uninstalled.
-- Native Connections, Nodes, Flows and DNS Runtime provide local search, filtering, sortable columns and 25/50/100/200-row client-side paging.
-- Nodes, Flows, DNS cache and DNS log now support incremental Native API cursor loading. The first page remains live; loading a second server page freezes the current snapshot so subsequent rows cannot be silently mixed with a newer generation. “Restart live snapshot” explicitly returns to first-page polling.
-- Cursor walks are bounded to 5000 locally retained rows per dataset; expired/invalid cursors are reported instead of silently restarting against another snapshot.
-- The backend request whitelist supports the contract's safe read query fields such as connection type/source, node group/cursor, flow network/state/cursor, and DNS name/type/source/cursor.
-- Validation output is parsed for safe `*.dae:line:column` locations. Save failures and Diagnostics can link directly to **Configuration Files**, select the source file and scroll the local editor to the reported line.
-- Config Sources, All Sections, and existing structured-section views now link source labels back to their actual `.dae` files.
-- Added a capability-gated **Native Rule Dictionary** backed by `GET /api/v1/rules`.
-- Added a capability-gated **Native DNS Rule Dictionary** backed by `GET /api/v1/dns/rules`.
-  - Request and response rules are displayed separately in evaluation order, including the backend-reported fallback entries.
-  - Request actions expose `upstream / asis / reject`; response actions expose `accept / reject / requery`, with resolved upstream names when applicable.
-  - DNS rule source navigation follows the same safe source-ID model as traffic rules: `source_id → GET /api/v1/config → exact local .dae path`; the display-only source file label is never used as a file-access path.
-  - Generation-qualified links can open an exact request/response DNS rule only when the requested generation matches the currently loaded complete DNS dictionary.
+The UI is designed around three rules:
 
-  - Rules are tied to the running `generation_id` and displayed with rule ID, evaluation index, kind, expression, outbound, must flag and source metadata.
-  - Rule source navigation never treats the rule's display-only `file` label as a local path.
-  - The UI joins `rule.source.source_id` to `GET /api/v1/config`, then links into the local editor only if that Native source path exactly matches a locally discovered `.dae` file.
-- Added capability-driven **Node Probe** actions when `probes` and `operations` are available.
-  - Probe kind, transport and IP family are derived from the backend's advertised probe contract.
-  - `tcp_connect` and `http` are constrained to TCP; DNS probes use only advertised DNS-capable transports.
-  - No probe runs automatically or on page refresh; opening the dialog is not enough — the user must press **Run probe**.
-  - rpcd re-reads capabilities before submission and rejects unadvertised target/kind/transport/IP combinations.
-  - The UI polls only the returned operation ID, respects Retry-After, and stops after 60 seconds if one operation remains nonterminal.
-- Added capability-sized **Group Probe** support.
-  - Only direct group members are probed.
-  - Group details are read first so the group's own `probe_transports` restriction is respected.
-  - Direct members are split into explicit member-ID batches using `max_members_per_job` and `max_results_per_job`.
-  - Batches run sequentially; the next operation is not submitted until the previous operation reaches a terminal state.
-  - Partial results remain visible if a later batch fails.
-- Flow timelines now resolve all routing chains with the correct dictionary:
-  - `traffic` → traffic Rules Dictionary;
-  - `dns_upstream` → traffic Rules Dictionary, because upstream transport routing uses traffic routing inputs;
-  - `dns_request` → DNS request rules;
-  - `dns_response` → DNS response rules.
-  - Both the winning route rule and every retained rule-evaluation row become links only when the step's `generation_id` exactly matches the corresponding current dictionary.
-  - DNS route steps also expose `dns_action` and DNS evidence shows `route_evaluation_ids` so a recorded lookup can be related back to its retained routing evaluations.
-- Added a reusable **Retained Flow Trace Timeline** renderer.
-  - Flow detail is read only from the fixed `GET /api/v1/flows/{flow_id}` path.
-  - Timeline steps are sorted by `seq` and render the full causal chain: input, traffic/DNS route evaluation, datapath action, dial mode, DNS evidence, reroute decision, outbound selection and connection milestones.
-  - Every step preserves `observed_at`, `elapsed_us`, `generation_id` and evidence type, with raw step JSON available under a disclosure panel.
-  - Route steps render the backend's rule-evaluation list; outbound steps render nested selection-path candidates, eligibility, latency, score and selected state when retained.
-  - Trace status and missing-evidence reasons remain visible for partial/disabled traces instead of presenting them as complete.
-- Added **Connections → Flow Timeline** drill-down.
-  - A connection gets a Timeline action only when the backend returned a real `flow_id`.
-  - The UI never manufactures a flow ID for an unrecorded live connection.
-  - The same generation-safe traffic-rule links are reused inside connection-launched timelines.
-- Added generation-safe **Flow → Rule** association.
-  - Clicking a flow rule ID reads the retained flow detail and current rule dictionary.
-  - The UI requires a retained `route` step with `chain=traffic`, the same `rule_id`, and a non-null `generation_id`.
-  - A rule link is offered only when that generation exactly equals the current Rules Dictionary `generation_id`.
-  - Missing retained evidence or a generation mismatch is shown explicitly; no cross-generation rule guess is made.
-- Native API Discovery also shows the advertised probe targets, kinds, transports, IP versions and job limits.
-- Added capability-gated **Native Diagnostics**:
-  - DNS Query uses the standard read-only `GET /api/v1/dns/query` with a typed query whitelist and visible request preview.
-  - Routing Trace uses only `POST /api/v1/routing/trace`, constructing a bounded `RoutingTraceRequest` server-side. The UI labels the result as a hypothetical simulation, never a recorded flow.
-  - No connection close, policy mutation, DNS cache delete/flush, config write, or arbitrary Native API POST is exposed. Probe operations remain isolated to the dedicated capability-bounded probe workflow.
-- Configurable dae binary, init script, config path and log path through UCI.
+1. **Do not fabricate runtime state.**  
+   Local process and kernel data is shown directly. Native-only data is shown only when the dae Native API explicitly advertises that capability.
 
-## Install for development
+2. **Do not silently rewrite user-owned configuration.**  
+   Managed writes are staged, diffable, validated, backed up, and rolled back on failure.
 
-Copy the project into an OpenWrt build tree as a package, or install the package files into the usual LuCI locations. Default runtime assumptions are:
+3. **Do not make dae binary switching fragile.**  
+   Version selection survives reboot and falls back through `selected → last-good → system` without rewriting `.dae` files.
+
+## Highlights
+
+- Native LuCI JavaScript UI
+- Simplified Chinese and English, following the LuCI system language automatically
+- Live Overview and Runtime dashboards
+- Context-aware CodeMirror DAE editor
+- Include-aware multi-file configuration management
+- Safe validate / apply / hot-reload / rollback workflow
+- Nodes, subscriptions, policy groups, routing and DNS views
+- Native API capability discovery
+- Connections, flows, runtime policies, DNS telemetry and rule dictionaries when supported by the backend
+- Generation-safe retained-flow and rule correlation
+- Explicit node/group probes with backend-advertised limits
+- Verified GeoData pin refresh and update
+- Persistent DAE Version Manager with reboot fallback
+- Diagnostics, logs, backups and restore workflows
+- Security boundaries around Native API tokens and file access
+
+## Screenshots
+
+Real-router screenshots will be added after the v0.14.1 OpenWrt validation pass. The README intentionally does not use generated mockups as production screenshots.
+
+Planned captures:
+
+- Simplified Chinese **Overview**
+- Simplified Chinese **Runtime** with populated traffic charts
+- Simplified Chinese **DAE Version Manager**
+- Simplified Chinese **Configuration Files** editor
+
+See [docs/screenshots/README.md](docs/screenshots/README.md) for the capture and redaction checklist.
+
+<!--
+![Overview](docs/screenshots/overview-zh-cn.png)
+![Runtime](docs/screenshots/runtime-zh-cn.png)
+![DAE Version Manager](docs/screenshots/versions-zh-cn.png)
+![Configuration Editor](docs/screenshots/configuration-zh-cn.png)
+-->
+
+## Interface
+
+The application appears under:
+
+```text
+Services → DAE
+```
+
+Main pages:
+
+| Page | Purpose |
+| --- | --- |
+| Overview | Service state, version, config validation, dae0, Native API and generation status |
+| Runtime | CPU, memory, sockets, dae0 traffic trends and runtime capability matrix |
+| Configuration Files | Safe multi-file DAE editing with validation diagnostics |
+| Main Config | Main dae configuration |
+| Nodes | Node and subscription management |
+| Policies | Policy groups and staged visual group builder |
+| Routing | Routing rules and Native rule dictionary |
+| DNS | DNS upstreams, managed DNS config and Native DNS rules |
+| All Sections | Structural view of recognized DAE config sections |
+| Backups | Diff, restore + validate, restore + reload |
+| Config Sources | Discovered source files and ownership |
+| GeoData | Pinned GeoIP / GeoSite metadata and verified updater |
+| Diagnostics | Process, config, dae0 and route checks |
+| Logs | Live log view with pause / resume / clear |
+| Native API | Discovery, capability matrix and optional token configuration |
+| DAE Versions | Multi-version binary manager |
+| Settings | Integration paths and package settings |
+
+Native-only pages remain hidden until the corresponding capability is reported.
+
+## Runtime observability
+
+The Runtime page polls local state without requiring Native API support.
+
+Local metrics include:
+
+- process CPU
+- RSS memory
+- process uptime
+- process-owned socket FD count
+- `dae0` / `dae0peer` counters
+- current RX / TX rate
+- 60-second traffic trend
+- 5-minute traffic trend
+- current / average / peak rate
+- recent WARN / ERROR marker summary
+
+Traffic charts are calculated locally from kernel interface counters. They are intentionally not presented as Native API proxy accounting.
+
+## Configuration editing
+
+The built-in CodeMirror editor provides:
+
+- line numbers
+- DAE syntax highlighting
+- bracket matching
+- auto-close
+- folding
+- `Ctrl+Space` / `Cmd+Space` completion
+- context-aware suggestions for `global`, `group`, `dns` and `routing`
+- routing matcher and outbound/group completion
+- validation diagnostics in the editor gutter
+- first-error navigation
+
+The UI discovers `.dae` files below the active configuration directory and validates writes against the complete main configuration, so include relationships are checked as a unit.
+
+### Safe apply model
+
+Managed writes use this flow:
+
+```text
+edit
+ ↓
+timestamped backup
+ ↓
+dae validate
+ ↓
+write
+ ↓
+hot reload
+ ↓
+runtime result
+```
+
+If validation or reload fails:
+
+```text
+failure
+ ↓
+restore previous file
+ ↓
+report diagnostics
+```
+
+Managed config sections are stored under:
+
+```text
+config.d/dae-ui-*.dae
+```
+
+The UI refuses managed writes unless the main dae configuration already includes:
+
+```text
+config.d/*.dae
+```
+
+It does not silently add that include.
+
+## Nodes, subscriptions and policies
+
+The source-oriented views preserve advanced user configuration while providing structured summaries and staged helpers.
+
+Supported features include:
+
+- node and subscription cards
+- protocol-aware node staging
+- tagged subscription staging
+- HTTP / HTTPS / SOCKS4 / SOCKS5 URI builder
+- exact runtime tag correlation when Native API data is available
+- TCP / UDP latency observations
+- subscription runtime member expansion
+- policy group cards
+- exact group-name runtime correlation
+- current TCP / UDP runtime selections
+- visual staged group builder
+
+Supported common policy syntax includes:
+
+```text
+fixed(0)
+min
+min_moving_avg
+min_avg10
+random
+```
+
+Credentials, opaque payloads and subscription secrets are redacted in summaries without modifying the source configuration.
+
+## Routing and DNS
+
+Routing and DNS pages combine source configuration with optional Native API dictionaries.
+
+### Native traffic rules
+
+When `rules` is advertised, the UI exposes a read-only rule dictionary tied to the running `generation_id`.
+
+Rule-source navigation follows:
+
+```text
+rule.source.source_id
+        ↓
+Native config source
+        ↓
+exact local .dae path match
+```
+
+Display-only backend file labels are never treated as trusted local file paths.
+
+### Native DNS rules
+
+When `dns_rules` is advertised, request and response rules are shown separately.
+
+Request actions may include:
+
+```text
+upstream / asis / reject
+```
+
+Response actions may include:
+
+```text
+accept / reject / requery
+```
+
+Rule links are generation-qualified. Historical evidence is never joined to a different current rule generation.
+
+## Native API model
+
+The backend probes:
+
+```text
+/api
+/api/v1/capabilities
+```
+
+Native-only features are capability-driven.
+
+Examples include:
+
+- detailed connections
+- node inventory
+- node/group probes
+- runtime policy selection
+- flows
+- routing trace
+- DNS query
+- DNS cache
+- DNS log
+- routing rules
+- DNS rules
+
+The LuCI frontend cannot submit arbitrary Native API URLs.
+
+### Token security
+
+Optional Bearer authentication is stored outside UCI:
+
+```text
+/etc/dae-ui/native-api.token
+```
+
+Security properties:
+
+- token directory: `0700`
+- token file: `0600`
+- token is never returned to browser JavaScript
+- `native_api.secret` is never copied automatically
+- token is used only by server-side requests
+- token is removed when the package is uninstalled
+
+## Connections and retained flows
+
+Connections and flows are read-only.
+
+A live connection receives a Timeline action only when the backend provides a real `flow_id`. The UI never invents a flow identity for an unrecorded connection.
+
+Retained flow detail is read only from:
+
+```text
+GET /api/v1/flows/{flow_id}
+```
+
+The timeline can show:
+
+- input
+- route evaluation
+- datapath action
+- dial mode
+- DNS evidence
+- reroute decision
+- outbound selection
+- connection milestones
+
+Each retained step keeps:
+
+- `observed_at`
+- `elapsed_us`
+- `generation_id`
+- evidence type
+- raw JSON disclosure
+
+Flow-to-rule links require an exact generation match.
+
+## Node and group probes
+
+Probe controls appear only when the backend advertises the required targets, kinds, transports, IP families and operation limits.
+
+No probe runs automatically.
+
+The user must explicitly start each probe.
+
+Group probes:
+
+- use direct members only
+- respect group `probe_transports`
+- split work according to `max_members_per_job` and `max_results_per_job`
+- run batches sequentially
+- preserve completed partial results if a later batch fails
+
+## Native diagnostics
+
+The UI exposes only bounded diagnostic operations from the shared contract.
+
+### DNS Query
+
+Uses the typed diagnostic resource:
+
+```text
+GET /api/v1/dns/query
+```
+
+### Routing Trace
+
+Uses:
+
+```text
+POST /api/v1/routing/trace
+```
+
+The result is explicitly presented as a hypothetical routing simulation, not as a recorded flow.
+
+The UI does not expose arbitrary Native API POSTs, connection termination, runtime policy mutation, DNS cache deletion, or arbitrary config writes.
+
+## DAE Version Manager
+
+The Version Manager keeps multiple dae binaries in immutable slots:
+
+```text
+/usr/lib/dae-ui/versions/<slot>/dae
+```
+
+### Official releases
+
+Official releases are queried on demand from `daeuniverse/dae`.
+
+Before a release is installed, the backend:
+
+1. filters assets by router architecture;
+2. obtains a trusted SHA256 from current GitHub metadata or the official `.dgst` asset;
+3. verifies the archive;
+4. extracts the dae binary;
+5. executes a smoke test;
+6. validates the actual OpenWrt dae service configuration.
+
+Downloading a release never activates it automatically.
+
+### Custom binaries
+
+A trusted local dae executable may be imported.
+
+The backend:
+
+- accepts only the fixed upload path;
+- rejects symlinks and non-regular files;
+- enforces a 1 KiB–128 MiB size range;
+- calculates SHA256;
+- smoke-tests the binary;
+- validates the active service configuration;
+- stores it in an immutable SHA256-addressed slot.
+
+Importing does not activate the binary automatically.
+
+### Reboot safety
+
+Before first takeover, the package-managed `/usr/bin/dae` is captured into a protected `system` slot.
+
+Then `/usr/bin/dae` becomes a persistent managed runner. The upstream `/etc/init.d/dae` is left unchanged.
+
+The boot guard:
+
+```text
+/etc/init.d/dae-ui-version
+START=98
+```
+
+runs before the normal dae service and validates:
+
+```text
+selected
+   ↓
+last-good
+   ↓
+system
+```
+
+Fallback changes binary selection only. It does not rewrite user configuration.
+
+If a later dae package upgrade overwrites `/usr/bin/dae`, the boot guard captures the new package binary, preserves the previous system binary as an immutable `system-prev-*` slot, and reinstalls the managed runner.
+
+## GeoData
+
+The GeoData updater reads pinned metadata from the fixed dae upstream source:
+
+```text
+daeuniverse/dae/main/scripts/fetch-geo-data.sh
+```
+
+Only numeric release versions and 64-hex SHA256 values are accepted.
+
+Persisted pins are stored under:
+
+```text
+/etc/dae-ui/geodata-pins
+```
+
+Downloads remain restricted to the fixed v2fly GeoIP and domain-list-community release repositories.
+
+Update flow:
+
+```text
+fixed upstream pin source
+        ↓
+persist version / SHA256
+        ↓
+download to /tmp
+        ↓
+SHA256 verify
+        ↓
+backup existing file
+        ↓
+atomic replace
+```
+
+No unverified `latest/download` URL is used.
+
+## Backups, logs and diagnostics
+
+The project includes:
+
+- timestamped config backups
+- per-file diff
+- restore + validate
+- restore + reload
+- direct editor navigation to safe `*.dae:line:column` validation locations
+- live logs
+- pause / resume
+- log clear
+- process diagnostics
+- configuration validation
+- dae0 presence checks
+- default-route checks
+
+## Language support
+
+v0.14.1 includes built-in Simplified Chinese support.
+
+The UI follows the LuCI system language automatically:
+
+```text
+English      → English UI
+简体中文      → Simplified Chinese UI
+```
+
+English remains the source and fallback language.
+
+The translation catalog is maintained under:
+
+```text
+po/zh_Hans/dae-ui.po
+po/templates/dae-ui.pot
+```
+
+CI verifies that current frontend and menu strings have Simplified Chinese coverage.
+
+## Build and install
+
+### GitHub Release package
+
+For OpenWrt 25.12.x, version tags automatically build an APK with the official OpenWrt 25.12.5 SDK and attach it to the GitHub Release together with `SHA256SUMS` and `INSTALL.txt`.
+
+The package is architecture-independent (`PKGARCH=all`) but requires `dae` and the declared LuCI/rpcd dependencies to already be installed or available from configured repositories.
+
+Because GitHub Release assets are not signed by the OpenWrt distribution signing key, install a downloaded local package explicitly:
+
+```sh
+apk add --allow-untrusted /tmp/luci-app-dae-ui-<version>-r1.apk
+```
+
+The Release workflow verifies that the Git tag matches `PKG_VERSION` before publishing.
+
+### Build from source
+
+Copy or clone this repository into an OpenWrt build tree as a package, for example:
+
+```sh
+git clone https://github.com/Accelerator6666/luci-app-dae-ui.git \
+    package/luci-app-dae-ui
+```
+
+Then select and build the package through the normal OpenWrt build system.
+
+The package depends on dae and the required LuCI/rpcd runtime components.
+
+Default paths:
 
 ```text
 /usr/bin/dae
@@ -137,28 +536,40 @@ Copy the project into an OpenWrt build tree as a package, or install the package
 /var/log/dae/dae.log
 ```
 
-They can be changed under **Services → DAE → Settings**.
+Integration paths can be adjusted under:
 
-## v0.14 on main
+```text
+Services → DAE → Settings
+```
 
-The v0.14 feature set is implemented on `main` and is ready for router-side validation:
+## Project status
 
-- Context-aware CodeMirror completion for DAE sections, routing matchers, group policies and configured outbound groups, plus inline validation diagnostics in the editor gutter.
-- Native generation-consistency reporting in Runtime and a compact Native API / generation snapshot on Overview.
-- Local 60-second and 5-minute dae0 traffic trends derived from kernel interface counters, plus a recent WARN / ERROR marker summary.
-- Source node and subscription cards correlate exact tags with Native runtime latency/inventory data without rewriting source configuration.
-- Policy Groups has a visual staged builder for exact node tags, subscription tags and supported policy syntax, while retaining Preview diff before writes.
-- Native runtime policy cards display current TCP/UDP selection snapshots for exact group-name matches.
-- Retained flow traces have a dedicated hidden detail route keyed by backend flow ID, with generation-safe rule links and direct Open page links from Flows and Connections.
-- Version Manager can import a trusted local dae executable through a fixed upload path. The uploaded binary is size-bounded, SHA256-addressed, smoke-tested and validated against the active service configuration before it becomes an immutable slot; it is never activated automatically.
-- GeoData pins can be refreshed from dae upstream's `scripts/fetch-geo-data.sh`. Only numeric versions and 64-hex SHA256 values are persisted; GeoData downloads continue to use fixed v2fly release repositories and verify hashes before install.
-- Nodes / Subscriptions now provide protocol-aware staged forms. Complex protocols retain their normal share-link syntax; HTTP(S)/SOCKS links can be generated by a small structured URI builder. Summary cards redact credentials and subscription secrets.
+The v0.14.x architecture and feature set are implemented.
 
-The remaining work for the release is real-router validation on OpenWrt, not another architectural rewrite.
+The remaining release work is router-side validation, especially:
 
-## Native API token security
+- CodeMirror completion and inline diagnostics
+- Runtime 60-second / 5-minute traffic charts
+- Native generation consistency
+- node/subscription runtime correlation
+- visual policy staging
+- retained flow detail
+- custom dae binary import
+- GeoData pin refresh
+- selected version persistence after reboot
+- Simplified Chinese rendering on a Chinese LuCI installation
 
-The optional Native API token is deliberately separate from normal UCI settings. `/etc/config/dae-ui` contains paths and UI settings only; the token lives in a root-only file. The UI can replace or remove it but cannot read it back. The rpcd gateway continues to allow only a fixed GET resource list and typed query parameters even after authentication is configured.
+See [RELEASE_NOTES_v0.14.0.md](RELEASE_NOTES_v0.14.0.md) and [CHANGELOG.md](CHANGELOG.md) for detailed release history.
+
+## Inspiration
+
+The project takes architectural and UX inspiration from:
+
+- [QiuSimons/luci-app-honk](https://github.com/QiuSimons/luci-app-honk)
+- [Zakkaus/doona](https://github.com/Zakkaus/doona)
+- Doona / dae Native API documentation and contract ideas
+
+The goal is not to clone any one of them, but to provide a native OpenWrt control plane with explicit safety boundaries.
 
 ## License
 

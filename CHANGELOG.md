@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.14.1 - 2026-10-02
+
+- Added bundled Simplified Chinese (zh_Hans / zh-cn) localization that follows the LuCI system language automatically.
+- Translated the complete current LuCI frontend string set, including menus, Overview, Runtime, configuration management, Native API pages, flow/rule diagnostics, GeoData and DAE Version Manager.
+- Added centralized frontend localization for rpcd backend success/error messages so operational dialogs and notifications do not fall back to English during normal Chinese-language use.
+- Added translations for dynamic backend message prefixes such as release download failures, SHA256 mismatches, install/backup failures and service-action completion.
+- Added `README.zh-CN.md` and reciprocal language links between the English and Simplified Chinese project documentation.
+- Kept technical identifiers such as DAE, Native API, GeoData, SHA256, PID, eBPF, TCP/UDP and IPv4/IPv6 unchanged where translating them would reduce clarity.
+- Bumped package version to 0.14.1.
+
 ## 0.14.0 - 2026-10-02
 
 - Added contextual DAE completion to the local CodeMirror editor. `Ctrl+Space` suggests section-aware global, group, DNS and routing syntax and can complete configured proxy-group names after routing arrows/fallbacks.

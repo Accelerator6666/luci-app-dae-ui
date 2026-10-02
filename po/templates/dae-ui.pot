@@ -1,0 +1,2676 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: luci-app-dae-ui 0.14.1\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "0 matching records"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
+msgid "Action finished."
+msgstr ""
+
+msgid "Actions"
+msgstr ""
+
+msgid "Activate & Restart"
+msgstr ""
+
+msgid "Active"
+msgstr ""
+
+msgid "Active selection"
+msgstr ""
+
+msgid "Add rules in normal dae syntax. Rule order inside this managed section is preserved."
+msgstr ""
+
+msgid "All .dae files below the main configuration directory are discovered automatically. Every write validates the complete main configuration so include relationships are checked as one unit."
+msgstr ""
+
+msgid "All Sections"
+msgstr ""
+
+msgid "All socket descriptors owned by dae"
+msgstr ""
+
+msgid "Allow live DNS for simulation"
+msgstr ""
+
+msgid "API major"
+msgstr ""
+
+msgid "Apply staged changes"
+msgstr ""
+
+msgid "Applying action…"
+msgstr ""
+
+msgid "Asset"
+msgstr ""
+
+msgid "Auth required"
+msgstr ""
+
+msgid "Authentication required by Native API."
+msgstr ""
+
+msgid "Automatic rollback was attempted. Fallback slot: "
+msgstr ""
+
+msgid "Available"
+msgstr ""
+
+msgid "Avg RX "
+msgstr ""
+
+msgid "Back to Flows"
+msgstr ""
+
+msgid "Backend name"
+msgstr ""
+
+msgid "backend snapshot truncated at requested limit"
+msgstr ""
+
+msgid "Backup"
+msgstr ""
+
+msgid "Backup restored."
+msgstr ""
+
+msgid "Backups"
+msgstr ""
+
+msgid "Base path"
+msgstr ""
+
+msgid "Bearer challenge"
+msgstr ""
+
+msgid "Bearer token"
+msgstr ""
+
+msgid "Best-effort process-owned socket count"
+msgstr ""
+
+msgid "Binary entry point"
+msgstr ""
+
+msgid "bypass cache"
+msgstr ""
+
+msgid "Cache"
+msgstr ""
+
+msgid "Cache mode"
+msgstr ""
+
+msgid "Calculated from process CPU ticks between polls"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Capabilities endpoint"
+msgstr ""
+
+msgid "Checks process state, configuration validation, eBPF interface presence and default routing."
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Code editor failed to initialize: "
+msgstr ""
+
+msgid "cold"
+msgstr ""
+
+msgid "Comparing backup with current file…"
+msgstr ""
+
+msgid "Compatible discovery detected. "
+msgstr ""
+
+msgid "Compatible discovery not confirmed. "
+msgstr ""
+
+msgid "Config Sources"
+msgstr ""
+
+msgid "config.d/*.dae is not detected in the active include block."
+msgstr ""
+
+msgid "Configuration"
+msgstr ""
+
+msgid "Configuration cannot be empty."
+msgstr ""
+
+msgid "Configuration diff"
+msgstr ""
+
+msgid "Configuration file"
+msgstr ""
+
+msgid "Configuration Files"
+msgstr ""
+
+msgid "Configuration Sources"
+msgstr ""
+
+msgid "Configured"
+msgstr ""
+
+msgid "Connections"
+msgstr ""
+
+msgid "Consistency"
+msgstr ""
+
+msgid "Consistent"
+msgstr ""
+
+msgid "Core checks passed."
+msgstr ""
+
+msgid "Counts are derived from the most recent 250 dae log lines using explicit WARN/WARNING and ERROR/FATAL/PANIC markers. This is a compact signal, not a replacement for the full log page."
+msgstr ""
+
+msgid "CPU"
+msgstr ""
+
+msgid "Cumulative RX / TX"
+msgstr ""
+
+msgid "Current package-managed binary; it will be captured automatically before the first managed switch."
+msgstr ""
+
+msgid "DAE"
+msgstr ""
+
+msgid "DAE Backup History"
+msgstr ""
+
+msgid "DAE Config Sections"
+msgstr ""
+
+msgid "DAE Configuration"
+msgstr ""
+
+msgid "DAE Configuration Files"
+msgstr ""
+
+msgid "DAE Diagnostics"
+msgstr ""
+
+msgid "DAE Overview"
+msgstr ""
+
+msgid "dae process"
+msgstr ""
+
+msgid "DAE Runtime"
+msgstr ""
+
+msgid "dae service enabled"
+msgstr ""
+
+msgid "DAE UI Settings"
+msgstr ""
+
+msgid "DAE uses geoip.dat and geosite.dat for geoip/geosite routing. Updates here use the exact versions and SHA256 values pinned by dae upstream, not an unverified latest URL."
+msgstr ""
+
+msgid "DAE validation failed"
+msgstr ""
+
+msgid "DAE Version Manager"
+msgstr ""
+
+msgid "DAE Versions"
+msgstr ""
+
+msgid "Default route"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Delete this inactive dae version slot?"
+msgstr ""
+
+msgid "Destination IP"
+msgstr ""
+
+msgid "Destination port"
+msgstr ""
+
+msgid "Detailed connections"
+msgstr ""
+
+msgid "Detected"
+msgstr ""
+
+msgid "Diagnostic DNS query"
+msgstr ""
+
+msgid "Diagnostics"
+msgstr ""
+
+msgid "Diff"
+msgstr ""
+
+msgid "Diff failed."
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
+
+msgid "Discovered .dae files"
+msgstr ""
+
+msgid "Discovery /api"
+msgstr ""
+
+msgid "DNS"
+msgstr ""
+
+msgid "DNS action"
+msgstr ""
+
+msgid "DNS Cache"
+msgstr ""
+
+msgid "DNS cache telemetry"
+msgstr ""
+
+msgid "DNS Log"
+msgstr ""
+
+msgid "DNS query"
+msgstr ""
+
+msgid "DNS Query"
+msgstr ""
+
+msgid "DNS query log telemetry"
+msgstr ""
+
+msgid "DNS routing rules"
+msgstr ""
+
+msgid "DNS rule dictionary"
+msgstr ""
+
+msgid "DNS Runtime"
+msgstr ""
+
+msgid "DNS upstream"
+msgstr ""
+
+msgid "DNS upstreams"
+msgstr ""
+
+msgid "Do not resolve domain"
+msgstr ""
+
+msgid "Domain"
+msgstr ""
+
+msgid "Doona-compatible contract"
+msgstr ""
+
+msgid "Download total"
+msgstr ""
+
+msgid "Downloading and verifying GeoData… This can take a little while."
+msgstr ""
+
+msgid "Downloading, verifying SHA256, smoke-testing the binary and validating the active service configuration…"
+msgstr ""
+
+msgid "eBPF interface counters"
+msgstr ""
+
+msgid "eBPF interface dae0"
+msgstr ""
+
+msgid "Edit upstream, request routing and response routing within this managed DNS section."
+msgstr ""
+
+msgid "Effective config sources"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Enabled in config"
+msgstr ""
+
+msgid "end of snapshot"
+msgstr ""
+
+msgid "Enter the Native API Bearer token first."
+msgstr ""
+
+msgid "Entry config"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Error / fatal markers"
+msgstr ""
+
+msgid "Evaluation"
+msgstr ""
+
+msgid "Evaluation order; the final entry is the request fallback reported by the backend."
+msgstr ""
+
+msgid "Evaluation order; the final entry is the response fallback reported by the backend."
+msgstr ""
+
+msgid "Every file write creates a timestamped sibling backup before the current .dae file is replaced."
+msgstr ""
+
+msgid "Expression"
+msgstr ""
+
+msgid "fallback running: "
+msgstr ""
+
+msgid "File created."
+msgstr ""
+
+msgid "Flow Detail"
+msgstr ""
+
+msgid "Flow detail is unavailable."
+msgstr ""
+
+msgid "Flow history"
+msgstr ""
+
+msgid "Flow ID"
+msgstr ""
+
+msgid "Flow summary"
+msgstr ""
+
+msgid "Flow trace"
+msgstr ""
+
+msgid "Flows"
+msgstr ""
+
+msgid "Generation"
+msgstr ""
+
+msgid "GeoData"
+msgstr ""
+
+msgid "GeoData pins refreshed."
+msgstr ""
+
+msgid "GeoData Update"
+msgstr ""
+
+msgid "GitHub digest"
+msgstr ""
+
+msgid "Group"
+msgstr ""
+
+msgid "Group Probe"
+msgstr ""
+
+msgid "Groups"
+msgstr ""
+
+msgid "High-resolution short window"
+msgstr ""
+
+msgid "Hot Reload"
+msgstr ""
+
+msgid "Import custom dae binary"
+msgstr ""
+
+msgid "Insert split-DNS template"
+msgstr ""
+
+msgid "Install / Update"
+msgstr ""
+
+msgid "Install dae release"
+msgstr ""
+
+msgid "Installed versions"
+msgstr ""
+
+msgid "Interface traffic counters"
+msgstr ""
+
+msgid "Interfaces"
+msgstr ""
+
+msgid "Invalid"
+msgstr ""
+
+msgid "IP version"
+msgstr ""
+
+msgid "IP versions"
+msgstr ""
+
+msgid "Job timeout"
+msgstr ""
+
+msgid "Kind"
+msgstr ""
+
+msgid "Kinds"
+msgstr ""
+
+msgid "Last 5 minutes"
+msgstr ""
+
+msgid "Last 60 seconds"
+msgstr ""
+
+msgid "Last-good"
+msgstr ""
+
+msgid "Last-good slot"
+msgstr ""
+
+msgid "Latency"
+msgstr ""
+
+msgid "Latest backup"
+msgstr ""
+
+msgid "Listen"
+msgstr ""
+
+msgid "Live dae0 traffic trend"
+msgstr ""
+
+msgid "Live process, configuration and network state. Refreshes automatically every 5 seconds."
+msgstr ""
+
+msgid "Load next server page"
+msgstr ""
+
+msgid "Load Official Releases"
+msgstr ""
+
+msgid "Loaded rows: "
+msgstr ""
+
+msgid "Loaded: "
+msgstr ""
+
+msgid "Loading official dae releases from GitHub…"
+msgstr ""
+
+msgid "Local metrics come from /proc, /sys/class/net and ss when available. Interface counters are kernel-interface counters, not a substitute for Native API proxy accounting."
+msgstr ""
+
+msgid "Local probe base"
+msgstr ""
+
+msgid "Local process state"
+msgstr ""
+
+msgid "Logs"
+msgstr ""
+
+msgid "LuCI config"
+msgstr ""
+
+msgid "Main config"
+msgstr ""
+
+msgid "Main Config"
+msgstr ""
+
+msgid "Manage multiple dae binaries without moving or rewriting your .dae configuration. A candidate must execute and validate the active service configuration before it can be selected. Successful runtime activation becomes last-good."
+msgstr ""
+
+msgid "Managed config is enabled through config.d/*.dae."
+msgstr ""
+
+msgid "Managed file: "
+msgstr ""
+
+msgid "Managed runner installed"
+msgstr ""
+
+msgid "Managed writes are disabled. "
+msgstr ""
+
+msgid "Max members / job"
+msgstr ""
+
+msgid "Max results / job"
+msgstr ""
+
+msgid "Member"
+msgstr ""
+
+msgid "Members"
+msgstr ""
+
+msgid "Memory"
+msgstr ""
+
+msgid "Mismatch"
+msgstr ""
+
+msgid "Missing"
+msgstr ""
+
+msgid "Missing: "
+msgstr ""
+
+msgid "more available"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Native API"
+msgstr ""
+
+msgid "Native API authentication"
+msgstr ""
+
+msgid "Native API Bearer token"
+msgstr ""
+
+msgid "Native API Discovery"
+msgstr ""
+
+msgid "Native API request failed."
+msgstr ""
+
+msgid "Native API returned HTTP "
+msgstr ""
+
+msgid "Native API returned invalid JSON: "
+msgstr ""
+
+msgid "Native API token removed."
+msgstr ""
+
+msgid "Native Connections"
+msgstr ""
+
+msgid "Native Diagnostics"
+msgstr ""
+
+msgid "Native DNS Rule Dictionary"
+msgstr ""
+
+msgid "Native DNS Rules"
+msgstr ""
+
+msgid "Native Flows"
+msgstr ""
+
+msgid "Native generation consistency"
+msgstr ""
+
+msgid "Native Nodes"
+msgstr ""
+
+msgid "Native Nodes & Latency"
+msgstr ""
+
+msgid "Native Rule Dictionary"
+msgstr ""
+
+msgid "Native Rules"
+msgstr ""
+
+msgid "native_api block"
+msgstr ""
+
+msgid "Network"
+msgstr ""
+
+msgid "New config.d file"
+msgstr ""
+
+msgid "New file name under config.d/ (for example routing.dae):"
+msgstr ""
+
+msgid "Next"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "No backups have been created yet."
+msgstr ""
+
+msgid "No diff output."
+msgstr ""
+
+msgid "No differences."
+msgstr ""
+
+msgid "No DNS query has been run."
+msgstr ""
+
+msgid "No DNS upstream entries could be summarized."
+msgstr ""
+
+msgid "No flow ID was supplied in the page URL."
+msgstr ""
+
+msgid "No generation IDs reported"
+msgstr ""
+
+msgid "No geoip.dat or geosite.dat was found in the common DAE asset locations."
+msgstr ""
+
+msgid "No interface information."
+msgstr ""
+
+msgid "No node entries could be summarized."
+msgstr ""
+
+msgid "No policy groups could be summarized."
+msgstr ""
+
+msgid "No read-only Native API runtime page is currently available."
+msgstr ""
+
+msgid "No records match the current filters."
+msgstr ""
+
+msgid "No records were returned."
+msgstr ""
+
+msgid "No response from Native API gateway."
+msgstr ""
+
+msgid "No retained trace steps were returned."
+msgstr ""
+
+msgid "No routing rules could be summarized."
+msgstr ""
+
+msgid "No simulation has been run."
+msgstr ""
+
+msgid "No subscription entries could be summarized."
+msgstr ""
+
+msgid "Node"
+msgstr ""
+
+msgid "Node cards"
+msgstr ""
+
+msgid "Node health / latency probes"
+msgstr ""
+
+msgid "Node Probe"
+msgstr ""
+
+msgid "Node probes / latency"
+msgstr ""
+
+msgid "Node probing is hidden unless probes, operations and the node target are all advertised."
+msgstr ""
+
+msgid "Nodes"
+msgstr ""
+
+msgid "Nodes & Latency"
+msgstr ""
+
+msgid "Nodes & Subscriptions"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "normal"
+msgstr ""
+
+msgid "Not applicable"
+msgstr ""
+
+msgid "Not configured"
+msgstr ""
+
+msgid "Not confirmed"
+msgstr ""
+
+msgid "Not detected"
+msgstr ""
+
+msgid "Not enabled"
+msgstr ""
+
+msgid "Not reported"
+msgstr ""
+
+msgid "Now RX "
+msgstr ""
+
+msgid "Official dae releases"
+msgstr ""
+
+msgid "One or more checks need attention."
+msgstr ""
+
+msgid "Only one generation reported"
+msgstr ""
+
+msgid "Open detail page"
+msgstr ""
+
+msgid "Open full logs"
+msgstr ""
+
+msgid "Open page"
+msgstr ""
+
+msgid "Operation completed."
+msgstr ""
+
+msgid "Operation failed."
+msgstr ""
+
+msgid "Operation remained nonterminal for more than 60 seconds."
+msgstr ""
+
+msgid "Operations"
+msgstr ""
+
+msgid "optional forced upstream"
+msgstr ""
+
+msgid "Outbound"
+msgstr ""
+
+msgid "Overview"
+msgstr ""
+
+msgid "Packets RX / TX"
+msgstr ""
+
+msgid "Path"
+msgstr ""
+
+msgid "Peak RX "
+msgstr ""
+
+msgid "Persistent selection state"
+msgstr ""
+
+msgid "PID"
+msgstr ""
+
+msgid "Pin source"
+msgstr ""
+
+msgid "Pinned upstream versions"
+msgstr ""
+
+msgid "Policies"
+msgstr ""
+
+msgid "Policy cards"
+msgstr ""
+
+msgid "Policy Groups"
+msgstr ""
+
+msgid "Prerelease"
+msgstr ""
+
+msgid "Present"
+msgstr ""
+
+msgid "Preview diff"
+msgstr ""
+
+msgid "Previous"
+msgstr ""
+
+msgid "Probe"
+msgstr ""
+
+msgid "Probe contract"
+msgstr ""
+
+msgid "Probe operation failed."
+msgstr ""
+
+msgid "Probe queued · "
+msgstr ""
+
+msgid "Probe…"
+msgstr ""
+
+msgid "Process"
+msgstr ""
+
+msgid "Process / memory metrics"
+msgstr ""
+
+msgid "Process name"
+msgstr ""
+
+msgid "Process uptime"
+msgstr ""
+
+msgid "Protocol"
+msgstr ""
+
+msgid "Provider"
+msgstr ""
+
+msgid "Public /usr/bin/dae target"
+msgstr ""
+
+msgid "Raw flow detail"
+msgstr ""
+
+msgid "Raw response"
+msgstr ""
+
+msgid "Raw step data"
+msgstr ""
+
+msgid "Read-only connection snapshot. When the backend records a flow_id, Timeline opens that exact retained causal trace; connections without a recorded flow remain unlinked."
+msgstr ""
+
+msgid "Read-only DNS cache and log resources. Loading another server cursor page freezes that dataset snapshot until you explicitly restart it."
+msgstr ""
+
+msgid "Read-only DNS request and response routing rules for one running generation. Request rules select upstream/asis/reject; response rules select accept/reject/requery. Source links use source_id → Native config source → exact local .dae path matching."
+msgstr ""
+
+msgid "Read-only node inventory and backend probe observations. The first server page stays live; loading another cursor page freezes that snapshot so sorting and filtering never mix generations."
+msgstr ""
+
+msgid "Read-only retained flow summaries. Timeline opens the recorded causal trace. Traffic and DNS rule links are generation-safe and never join historical evidence to a different current routing generation."
+msgstr ""
+
+msgid "Read-only routing dictionary for one running generation. Rules are joined by generation_id + rule_id. Source navigation uses source_id from Native API config and only becomes clickable when that source path exactly matches a locally discovered .dae file."
+msgstr ""
+
+msgid "Reading pinned versions and SHA256 values from dae upstream…"
+msgstr ""
+
+msgid "Reboot safety: the version boot guard starts before the normal dae init script. It validates the persisted selected binary against the service configuration, then falls back to last-good and finally the captured system binary if necessary. Configuration files are never rewritten during version selection or boot fallback."
+msgstr ""
+
+msgid "Recent log sample"
+msgstr ""
+
+msgid "Recent WARN / ERROR summary"
+msgstr ""
+
+msgid "Record types"
+msgstr ""
+
+msgid "Refresh GeoData pins"
+msgstr ""
+
+msgid "Refresh pins from dae upstream"
+msgstr ""
+
+msgid "Release"
+msgstr ""
+
+msgid "Release list not loaded yet."
+msgstr ""
+
+msgid "Remove the root-only Native API token used by this LuCI package?"
+msgstr ""
+
+msgid "Remove token"
+msgstr ""
+
+msgid "Replace token"
+msgstr ""
+
+msgid "Reported resources"
+msgstr ""
+
+msgid "Request preview"
+msgstr ""
+
+msgid "Request rules"
+msgstr ""
+
+msgid "Requires Native API"
+msgstr ""
+
+msgid "Resolve mode"
+msgstr ""
+
+msgid "Response rules"
+msgstr ""
+
+msgid "Restart"
+msgstr ""
+
+msgid "Restart live snapshot"
+msgstr ""
+
+msgid "Restore + Reload"
+msgstr ""
+
+msgid "Restore + Validate"
+msgstr ""
+
+msgid "Restore failed."
+msgstr ""
+
+msgid "Restore latest backup"
+msgstr ""
+
+msgid "Restore the newest backup and reload dae?"
+msgstr ""
+
+msgid "Restore this backup and hot-reload dae?"
+msgstr ""
+
+msgid "Restore this backup and validate it without reloading?"
+msgstr ""
+
+msgid "Result"
+msgstr ""
+
+msgid "Retained trace timeline"
+msgstr ""
+
+msgid "Rolling in-page history"
+msgstr ""
+
+msgid "Route"
+msgstr ""
+
+msgid "Router architecture"
+msgstr ""
+
+msgid "Routing"
+msgstr ""
+
+msgid "Routing rule dictionary"
+msgstr ""
+
+msgid "Routing rules"
+msgstr ""
+
+msgid "Routing source"
+msgstr ""
+
+msgid "Routing table"
+msgstr ""
+
+msgid "Routing trace"
+msgstr ""
+
+msgid "Routing Trace"
+msgstr ""
+
+msgid "RSS"
+msgstr ""
+
+msgid "Rule"
+msgstr ""
+
+msgid "Rule ID"
+msgstr ""
+
+msgid "Run diagnostics"
+msgstr ""
+
+msgid "Run diagnostics to collect current state."
+msgstr ""
+
+msgid "Run DNS diagnostic query"
+msgstr ""
+
+msgid "Run group probe"
+msgstr ""
+
+msgid "Run probe"
+msgstr ""
+
+msgid "Run routing simulation"
+msgstr ""
+
+msgid "Running"
+msgstr ""
+
+msgid "Running binary"
+msgstr ""
+
+msgid "Running bounded routing simulation…"
+msgstr ""
+
+msgid "Running diagnostic DNS query…"
+msgstr ""
+
+msgid "Running diagnostics…"
+msgstr ""
+
+msgid "Runtime"
+msgstr ""
+
+msgid "Runtime capability matrix"
+msgstr ""
+
+msgid "Runtime generation"
+msgstr ""
+
+msgid "Runtime memory"
+msgstr ""
+
+msgid "Runtime outbounds / policy"
+msgstr ""
+
+msgid "Runtime Policies"
+msgstr ""
+
+msgid "Runtime policy / outbound selection"
+msgstr ""
+
+msgid "RX rate"
+msgstr ""
+
+msgid "Save & Hot Reload"
+msgstr ""
+
+msgid "Save + Validate"
+msgstr ""
+
+msgid "Search cached domain or answer…"
+msgstr ""
+
+msgid "Search current snapshot…"
+msgstr ""
+
+msgid "Search DNS name, source, upstream or status…"
+msgstr ""
+
+msgid "Search expression, action, upstream, rule ID or source…"
+msgstr ""
+
+msgid "Search expression, outbound, rule ID or source…"
+msgstr ""
+
+msgid "Search flow, source, target, outbound, rule or connection…"
+msgstr ""
+
+msgid "Search node, protocol, provider or group…"
+msgstr ""
+
+msgid "Search source, target, outbound or process…"
+msgstr ""
+
+msgid "Security note: validating a custom binary requires executing it on the router. Import only binaries you trust and that match this router CPU/ABI."
+msgstr ""
+
+msgid "Selected"
+msgstr ""
+
+msgid "Selected slot"
+msgstr ""
+
+msgid "Server pages: "
+msgstr ""
+
+msgid "Service"
+msgstr ""
+
+msgid "Service config"
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "SHA256"
+msgstr ""
+
+msgid "Showing "
+msgstr ""
+
+msgid "Size"
+msgstr ""
+
+msgid "Slot"
+msgstr ""
+
+msgid "Smart completion: "
+msgstr ""
+
+msgid "Smoke-testing the uploaded binary and validating the active service configuration…"
+msgstr ""
+
+msgid "Socket FDs"
+msgstr ""
+
+msgid "Source"
+msgstr ""
+
+msgid "Source configuration"
+msgstr ""
+
+msgid "Source IP"
+msgstr ""
+
+msgid "Source port"
+msgstr ""
+
+msgid "Stage node"
+msgstr ""
+
+msgid "Stage policy group"
+msgstr ""
+
+msgid "Stage rule"
+msgstr ""
+
+msgid "Stage subscription"
+msgstr ""
+
+msgid "Staged diff"
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "State"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Stop"
+msgstr ""
+
+msgid "Stopped"
+msgstr ""
+
+msgid "Store token"
+msgstr ""
+
+msgid "Stored token"
+msgstr ""
+
+msgid "Storing the token in a root-only file and testing capabilities…"
+msgstr ""
+
+msgid "Subscription"
+msgstr ""
+
+msgid "Subscription cards"
+msgstr ""
+
+msgid "Suggestions follow the current global/group/DNS/routing context and include configured proxy groups."
+msgstr ""
+
+msgid "Suspend"
+msgstr ""
+
+msgid "Switch dae version"
+msgstr ""
+
+msgid "System fallback"
+msgstr ""
+
+msgid "Tag"
+msgstr ""
+
+msgid "Targets"
+msgstr ""
+
+msgid "TCP latency"
+msgstr ""
+
+msgid "TCP selection"
+msgstr ""
+
+msgid "The charts are calculated locally from dae0 kernel byte counters every 2 seconds. History starts when this Runtime page is opened and is not persisted."
+msgstr ""
+
+msgid "The main config includes config.d/*.dae."
+msgstr ""
+
+msgid "The main dae configuration does not include config.d/*.dae. Existing configuration is still shown read-only; this UI will not modify the main config automatically."
+msgstr ""
+
+msgid "The release list is fetched only when requested. Downloads are restricted to daeuniverse/dae assets matching this router architecture. The .dgst SHA256 is required and verified before extraction."
+msgstr ""
+
+msgid "The service is disabled/stopped, so the selection is persisted but has not yet been runtime-confirmed."
+msgstr ""
+
+msgid "Time"
+msgstr ""
+
+msgid "Timeline"
+msgstr ""
+
+msgid "Token accepted"
+msgstr ""
+
+msgid "Token stored and authenticated capabilities successfully."
+msgstr ""
+
+msgid "Token stored. The capabilities endpoint did not return HTTP 200 yet."
+msgstr ""
+
+msgid "Total: "
+msgstr ""
+
+msgid "Transport"
+msgstr ""
+
+msgid "Transports"
+msgstr ""
+
+msgid "TX "
+msgstr ""
+
+msgid "TX rate"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "UDP latency"
+msgstr ""
+
+msgid "UDP selection"
+msgstr ""
+
+msgid "Unable to create file."
+msgstr ""
+
+msgid "Unable to delete version slot."
+msgstr ""
+
+msgid "Unable to refresh GeoData pins."
+msgstr ""
+
+msgid "Unable to store Native API token."
+msgstr ""
+
+msgid "Unavailable"
+msgstr ""
+
+msgid "Unknown"
+msgstr ""
+
+msgid "Update verified GeoData"
+msgstr ""
+
+msgid "Upload & Validate Custom Binary"
+msgstr ""
+
+msgid "Upload a trusted local dae executable into an immutable custom version slot. The backend accepts only the fixed temporary upload path, enforces a 1 KiB–128 MiB size bound, executes a version smoke test, validates the active service configuration and derives the slot name from the SHA256. Import never activates the binary automatically."
+msgstr ""
+
+msgid "Upload total"
+msgstr ""
+
+msgid "Upstream"
+msgstr ""
+
+msgid "Uptime"
+msgstr ""
+
+msgid "Use Configuration Files to edit the source file. Changes there are validated against the main dae configuration before they can be applied."
+msgstr ""
+
+msgid "Valid"
+msgstr ""
+
+msgid "Validated config"
+msgstr ""
+
+msgid "Validating and hot-reloading staged changes…"
+msgstr ""
+
+msgid "Validating and hot-reloading…"
+msgstr ""
+
+msgid "Validating and saving…"
+msgstr ""
+
+msgid "Validating staged changes…"
+msgstr ""
+
+msgid "Validating the target binary and active service configuration before switching…"
+msgstr ""
+
+msgid "Validation"
+msgstr ""
+
+msgid "Validation diagnostics"
+msgstr ""
+
+msgid "Validation error"
+msgstr ""
+
+msgid "Validation errors are marked in the editor gutter after a failed save."
+msgstr ""
+
+msgid "Version"
+msgstr ""
+
+msgid "Version manager"
+msgstr ""
+
+msgid "Version slot deleted."
+msgstr ""
+
+msgid "Waiting for samples…"
+msgstr ""
+
+msgid "warm"
+msgstr ""
+
+msgid "Warmth"
+msgstr ""
+
+msgid "Warning markers"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid " and accepts only numeric release versions plus 64-hex SHA256 values. The download URLs remain fixed to the v2fly GeoIP and domain-list-community release repositories."
+msgstr ""
+
+msgid " is not present in the requested dictionary list."
+msgstr ""
+
+msgid " is not present in this complete dictionary."
+msgstr ""
+
+msgid ", but this page currently exposes generation "
+msgstr ""
+
+msgid ". No cross-generation DNS rule association is made."
+msgstr ""
+
+msgid ". No cross-generation rule association is made."
+msgstr ""
+
+msgid ". The backend-provided flow_id is authoritative; this UI does not fabricate a flow for unrecorded connections."
+msgstr ""
+
+msgid "A compatible Native API discovery endpoint was detected. Resource availability above comes from /api/v1/capabilities when that endpoint is publicly readable."
+msgstr ""
+
+msgid "A tagged subscription remains a normal DAE subscription URI. The form validates the tag and requires an explicit URI scheme before staging."
+msgstr ""
+
+msgid "accepted release assets: "
+msgstr ""
+
+msgid "action"
+msgstr ""
+
+msgid "Activate this dae version and restart the dae service when it is currently enabled/running? The current configuration will not be modified."
+msgstr ""
+
+msgid "Addresses"
+msgstr ""
+
+msgid "All "
+msgstr ""
+
+msgid "Answers"
+msgstr ""
+
+msgid "api_major=1 or a Bearer authentication challenge matches the Doona-compatible discovery model."
+msgstr ""
+
+msgid "Attempt ID"
+msgstr ""
+
+msgid "Base directory: "
+msgstr ""
+
+msgid "Batch "
+msgstr ""
+
+msgid "batch size: "
+msgstr ""
+
+msgid "best TCP"
+msgstr ""
+
+msgid "Boot guard warning: "
+msgstr ""
+
+msgid "bounded probe operations."
+msgstr ""
+
+msgid "Build URI"
+msgstr ""
+
+msgid "cache"
+msgstr ""
+
+msgid "cache mode: "
+msgstr ""
+
+msgid "Cached"
+msgstr ""
+
+msgid "Carrier transport"
+msgstr ""
+
+msgid "Chain"
+msgstr ""
+
+msgid "Clear"
+msgstr ""
+
+msgid "Clear the configured dae log file?"
+msgstr ""
+
+msgid "Comma-separated, for example A,AAAA,HTTPS."
+msgstr ""
+
+msgid "Completed "
+msgstr ""
+
+msgid "Complex protocols keep their standard share-link syntax. The protocol selector validates the URI scheme before staging; the simple builder below can generate HTTP(S) and SOCKS links. Nothing is written until the managed-section save/apply controls are used."
+msgstr ""
+
+msgid "Config generation"
+msgstr ""
+
+msgid "Connection"
+msgstr ""
+
+msgid "Connection ID"
+msgstr ""
+
+msgid "Current dae process"
+msgstr ""
+
+msgid "Current group selection plus outbound counters when available. Policy selection remains read-only; the only active operation on this page is an explicitly requested bounded group health probe."
+msgstr ""
+
+msgid "Current rule dictionary is unavailable."
+msgstr ""
+
+msgid "Current rules generation"
+msgstr ""
+
+msgid "dae binary"
+msgstr ""
+
+msgid "DAE Logs"
+msgstr ""
+
+msgid "DAE UI managed section"
+msgstr ""
+
+msgid "dae0 missing"
+msgstr ""
+
+msgid "Datapath"
+msgstr ""
+
+msgid "Decision"
+msgstr ""
+
+msgid "Destination"
+msgstr ""
+
+msgid "Detailed Connections, node latency, routing rules, runtime policy selection, flows and DNS telemetry are enabled only when the Native API explicitly reports those resources."
+msgstr ""
+
+msgid "Detected locations"
+msgstr ""
+
+msgid "Dial IP"
+msgstr ""
+
+msgid "Dial mode"
+msgstr ""
+
+msgid "Diff: "
+msgstr ""
+
+msgid "Direct members: "
+msgstr ""
+
+msgid "DNS cache"
+msgstr ""
+
+msgid "DNS log"
+msgstr ""
+
+msgid "DNS rules generation"
+msgstr ""
+
+msgid "Domain is optional when destination IP is supplied."
+msgstr ""
+
+msgid "Domain source"
+msgstr ""
+
+msgid "Done."
+msgstr ""
+
+msgid "Download"
+msgstr ""
+
+msgid "Download and verify this official dae release? It will be installed into a version slot but will not be activated automatically."
+msgstr ""
+
+msgid "download direction on dae0"
+msgstr ""
+
+msgid "Download the currently persisted GeoData pins, verify SHA256, back up existing files and atomically replace them?"
+msgstr ""
+
+msgid "Dropped records: "
+msgstr ""
+
+msgid "Edits are validated with dae before they are accepted. Save & Apply creates a timestamped backup, validates, then uses dae hot reload. A failed validation or reload restores the previous configuration."
+msgstr ""
+
+msgid "Effective outbound"
+msgstr ""
+
+msgid "Effective target"
+msgstr ""
+
+msgid "Eligible"
+msgstr ""
+
+msgid "Ended"
+msgstr ""
+
+msgid "Enter a DNS domain."
+msgstr ""
+
+msgid "Enter a domain or destination IP."
+msgstr ""
+
+msgid "Enter a username when a password is used in the simple proxy builder."
+msgstr ""
+
+msgid "Evaluation ID"
+msgstr ""
+
+msgid "Evaluations"
+msgstr ""
+
+msgid "Exact node tags"
+msgstr ""
+
+msgid "Existing definitions remain untouched. Cards are a best-effort summary of standard one-line entries; advanced syntax is still preserved in the source view."
+msgstr ""
+
+msgid "Expires"
+msgstr ""
+
+msgid "Fallback"
+msgstr ""
+
+msgid "Fetch dae upstream scripts/fetch-geo-data.sh and persist only its pinned GeoData versions and SHA256 values? No GeoData file is downloaded by this step."
+msgstr ""
+
+msgid "Flow Detail · "
+msgstr ""
+
+msgid "Flow route generation"
+msgstr ""
+
+msgid "Flow trace · "
+msgstr ""
+
+msgid "Forced upstream"
+msgstr ""
+
+msgid "From evaluation"
+msgstr ""
+
+msgid "Future dashboard directory"
+msgstr ""
+
+msgid "generation "
+msgstr ""
+
+msgid "Generation matches, but DNS rule ID "
+msgstr ""
+
+msgid "Generation matches, but rule ID "
+msgstr ""
+
+msgid "Generation mismatch. This retained flow must not be joined to the current rule dictionary."
+msgstr ""
+
+msgid "Generation: "
+msgstr ""
+
+msgid "geoip.dat"
+msgstr ""
+
+msgid "geosite.dat"
+msgstr ""
+
+msgid "group name"
+msgstr ""
+
+msgid "Group name must be a safe DAE identifier."
+msgstr ""
+
+msgid "Group probes use only direct members and automatically split them into sequential jobs that satisfy the backend-advertised member/result limits."
+msgstr ""
+
+msgid "groups"
+msgstr ""
+
+msgid "Health updated"
+msgstr ""
+
+msgid "Host and a valid port are required."
+msgstr ""
+
+msgid "host or IP"
+msgstr ""
+
+msgid "Index"
+msgstr ""
+
+msgid "Init script"
+msgstr ""
+
+msgid "Input"
+msgstr ""
+
+msgid "Install target"
+msgstr ""
+
+msgid "Instance ID"
+msgstr ""
+
+msgid "IP is optional when domain is supplied."
+msgstr ""
+
+msgid "kind"
+msgstr ""
+
+msgid "Latest backup: "
+msgstr ""
+
+msgid "Leaf node"
+msgstr ""
+
+msgid "line(s)"
+msgstr ""
+
+msgid "List"
+msgstr ""
+
+msgid "Loading retained flow detail for this connection…"
+msgstr ""
+
+msgid "Loading retained flow detail…"
+msgstr ""
+
+msgid "Local"
+msgstr ""
+
+msgid "Log file"
+msgstr ""
+
+msgid "Lookup ID"
+msgstr ""
+
+msgid "Mark"
+msgstr ""
+
+msgid "Match"
+msgstr ""
+
+msgid "max members/job: "
+msgstr ""
+
+msgid "max results/job: "
+msgstr ""
+
+msgid "member(s)"
+msgstr ""
+
+msgid "members"
+msgstr ""
+
+msgid "Milestone"
+msgstr ""
+
+msgid "Missing inputs"
+msgstr ""
+
+msgid "Must"
+msgstr ""
+
+msgid "Native node inventory has additional server pages. Latency labels in the visual builder are therefore partial."
+msgstr ""
+
+msgid "Native runtime correlation enabled. Exact tagged nodes and subscription/provider tags are joined to the current runtime inventory."
+msgstr ""
+
+msgid "Native runtime node data is unavailable; source cards remain fully usable without it."
+msgstr ""
+
+msgid "Native runtime pages"
+msgstr ""
+
+msgid "Native runtime policy correlation is available for exact group names. Current TCP/UDP selections are shown as a read-only snapshot."
+msgstr ""
+
+msgid "Native runtime policy data is unavailable; source policy editing is unaffected."
+msgstr ""
+
+msgid "network"
+msgstr ""
+
+msgid "No .dae files found."
+msgstr ""
+
+msgid "No compatible Native API discovery response is currently available. Native-only rows remain disabled rather than showing inferred or fabricated runtime data."
+msgstr ""
+
+msgid "No compatible transport is available for this probe kind."
+msgstr ""
+
+msgid "No existing matching sections were found."
+msgstr ""
+
+msgid "No log entries found."
+msgstr ""
+
+msgid "No matching section was found in the active .dae files."
+msgstr ""
+
+msgid "No recognized top-level DAE sections"
+msgstr ""
+
+msgid "No release asset matching this router architecture was returned."
+msgstr ""
+
+msgid "No retained traffic-route step proves the generation for this flow rule. The summary rule_id is therefore not joined to the current dictionary."
+msgstr ""
+
+msgid "No subscription filter"
+msgstr ""
+
+msgid "Node link must contain a URI scheme such as vless:// or ss://."
+msgstr ""
+
+msgid "Node tag may contain only letters, numbers, dot, underscore and hyphen."
+msgstr ""
+
+msgid "not a locally discovered source"
+msgstr ""
+
+msgid "Not cached"
+msgstr ""
+
+msgid "Not probed"
+msgstr ""
+
+msgid "now"
+msgstr ""
+
+msgid "Observed by"
+msgstr ""
+
+msgid "Open matching rule"
+msgstr ""
+
+msgid "Opened from connection "
+msgstr ""
+
+msgid "Operation finished."
+msgstr ""
+
+msgid "operations: "
+msgstr ""
+
+msgid "optional advanced filter, e.g. name(keyword: 'HK')"
+msgstr ""
+
+msgid "Optional label for this custom dae binary:"
+msgstr ""
+
+msgid "optional tag"
+msgstr ""
+
+msgid "outbound"
+msgstr ""
+
+msgid "Outbound / upstream"
+msgstr ""
+
+msgid "password (optional)"
+msgstr ""
+
+msgid "Path: "
+msgstr ""
+
+msgid "Paths and integration settings for this LuCI package."
+msgstr ""
+
+msgid "Pause"
+msgstr ""
+
+msgid "Performed"
+msgstr ""
+
+msgid "Pin refresh reads only "
+msgstr ""
+
+msgid "Plane"
+msgstr ""
+
+msgid "Policy"
+msgstr ""
+
+msgid "Policy cards summarize common group syntax. Existing groups remain user-owned and are never rewritten by the quick editor."
+msgstr ""
+
+msgid "Policy: "
+msgstr ""
+
+msgid "port"
+msgstr ""
+
+msgid "Preparing diff preview…"
+msgstr ""
+
+msgid "Probe accepted without operation_id."
+msgstr ""
+
+msgid "Probe choices come from the backend capability document. Every probe is manually opened and submitted; no probe runs on page load or polling."
+msgstr ""
+
+msgid "Probe completed. Selection changed: TCP "
+msgstr ""
+
+msgid "Probe failed. "
+msgstr ""
+
+msgid "Probe group: "
+msgstr ""
+
+msgid "Probe is "
+msgstr ""
+
+msgid "Probe node: "
+msgstr ""
+
+msgid "Process stopped"
+msgstr ""
+
+msgid "protocol"
+msgstr ""
+
+msgid "Protocol-aware node staging"
+msgstr ""
+
+msgid "provider"
+msgstr ""
+
+msgid "Purpose"
+msgstr ""
+
+msgid "Question"
+msgstr ""
+
+msgid "Raw operation"
+msgstr ""
+
+msgid "Read-only consistency check across Native API config, traffic-rule and DNS-rule dictionaries. Consistency is claimed only when at least two available dictionaries report the same generation. This does not infer desired-vs-active state when the backend does not report it."
+msgstr ""
+
+msgid "Read-only structural view inspired by Doona. Editing remains centralized in Configuration so validation and rollback stay atomic."
+msgstr ""
+
+msgid "Reading retained flow evidence and current rule dictionary…"
+msgstr ""
+
+msgid "Reason"
+msgstr ""
+
+msgid "Refresh"
+msgstr ""
+
+msgid "Reply received"
+msgstr ""
+
+msgid "Request rules: "
+msgstr ""
+
+msgid "Reroute"
+msgstr ""
+
+msgid "Resolution"
+msgstr ""
+
+msgid "Resolve flow rule"
+msgstr ""
+
+msgid "Resolved DNS rule"
+msgstr ""
+
+msgid "Resolved flow rule"
+msgstr ""
+
+msgid "Resolved node"
+msgstr ""
+
+msgid "Resolved rule"
+msgstr ""
+
+msgid "Response rules: "
+msgstr ""
+
+msgid "Results completed before the failure: "
+msgstr ""
+
+msgid "Resume"
+msgstr ""
+
+msgid "Revision"
+msgstr ""
+
+msgid "Route evaluations"
+msgstr ""
+
+msgid "Routed outbound"
+msgstr ""
+
+msgid "Router architecture: "
+msgstr ""
+
+msgid "Rule evaluations"
+msgstr ""
+
+msgid "Rule expression"
+msgstr ""
+
+msgid "Rule source"
+msgstr ""
+
+msgid "Rules checked"
+msgstr ""
+
+msgid "Rules: "
+msgstr ""
+
+msgid "Running batch "
+msgstr ""
+
+msgid "Runtime members"
+msgstr ""
+
+msgid "Runtime node found; no latency observation reported"
+msgstr ""
+
+msgid "runtime node(s)"
+msgstr ""
+
+msgid "Runtime snapshot: "
+msgstr ""
+
+msgid "Score"
+msgstr ""
+
+msgid "Select at least one node/subscription or enter an advanced filter."
+msgstr ""
+
+msgid "Select exact source node tags and/or a subscription tag. Multiple filter lines use DAE group OR semantics. The generated text is only staged in the managed editor below; Preview diff remains available before any write."
+msgstr ""
+
+msgid "Selected IP"
+msgstr ""
+
+msgid "Selected protocol does not match the node URI scheme."
+msgstr ""
+
+msgid "Selection candidates"
+msgstr ""
+
+msgid "Selection changed: TCP "
+msgstr ""
+
+msgid "Selection path"
+msgstr ""
+
+msgid "Server address"
+msgstr ""
+
+msgid "Shareable retained-flow view. The flow ID in the URL is the only requested identity. Rule links are still generation-qualified and are created only when retained evidence matches the current dictionary generation."
+msgstr ""
+
+msgid "Simple HTTP / SOCKS URI builder"
+msgstr ""
+
+msgid "Simulation DNS"
+msgstr ""
+
+msgid "Simulation result · generation "
+msgstr ""
+
+msgid "Socket descriptor count"
+msgstr ""
+
+msgid "source_id not mapped by Native config"
+msgstr ""
+
+msgid "ss process sockets"
+msgstr ""
+
+msgid "ss unavailable"
+msgstr ""
+
+msgid "Staged diff: "
+msgstr ""
+
+msgid "Started"
+msgstr ""
+
+msgid "state"
+msgstr ""
+
+msgid "status"
+msgstr ""
+
+msgid "Steps are ordered by seq. Generation IDs belong to the recorded evidence. traffic and dns_upstream steps use the traffic rule dictionary; dns_request and dns_response use the DNS rule dictionary. Links appear only on an exact generation match."
+msgstr ""
+
+msgid "Steps are rendered from retained backend evidence. No routing decision is simulated on this page."
+msgstr ""
+
+msgid "Submitting probe for "
+msgstr ""
+
+msgid "Subscription staging"
+msgstr ""
+
+msgid "subscription tag"
+msgstr ""
+
+msgid "Subscription tag"
+msgstr ""
+
+msgid "Subscription tag may contain only letters, numbers, dot, underscore and hyphen."
+msgstr ""
+
+msgid "Subscription URL must contain an explicit URI scheme."
+msgstr ""
+
+msgid "Target"
+msgstr ""
+
+msgid "Target kind"
+msgstr ""
+
+msgid "TCP: "
+msgstr ""
+
+msgid "The advertised probe limits do not allow this group request."
+msgstr ""
+
+msgid "The backend accepted the probe but did not return an operation_id."
+msgstr ""
+
+msgid "The backend does not advertise a usable probe kind/IP combination."
+msgstr ""
+
+msgid "The capabilities endpoint requires authentication. Store the Native API token above to enable authenticated read-only runtime resources."
+msgstr ""
+
+msgid "The capabilities endpoint requires authentication. This LuCI UI never extracts native_api.secret from dae configuration; configure the separate root-only token on the Native API page if token mode is desired."
+msgstr ""
+
+msgid "The configured listener may be absent, stopped, unreachable, unauthenticated, or not implement the shared Native API contract."
+msgstr ""
+
+msgid "The dae service and this LuCI package currently point at different configuration files. Version switching validates the service file, because that is what OpenWrt will actually start after reboot."
+msgstr ""
+
+msgid "The flow trace is available, but the current DNS rule dictionary could not be loaded: "
+msgstr ""
+
+msgid "The flow trace is available, but the current traffic rule dictionary could not be loaded: "
+msgstr ""
+
+msgid "The generation matches, but this rule ID is not present in the complete current dictionary."
+msgstr ""
+
+msgid "The group probe is explicit network activity. Direct members are split into bounded jobs using the backend-advertised member/result limits. Jobs run sequentially; no batch is submitted until the previous operation finishes."
+msgstr ""
+
+msgid "The Native API still returns HTTP 401 with the stored token. Check that it matches native_api.secret."
+msgstr ""
+
+msgid "The probe operation is still nonterminal after 60 seconds. No polling continues in the background after this dialog is closed."
+msgstr ""
+
+msgid "The requested DNS route evidence belongs to generation "
+msgstr ""
+
+msgid "The requested DNS rule list is invalid."
+msgstr ""
+
+msgid "The requested flow evidence belongs to generation "
+msgstr ""
+
+msgid "The retained flow is available, but the current DNS rule dictionary could not be loaded: "
+msgstr ""
+
+msgid "The retained flow is available, but the current traffic rule dictionary could not be loaded: "
+msgstr ""
+
+msgid "The retained traffic-route evidence and the current rule dictionary share the same generation."
+msgstr ""
+
+msgid "The rpcd backend probes /api and /api/v1/capabilities locally. It never extracts native_api.secret from dae configuration. An optional token entered below is stored outside UCI in /etc/dae-ui/native-api.token with root-only permissions and is never returned to browser JavaScript."
+msgstr ""
+
+msgid "The runtime inventory has additional server pages, so this card summary is partial."
+msgstr ""
+
+msgid "The server cursor expired or is no longer valid. Restart the live snapshot before loading more."
+msgstr ""
+
+msgid "The table summarizes one-line rules in evaluation order. Complex multiline rules remain visible in Source configuration."
+msgstr ""
+
+msgid "The uploaded file will be executed for a version smoke test and then used to validate the active dae configuration. Only continue with a binary you trust. It will not be activated automatically."
+msgstr ""
+
+msgid "The visual builder stages exact node/subscription filters and valid DAE policy syntax. Advanced filters can still be edited directly before previewing or applying."
+msgstr ""
+
+msgid "These are bounded diagnostic operations from the shared Native API contract. Routing Trace is a hypothetical simulation, not a recorded flow. DNS Query performs a diagnostic resolution and does not flush or delete cache entries."
+msgstr ""
+
+msgid "This DNS rule was opened with generation-qualified retained route evidence."
+msgstr ""
+
+msgid "This group has no usable advertised probe combination or no direct members."
+msgstr ""
+
+msgid "This Native API resource is explicitly unavailable."
+msgstr ""
+
+msgid "This probe is explicit network activity and may update backend health observations or automatic selections. Nothing runs until you press Run probe."
+msgstr ""
+
+msgid "This resource has not been reported as available by the Native API."
+msgstr ""
+
+msgid "This rule was opened with a generation-qualified flow association."
+msgstr ""
+
+msgid "To evaluation"
+msgstr ""
+
+msgid "Trace"
+msgstr ""
+
+msgid "Trace status: "
+msgstr ""
+
+msgid "Trace status: complete"
+msgstr ""
+
+msgid "Traffic rules generation"
+msgstr ""
+
+msgid "type"
+msgstr ""
+
+msgid "UDP: "
+msgstr ""
+
+msgid "Unable to generate diff."
+msgstr ""
+
+msgid "Unable to load release list."
+msgstr ""
+
+msgid "Unable to read configuration file."
+msgstr ""
+
+msgid "Unnamed"
+msgstr ""
+
+msgid "Update flow: fixed upstream pin source → persisted version/SHA256 → download to /tmp → SHA256 verify → backup existing files → atomic replace. It never uses an unverified latest/download URL."
+msgstr ""
+
+msgid "Upload"
+msgstr ""
+
+msgid "upload direction on dae0"
+msgstr ""
+
+msgid "upstream"
+msgstr ""
+
+msgid "Upstream / result"
+msgstr ""
+
+msgid "Upstream cards summarize common DNS entries. Nested request/response routing remains visible in the full source blocks."
+msgstr ""
+
+msgid "Upstream transport"
+msgstr ""
+
+msgid "Use one DAE node entry per line."
+msgstr ""
+
+msgid "Use one tagged DAE subscription entry per line."
+msgstr ""
+
+msgid "Use this only for Native API token mode. The value is sent once from this LuCI page to rpcd, written with mode 0600, and then used only by server-side curl requests. The field is always blank when this page is reopened."
+msgstr ""
+
+msgid "username (optional)"
+msgstr ""
+
+msgid "Verification"
+msgstr ""
+
+msgid "Visual group builder"
+msgstr ""
+
+msgid "When DAE Version Manager is enabled, /usr/bin/dae is a persistent managed runner and this custom path is ignored by backend service actions."
+msgstr ""
+
+msgid "Action completed: "
+msgstr ""
+
+msgid "Backup not found"
+msgstr ""
+
+msgid "Backup restored and hot-reloaded"
+msgstr ""
+
+msgid "Backup restored and validated"
+msgstr ""
+
+msgid "Backup validation failed; current file restored"
+msgstr ""
+
+msgid "Configuration is too large"
+msgstr ""
+
+msgid "Configuration saved and validated"
+msgstr ""
+
+msgid "Configuration validated and hot-reloaded"
+msgstr ""
+
+msgid "Current configuration file not found"
+msgstr ""
+
+msgid "Custom dae binary smoke-tested, configuration-validated and installed into an immutable slot"
+msgstr ""
+
+msgid "Custom version slot already exists with different content; refusing to overwrite it"
+msgstr ""
+
+msgid "DAE release download failed"
+msgstr ""
+
+msgid "dae upstream GeoData pin source did not contain the expected pinned version/SHA256 declarations"
+msgstr ""
+
+msgid "DNS domain is required"
+msgstr ""
+
+msgid "Download failed: "
+msgstr ""
+
+msgid "Downloaded dae binary failed the execution smoke test"
+msgstr ""
+
+msgid "Downloaded dae version is incompatible with the current service configuration"
+msgstr ""
+
+msgid "File already exists"
+msgstr ""
+
+msgid "File created and hot-reloaded"
+msgstr ""
+
+msgid "File created and validated"
+msgstr ""
+
+msgid "File name must end in .dae and contain only safe characters"
+msgstr ""
+
+msgid "GeoData downloaded, SHA256-verified and atomically installed"
+msgstr ""
+
+msgid "GeoData pins refreshed from dae upstream scripts/fetch-geo-data.sh"
+msgstr ""
+
+msgid "GitHub returned invalid release JSON"
+msgstr ""
+
+msgid "Invalid backup path"
+msgstr ""
+
+msgid "Invalid flow ID"
+msgstr ""
+
+msgid "Invalid group ID"
+msgstr ""
+
+msgid "Invalid managed path"
+msgstr ""
+
+msgid "Invalid operation ID"
+msgstr ""
+
+msgid "Invalid or missing configuration file"
+msgstr ""
+
+msgid "Invalid release tag"
+msgstr ""
+
+msgid "Invalid target path"
+msgstr ""
+
+msgid "Invalid version slot"
+msgstr ""
+
+msgid "ip_version=any requires both IPv4 and IPv6 capability"
+msgstr ""
+
+msgid "Main config does not include config.d/*.dae; managed writes are disabled for safety"
+msgstr ""
+
+msgid "Managed section is too large"
+msgstr ""
+
+msgid "Managed section saved and validated"
+msgstr ""
+
+msgid "Managed section validated and hot-reloaded"
+msgstr ""
+
+msgid "Native API flow request failed"
+msgstr ""
+
+msgid "Native API group request failed"
+msgstr ""
+
+msgid "Native API listener is not locally probeable"
+msgstr ""
+
+msgid "Native API operation request failed"
+msgstr ""
+
+msgid "Native API probe request failed"
+msgstr ""
+
+msgid "Native API returned invalid capabilities JSON"
+msgstr ""
+
+msgid "Native API returned invalid group JSON"
+msgstr ""
+
+msgid "Native API token stored in a root-only file"
+msgstr ""
+
+msgid "No backup found"
+msgstr ""
+
+msgid "No standalone log file to clear"
+msgstr ""
+
+msgid "No trusted SHA256 was available from GitHub metadata or the official .dgst asset; installation aborted"
+msgstr ""
+
+msgid "Probe limits do not permit a request"
+msgstr ""
+
+msgid "Probe member list is invalid or contains members outside the group"
+msgstr ""
+
+msgid "Probe purpose required by this kind is not advertised"
+msgstr ""
+
+msgid "Probe request exceeds advertised limits"
+msgstr ""
+
+msgid "Probe target contains no members"
+msgstr ""
+
+msgid "Probe target ID is required"
+msgstr ""
+
+msgid "Release asset does not match this router architecture"
+msgstr ""
+
+msgid "Release downloaded, SHA256-verified, executed and configuration-validated"
+msgstr ""
+
+msgid "Release SHA256 verification failed"
+msgstr ""
+
+msgid "Reload failed; current file restored"
+msgstr ""
+
+msgid "Reload failed; managed file rolled back"
+msgstr ""
+
+msgid "Reload failed; new file removed"
+msgstr ""
+
+msgid "Reload failed; previous file restored"
+msgstr ""
+
+msgid "Requested IP version is not advertised"
+msgstr ""
+
+msgid "Requested probe kind is not advertised"
+msgstr ""
+
+msgid "Requested probe target type is not advertised"
+msgstr ""
+
+msgid "Requested probe transport is not advertised"
+msgstr ""
+
+msgid "Routing trace requires domain or destination IP"
+msgstr ""
+
+msgid "Selected dae binary is not executable on this router"
+msgstr ""
+
+msgid "Selected dae version does not validate the active service configuration"
+msgstr ""
+
+msgid "Selected dae version failed runtime restart; automatically rolled back"
+msgstr ""
+
+msgid "Selected or last-good slot cannot be deleted"
+msgstr ""
+
+msgid "SHA256 mismatch: "
+msgstr ""
+
+msgid "Stored token is invalid"
+msgstr ""
+
+msgid "tcp_connect/http probes require TCP transport"
+msgstr ""
+
+msgid "The system slot cannot be deleted"
+msgstr ""
+
+msgid "This exact custom dae binary is already installed"
+msgstr ""
+
+msgid "This exact verified release is already installed"
+msgstr ""
+
+msgid "This group does not advertise the selected probe transport"
+msgstr ""
+
+msgid "Token must be 1-512 characters and contain no line breaks"
+msgstr ""
+
+msgid "Unable to backup existing "
+msgstr ""
+
+msgid "Unable to calculate uploaded dae SHA256"
+msgstr ""
+
+msgid "Unable to create custom version slot"
+msgstr ""
+
+msgid "Unable to create download workspace"
+msgstr ""
+
+msgid "Unable to create version slot"
+msgstr ""
+
+msgid "Unable to derive a safe custom version slot"
+msgstr ""
+
+msgid "Unable to derive a safe version slot"
+msgstr ""
+
+msgid "Unable to enable the dae version boot guard"
+msgstr ""
+
+msgid "Unable to extract dae binary from release archive"
+msgstr ""
+
+msgid "Unable to fetch dae upstream GeoData pin source"
+msgstr ""
+
+msgid "Unable to install "
+msgstr ""
+
+msgid "Unable to install dae into version slot"
+msgstr ""
+
+msgid "Unable to install the persistent dae runner"
+msgstr ""
+
+msgid "Unable to install uploaded dae binary"
+msgstr ""
+
+msgid "Unable to mark uploaded dae binary executable"
+msgstr ""
+
+msgid "Unable to persist selected dae version"
+msgstr ""
+
+msgid "Unable to prepare curl config"
+msgstr ""
+
+msgid "Unable to prepare GeoData directories"
+msgstr ""
+
+msgid "Unable to prepare GeoData pin state directory"
+msgstr ""
+
+msgid "Unable to prepare JSON request body"
+msgstr ""
+
+msgid "Unable to prepare private curl config"
+msgstr ""
+
+msgid "Unable to prepare private token directory"
+msgstr ""
+
+msgid "Unable to query dae GitHub releases"
+msgstr ""
+
+msgid "Unable to read group"
+msgstr ""
+
+msgid "Unable to read Native API capabilities"
+msgstr ""
+
+msgid "Unable to repair the managed /usr/bin/dae runner before service action"
+msgstr ""
+
+msgid "Unable to replace file"
+msgstr ""
+
+msgid "Unable to write temporary file"
+msgstr ""
+
+msgid "Unsupported action"
+msgstr ""
+
+msgid "Unsupported managed section"
+msgstr ""
+
+msgid "Unsupported Native API resource"
+msgstr ""
+
+msgid "Uploaded dae binary is incompatible with the current service configuration"
+msgstr ""
+
+msgid "Uploaded dae binary is missing or is not a regular file"
+msgstr ""
+
+msgid "Uploaded dae binary size is outside the accepted 1 KiB to 128 MiB range"
+msgstr ""
+
+msgid "Uploaded file failed the dae execution smoke test"
+msgstr ""
+
+msgid "Validation failed; managed file rolled back"
+msgstr ""
+
+msgid "Validation failed; new file removed"
+msgstr ""
+
+msgid "Validation failed; previous file restored"
+msgstr ""
+
+msgid "Version activated, dae restarted successfully, and this slot is now last-good"
+msgstr ""
+
+msgid "Version selected and persisted; dae service is disabled/stopped, so runtime confirmation was deferred"
+msgstr ""
+
+msgid "Version slot does not exist"
+msgstr ""
+
+msgid "Version slot not found"
+msgstr ""
+

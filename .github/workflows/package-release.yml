@@ -1,0 +1,260 @@
+name: package-release
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "Makefile"
+      - "htdocs/**"
+      - "root/**"
+      - "po/**"
+      - ".github/workflows/package-release.yml"
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  OPENWRT_VERSION: "25.12.5"
+  SDK_FILE: "openwrt-sdk-25.12.5-x86-64_gcc-14.3.0_musl.Linux-x86_64.tar.zst"
+  SDK_SHA256: "0c8df0151a1e88feb7c03d694d61f6a18d51872815b7c811d76e2b77504d5e9c"
+  SDK_URL: "https://downloads.openwrt.org/releases/25.12.5/targets/x86/64/openwrt-sdk-25.12.5-x86-64_gcc-14.3.0_musl.Linux-x86_64.tar.zst"
+
+jobs:
+  build-package:
+    name: Build OpenWrt 25.12 APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag version
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PKG_VERSION="$(sed -n 's/^PKG_VERSION:=//p' Makefile | head -n1)"
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+
+          echo "Package version: $PKG_VERSION"
+          echo "Tag version    : $TAG_VERSION"
+
+          if [ -z "$PKG_VERSION" ] || [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "Tag v$TAG_VERSION does not match Makefile PKG_VERSION=$PKG_VERSION" >&2
+            exit 1
+          fi
+
+      - name: Install host dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            clang \
+            flex \
+            bison \
+            g++ \
+            gawk \
+            gettext \
+            git \
+            libncurses-dev \
+            libssl-dev \
+            python3 \
+            rsync \
+            unzip \
+            zstd \
+            file \
+            wget \
+            curl \
+            jq
+
+      - name: Download and verify OpenWrt SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cd "$RUNNER_TEMP"
+          curl -fL --retry 5 --retry-delay 3 \
+            -o "$SDK_FILE" \
+            "$SDK_URL"
+
+          echo "$SDK_SHA256  $SDK_FILE" | sha256sum -c -
+
+          mkdir -p openwrt-sdk
+          tar --zstd -xf "$SDK_FILE" -C openwrt-sdk --strip-components=1
+
+          echo "SDK_DIR=$RUNNER_TEMP/openwrt-sdk" >> "$GITHUB_ENV"
+
+      - name: Update SDK feeds
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cd "$SDK_DIR"
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Install dae dependency metadata stub
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # luci-app-dae-ui has a runtime dependency on dae. The Release job
+          # builds only the UI package, so a tiny package-definition stub is
+          # enough for OpenWrt dependency resolution. It is never published.
+          mkdir -p "$SDK_DIR/package/dae-release-stub"
+
+          cat > "$SDK_DIR/package/dae-release-stub/Makefile" <<'EOF'
+          include $(TOPDIR)/rules.mk
+
+          PKG_NAME:=dae-release-stub
+          PKG_VERSION:=1
+          PKG_RELEASE:=1
+
+          include $(INCLUDE_DIR)/package.mk
+
+          define Build/Configure
+          endef
+
+          define Build/Compile
+          endef
+
+          define Package/dae
+            SECTION:=net
+            CATEGORY:=Network
+            TITLE:=dae runtime dependency metadata for luci-app-dae-ui release build
+          endef
+
+          define Package/dae/install
+            true
+          endef
+
+          $(eval $(call BuildPackage,dae))
+          EOF
+
+      - name: Copy luci-app-dae-ui into SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DEST="$SDK_DIR/package/luci-app-dae-ui"
+          rm -rf "$DEST"
+          mkdir -p "$DEST"
+
+          rsync -a \
+            --exclude ".git" \
+            --exclude ".github" \
+            ./ "$DEST/"
+
+      - name: Configure package build
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cd "$SDK_DIR"
+
+          cat >> .config <<'EOF'
+          CONFIG_PACKAGE_luci-app-dae-ui=m
+          EOF
+
+          make defconfig
+
+          if ! grep -qx 'CONFIG_USE_APK=y' .config; then
+            echo "OpenWrt SDK is not configured for APK packaging" >&2
+            exit 1
+          fi
+
+          if ! grep -Eq '^CONFIG_PACKAGE_luci-app-dae-ui=(m|y)$' .config; then
+            echo "luci-app-dae-ui was not selected" >&2
+            exit 1
+          fi
+
+          echo "===== package configuration ====="
+          grep -E '^(CONFIG_USE_APK|CONFIG_PACKAGE_luci-app-dae-ui|CONFIG_PACKAGE_dae)=' .config || true
+
+      - name: Build package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cd "$SDK_DIR"
+
+          make package/luci-app-dae-ui/compile -j"$(nproc)" V=s || \
+            make package/luci-app-dae-ui/compile -j1 V=sc
+
+      - name: Collect release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p "$GITHUB_WORKSPACE/release"
+
+          mapfile -t PACKAGES < <(
+            find "$SDK_DIR/bin/packages" -type f \
+              -name 'luci-app-dae-ui-*.apk' \
+              -print
+          )
+
+          if [ "${#PACKAGES[@]}" -ne 1 ]; then
+            echo "Expected exactly one luci-app-dae-ui APK, found ${#PACKAGES[@]}" >&2
+            printf '%s\n' "${PACKAGES[@]}" >&2
+            exit 1
+          fi
+
+          cp "${PACKAGES[0]}" "$GITHUB_WORKSPACE/release/"
+
+          cd "$GITHUB_WORKSPACE/release"
+          sha256sum ./*.apk > SHA256SUMS
+
+          PKG_VERSION="$(sed -n 's/^PKG_VERSION:=//p' "$GITHUB_WORKSPACE/Makefile" | head -n1)"
+
+          cat > INSTALL.txt <<EOF
+          luci-app-dae-ui $PKG_VERSION
+          OpenWrt target series: 25.12.x
+          Package format: APK
+          Package architecture: all
+
+          This package contains the LuCI UI only.
+          dae and the declared LuCI/rpcd dependencies must already be installed
+          or be available from configured repositories.
+
+          GitHub Release packages are not signed by the OpenWrt distribution key.
+          For a local Release asset, install explicitly with:
+
+            apk add --allow-untrusted /tmp/$(basename "${PACKAGES[0]}")
+
+          After installation, reload rpcd/uhttpd or sign out and back in if the
+          LuCI menu is cached.
+          EOF
+
+          echo "===== Release assets ====="
+          ls -lh
+          cat SHA256SUMS
+
+      - name: Upload CI package artifact
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: luci-app-dae-ui-openwrt-25.12
+          path: release/*
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish tagged release package
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
+          files: |
+            release/*.apk
+            release/SHA256SUMS
+            release/INSTALL.txt
