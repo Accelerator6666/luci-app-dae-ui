@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.14.3 - 2026-10-02
+
+- Live Overview, Runtime, Logs, Connections, Flows, Native Nodes, Runtime Policies and DNS Runtime polling now pauses while the browser tab is hidden, reducing unnecessary rpcd and Native API work.
+- Added a syntax-aware DAE configuration parser that preserves quoted `#`, escaped apostrophes, regex text and nested group syntax instead of using comment-stripping or group-splitting regexes.
+- Policy-group summaries now parse the inner `group { ... }` body correctly and preserve multiple filter expressions as opaque DAE/honk syntax.
+- Added field-level staged editors for tagged managed nodes and subscriptions; only the selected quoted URI value is replaced while tags, comments, spacing and unrelated entries remain unchanged.
+- Added field-level staged editing for managed group policy/filter values. Filter expressions are not tokenized or normalized, and field mode deliberately refuses filter-count changes so complex edits remain in the raw validated editor.
+- Added optimistic SHA256 revision guards to managed-section saves. If the managed file changes after the page loads, the backend refuses the stale write and returns the current body instead of overwriting newer changes.
+- Added Copy Error controls plus an in-memory Recent Error Diagnostics panel. Only the latest 20 sanitized records are retained; RPC arguments, secrets and request bodies are never stored.
+- Extended Simplified Chinese coverage and CI contract checks for the new polling, parser, conflict-protection and diagnostics behavior.
+
 ## 0.14.2 - 2026-10-02
 
 - Added drag-and-drop local dae import on the DAE Version Manager page.
