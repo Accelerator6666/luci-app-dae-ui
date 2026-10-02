@@ -2316,3 +2316,366 @@ msgstr "可视化策略组构建器"
 msgid "When DAE Version Manager is enabled, /usr/bin/dae is a persistent managed runner and this custom path is ignored by backend service actions."
 msgstr "启用 DAE 版本管理后，/usr/bin/dae 会成为持久化托管运行器，后端服务操作将忽略此自定义路径。"
 
+msgid "Action completed: "
+msgstr "操作已完成："
+
+msgid "Backup not found"
+msgstr "未找到备份"
+
+msgid "Backup restored and hot-reloaded"
+msgstr "备份已恢复并完成热重载"
+
+msgid "Backup restored and validated"
+msgstr "备份已恢复并通过验证"
+
+msgid "Backup validation failed; current file restored"
+msgstr "备份验证失败；已恢复当前文件"
+
+msgid "Configuration is too large"
+msgstr "配置内容过大"
+
+msgid "Configuration saved and validated"
+msgstr "配置已保存并通过验证"
+
+msgid "Configuration validated and hot-reloaded"
+msgstr "配置已验证并完成热重载"
+
+msgid "Current configuration file not found"
+msgstr "未找到当前配置文件"
+
+msgid "Custom dae binary smoke-tested, configuration-validated and installed into an immutable slot"
+msgstr "自定义 dae 二进制已通过冒烟测试和配置验证，并安装到不可变槽位"
+
+msgid "Custom version slot already exists with different content; refusing to overwrite it"
+msgstr "自定义版本槽位已存在但内容不同；拒绝覆盖"
+
+msgid "DAE release download failed"
+msgstr "DAE 发布版本下载失败"
+
+msgid "dae upstream GeoData pin source did not contain the expected pinned version/SHA256 declarations"
+msgstr "dae 上游 GeoData 固定版本来源中未包含预期的版本/SHA256 声明"
+
+msgid "DNS domain is required"
+msgstr "必须填写 DNS 域名"
+
+msgid "Download failed: "
+msgstr "下载失败："
+
+msgid "Downloaded dae binary failed the execution smoke test"
+msgstr "下载的 dae 二进制未通过执行冒烟测试"
+
+msgid "Downloaded dae version is incompatible with the current service configuration"
+msgstr "下载的 dae 版本与当前服务配置不兼容"
+
+msgid "File already exists"
+msgstr "文件已存在"
+
+msgid "File created and hot-reloaded"
+msgstr "文件已创建并完成热重载"
+
+msgid "File created and validated"
+msgstr "文件已创建并通过验证"
+
+msgid "File name must end in .dae and contain only safe characters"
+msgstr "文件名必须以 .dae 结尾，且只能包含安全字符"
+
+msgid "GeoData downloaded, SHA256-verified and atomically installed"
+msgstr "GeoData 已下载、通过 SHA256 验证并以原子方式安装"
+
+msgid "GeoData pins refreshed from dae upstream scripts/fetch-geo-data.sh"
+msgstr "已从 dae 上游 scripts/fetch-geo-data.sh 刷新 GeoData 固定版本"
+
+msgid "GitHub returned invalid release JSON"
+msgstr "GitHub 返回了无效的发布版本 JSON"
+
+msgid "Invalid backup path"
+msgstr "备份路径无效"
+
+msgid "Invalid flow ID"
+msgstr "Flow ID 无效"
+
+msgid "Invalid group ID"
+msgstr "策略组 ID 无效"
+
+msgid "Invalid managed path"
+msgstr "托管路径无效"
+
+msgid "Invalid operation ID"
+msgstr "操作 ID 无效"
+
+msgid "Invalid or missing configuration file"
+msgstr "配置文件无效或缺失"
+
+msgid "Invalid release tag"
+msgstr "发布版本标签无效"
+
+msgid "Invalid target path"
+msgstr "目标路径无效"
+
+msgid "Invalid version slot"
+msgstr "版本槽位无效"
+
+msgid "ip_version=any requires both IPv4 and IPv6 capability"
+msgstr "ip_version=any 要求同时具备 IPv4 和 IPv6 能力"
+
+msgid "Main config does not include config.d/*.dae; managed writes are disabled for safety"
+msgstr "主配置未包含 config.d/*.dae；为安全起见已禁用托管写入"
+
+msgid "Managed section is too large"
+msgstr "托管配置段内容过大"
+
+msgid "Managed section saved and validated"
+msgstr "托管配置段已保存并通过验证"
+
+msgid "Managed section validated and hot-reloaded"
+msgstr "托管配置段已验证并完成热重载"
+
+msgid "Native API flow request failed"
+msgstr "Native API 流量请求失败"
+
+msgid "Native API group request failed"
+msgstr "Native API 策略组请求失败"
+
+msgid "Native API listener is not locally probeable"
+msgstr "Native API 监听地址无法从本机探测"
+
+msgid "Native API operation request failed"
+msgstr "Native API 操作请求失败"
+
+msgid "Native API probe request failed"
+msgstr "Native API 探测请求失败"
+
+msgid "Native API returned invalid capabilities JSON"
+msgstr "Native API 返回了无效的能力信息 JSON"
+
+msgid "Native API returned invalid group JSON"
+msgstr "Native API 返回了无效的策略组 JSON"
+
+msgid "Native API token stored in a root-only file"
+msgstr "Native API Token 已保存到仅 root 可读的文件"
+
+msgid "No backup found"
+msgstr "未找到备份"
+
+msgid "No standalone log file to clear"
+msgstr "没有可清空的独立日志文件"
+
+msgid "No trusted SHA256 was available from GitHub metadata or the official .dgst asset; installation aborted"
+msgstr "GitHub 元数据或官方 .dgst 资源中没有可用的可信 SHA256；已中止安装"
+
+msgid "Probe limits do not permit a request"
+msgstr "后端探测限制不允许此次请求"
+
+msgid "Probe member list is invalid or contains members outside the group"
+msgstr "探测成员列表无效，或包含不属于该策略组的成员"
+
+msgid "Probe purpose required by this kind is not advertised"
+msgstr "此探测类型所需用途未被后端声明"
+
+msgid "Probe request exceeds advertised limits"
+msgstr "探测请求超过后端声明的限制"
+
+msgid "Probe target contains no members"
+msgstr "探测目标不包含成员"
+
+msgid "Probe target ID is required"
+msgstr "必须提供探测目标 ID"
+
+msgid "Release asset does not match this router architecture"
+msgstr "发布资源与当前路由器架构不匹配"
+
+msgid "Release downloaded, SHA256-verified, executed and configuration-validated"
+msgstr "发布版本已下载、通过 SHA256 验证、执行测试并完成配置验证"
+
+msgid "Release SHA256 verification failed"
+msgstr "发布版本 SHA256 验证失败"
+
+msgid "Reload failed; current file restored"
+msgstr "重载失败；已恢复当前文件"
+
+msgid "Reload failed; managed file rolled back"
+msgstr "重载失败；已回退托管文件"
+
+msgid "Reload failed; new file removed"
+msgstr "重载失败；已删除新文件"
+
+msgid "Reload failed; previous file restored"
+msgstr "重载失败；已恢复之前的文件"
+
+msgid "Requested IP version is not advertised"
+msgstr "请求的 IP 版本未被后端声明"
+
+msgid "Requested probe kind is not advertised"
+msgstr "请求的探测类型未被后端声明"
+
+msgid "Requested probe target type is not advertised"
+msgstr "请求的探测目标类型未被后端声明"
+
+msgid "Requested probe transport is not advertised"
+msgstr "请求的探测传输方式未被后端声明"
+
+msgid "Routing trace requires domain or destination IP"
+msgstr "路由追踪需要域名或目标 IP"
+
+msgid "Selected dae binary is not executable on this router"
+msgstr "所选 dae 二进制无法在此路由器上执行"
+
+msgid "Selected dae version does not validate the active service configuration"
+msgstr "所选 dae 版本无法通过当前服务配置验证"
+
+msgid "Selected dae version failed runtime restart; automatically rolled back"
+msgstr "所选 dae 版本运行时重启失败；已自动回退"
+
+msgid "Selected or last-good slot cannot be deleted"
+msgstr "当前选择或 last-good 槽位不能删除"
+
+msgid "SHA256 mismatch: "
+msgstr "SHA256 不匹配："
+
+msgid "Stored token is invalid"
+msgstr "已保存的 Token 无效"
+
+msgid "tcp_connect/http probes require TCP transport"
+msgstr "tcp_connect/http 探测要求使用 TCP 传输"
+
+msgid "The system slot cannot be deleted"
+msgstr "system 槽位不能删除"
+
+msgid "This exact custom dae binary is already installed"
+msgstr "完全相同的自定义 dae 二进制已安装"
+
+msgid "This exact verified release is already installed"
+msgstr "完全相同且已验证的发布版本已安装"
+
+msgid "This group does not advertise the selected probe transport"
+msgstr "此策略组未声明所选探测传输方式"
+
+msgid "Token must be 1-512 characters and contain no line breaks"
+msgstr "Token 长度必须为 1–512 个字符，且不能包含换行"
+
+msgid "Unable to backup existing "
+msgstr "无法备份现有文件 "
+
+msgid "Unable to calculate uploaded dae SHA256"
+msgstr "无法计算上传 dae 二进制的 SHA256"
+
+msgid "Unable to create custom version slot"
+msgstr "无法创建自定义版本槽位"
+
+msgid "Unable to create download workspace"
+msgstr "无法创建下载工作目录"
+
+msgid "Unable to create version slot"
+msgstr "无法创建版本槽位"
+
+msgid "Unable to derive a safe custom version slot"
+msgstr "无法生成安全的自定义版本槽位"
+
+msgid "Unable to derive a safe version slot"
+msgstr "无法生成安全的版本槽位"
+
+msgid "Unable to enable the dae version boot guard"
+msgstr "无法启用 dae 版本启动守卫"
+
+msgid "Unable to extract dae binary from release archive"
+msgstr "无法从发布压缩包中提取 dae 二进制"
+
+msgid "Unable to fetch dae upstream GeoData pin source"
+msgstr "无法获取 dae 上游 GeoData 固定版本来源"
+
+msgid "Unable to install "
+msgstr "无法安装 "
+
+msgid "Unable to install dae into version slot"
+msgstr "无法将 dae 安装到版本槽位"
+
+msgid "Unable to install the persistent dae runner"
+msgstr "无法安装持久化 dae 运行器"
+
+msgid "Unable to install uploaded dae binary"
+msgstr "无法安装上传的 dae 二进制"
+
+msgid "Unable to mark uploaded dae binary executable"
+msgstr "无法将上传的 dae 二进制标记为可执行"
+
+msgid "Unable to persist selected dae version"
+msgstr "无法持久化所选 dae 版本"
+
+msgid "Unable to prepare curl config"
+msgstr "无法准备 curl 配置"
+
+msgid "Unable to prepare GeoData directories"
+msgstr "无法准备 GeoData 目录"
+
+msgid "Unable to prepare GeoData pin state directory"
+msgstr "无法准备 GeoData 固定版本状态目录"
+
+msgid "Unable to prepare JSON request body"
+msgstr "无法准备 JSON 请求体"
+
+msgid "Unable to prepare private curl config"
+msgstr "无法准备私有 curl 配置"
+
+msgid "Unable to prepare private token directory"
+msgstr "无法准备私有 Token 目录"
+
+msgid "Unable to query dae GitHub releases"
+msgstr "无法查询 dae GitHub 发布版本"
+
+msgid "Unable to read group"
+msgstr "无法读取策略组"
+
+msgid "Unable to read Native API capabilities"
+msgstr "无法读取 Native API 能力信息"
+
+msgid "Unable to repair the managed /usr/bin/dae runner before service action"
+msgstr "执行服务操作前无法修复托管的 /usr/bin/dae 运行器"
+
+msgid "Unable to replace file"
+msgstr "无法替换文件"
+
+msgid "Unable to write temporary file"
+msgstr "无法写入临时文件"
+
+msgid "Unsupported action"
+msgstr "不支持的操作"
+
+msgid "Unsupported managed section"
+msgstr "不支持的托管配置段"
+
+msgid "Unsupported Native API resource"
+msgstr "不支持的 Native API 资源"
+
+msgid "Uploaded dae binary is incompatible with the current service configuration"
+msgstr "上传的 dae 二进制与当前服务配置不兼容"
+
+msgid "Uploaded dae binary is missing or is not a regular file"
+msgstr "上传的 dae 二进制缺失或不是普通文件"
+
+msgid "Uploaded dae binary size is outside the accepted 1 KiB to 128 MiB range"
+msgstr "上传的 dae 二进制大小超出允许的 1 KiB–128 MiB 范围"
+
+msgid "Uploaded file failed the dae execution smoke test"
+msgstr "上传的文件未通过 dae 执行冒烟测试"
+
+msgid "Validation failed; managed file rolled back"
+msgstr "验证失败；已回退托管文件"
+
+msgid "Validation failed; new file removed"
+msgstr "验证失败；已删除新文件"
+
+msgid "Validation failed; previous file restored"
+msgstr "验证失败；已恢复之前的文件"
+
+msgid "Version activated, dae restarted successfully, and this slot is now last-good"
+msgstr "版本已启用，dae 已成功重启，此槽位现已成为 last-good"
+
+msgid "Version selected and persisted; dae service is disabled/stopped, so runtime confirmation was deferred"
+msgstr "版本已选择并持久化；dae 服务当前已禁用或停止，因此运行时确认已延后"
+
+msgid "Version slot does not exist"
+msgstr "版本槽位不存在"
+
+msgid "Version slot not found"
+msgstr "未找到版本槽位"
+
