@@ -47,6 +47,7 @@
           "clear_log",
           "save_managed_section",
           "update_geodata",
+          "refresh_geodata_pins",
           "set_native_token",
           "clear_native_token",
           "native_probe_start",
