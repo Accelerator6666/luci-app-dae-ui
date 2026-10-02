@@ -500,6 +500,22 @@ CI verifies that current frontend and menu strings have Simplified Chinese cover
 
 ## Build and install
 
+### GitHub Release package
+
+For OpenWrt 25.12.x, version tags automatically build an APK with the official OpenWrt 25.12.5 SDK and attach it to the GitHub Release together with `SHA256SUMS` and `INSTALL.txt`.
+
+The package is architecture-independent (`PKGARCH=all`) but requires `dae` and the declared LuCI/rpcd dependencies to already be installed or available from configured repositories.
+
+Because GitHub Release assets are not signed by the OpenWrt distribution signing key, install a downloaded local package explicitly:
+
+```sh
+apk add --allow-untrusted /tmp/luci-app-dae-ui-<version>-r1.apk
+```
+
+The Release workflow verifies that the Git tag matches `PKG_VERSION` before publishing.
+
+### Build from source
+
 Copy or clone this repository into an OpenWrt build tree as a package, for example:
 
 ```sh
