@@ -112,17 +112,23 @@ function generationSummary(configResource, rulesResource, dnsRulesResource) {
 		{ key:'dns_rules', title:_('DNS rules generation'), value:nativeGeneration(dnsRulesResource) }
 	];
 	var ids = [];
+	var reported = 0;
 	entries.forEach(function(entry) {
-		if (entry.value && ids.indexOf(entry.value) < 0) ids.push(entry.value);
+		if (!entry.value) return;
+		reported++;
+		if (ids.indexOf(entry.value) < 0) ids.push(entry.value);
 	});
 	return {
 		entries: entries,
 		ids: ids,
-		state: ids.length === 0
+		reported: reported,
+		state: reported === 0
 			? { text:_('Not reported'), state:'WARN' }
-			: ids.length === 1
-				? { text:_('Consistent'), state:true }
-				: { text:_('Mismatch'), state:false }
+			: reported === 1
+				? { text:_('Only one generation reported'), state:'WARN' }
+				: ids.length === 1
+					? { text:_('Consistent'), state:true }
+					: { text:_('Mismatch'), state:false }
 	};
 }
 
