@@ -13,8 +13,25 @@ function fileRow(name,present,size){
 
 return view.extend({
 	load:function(){return dae.callGeodataStatus();},
+	refreshPins:function(){
+		if(!window.confirm(_('Fetch dae upstream scripts/fetch-geo-data.sh and persist only its pinned GeoData versions and SHA256 values? No GeoData file is downloaded by this step.'))) return;
+		ui.showModal(_('Refresh GeoData pins'),[
+			E('p',{'class':'spinning'},_('Reading pinned versions and SHA256 values from dae upstream…'))
+		]);
+		return dae.callRefreshGeodataPins().then(function(res){
+			ui.hideModal();
+			if(!res||!res.ok) {
+				var msg=(res&&(res.error||res.message))||_('Unable to refresh GeoData pins.');
+				if(res&&res.output) msg+='\n'+res.output;
+				dae.notify(msg,'error');
+				return;
+			}
+			dae.notify(res.message||_('GeoData pins refreshed.'),'info');
+			window.setTimeout(function(){window.location.reload();},500);
+		});
+	},
 	update:function(){
-		if(!window.confirm(_('Download the GeoData versions currently pinned by dae upstream, verify SHA256, back up existing files and atomically replace them?'))) return;
+		if(!window.confirm(_('Download the currently persisted GeoData pins, verify SHA256, back up existing files and atomically replace them?'))) return;
 		ui.showModal(_('GeoData Update'),[
 			E('p',{'class':'spinning'},_('Downloading and verifying GeoData… This can take a little while.'))
 		]);
@@ -38,10 +55,17 @@ return view.extend({
 				E('div',{'class':'table'},[
 					rowLine(_('geoip.dat'),pins.geoip_version||'-',pins.geoip_sha256||'-'),
 					rowLine(_('geosite.dat'),pins.geosite_version||'-',pins.geosite_sha256||'-'),
+					rowLine(_('Pin source'),pins.source||'builtin',pins.fetched_at||''),
 					rowLine(_('Install target'),data.target||'-','')
 				]),
-				E('div',{'class':'alert-message warning'},_('Update flow: download to /tmp → SHA256 verify → backup existing files → atomic replace. It does not use latest/download.')),
+				E('div',{'class':'alert-message notice'},[
+					_('Pin refresh reads only '),E('code',{},'daeuniverse/dae/main/scripts/fetch-geo-data.sh'),
+					_(' and accepts only numeric release versions plus 64-hex SHA256 values. The download URLs remain fixed to the v2fly GeoIP and domain-list-community release repositories.')
+				]),
+				E('div',{'class':'alert-message warning'},_('Update flow: fixed upstream pin source → persisted version/SHA256 → download to /tmp → SHA256 verify → backup existing files → atomic replace. It never uses an unverified latest/download URL.')),
 				E('div',{'class':'cbi-page-actions'},[
+					E('button',{'class':'btn cbi-button cbi-button-action','click':ui.createHandlerFn(this,this.refreshPins)},_('Refresh pins from dae upstream')),
+					' ',
 					E('button',{'class':'btn cbi-button cbi-button-apply','click':ui.createHandlerFn(this,this.update)},_('Update verified GeoData'))
 				])
 			]),
