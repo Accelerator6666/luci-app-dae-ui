@@ -91,6 +91,7 @@ return view.extend({
 		}).then(this.update.bind(this));
 	},
 	update:function(data){
+		var status=data||{};
 		var map={
 			'dae-running':dae.badge(status.running?_('Running'):_('Stopped'),!!status.running),
 			'dae-config':dae.badge(status.config_valid?_('Valid'):_('Invalid'),!!status.config_valid),
