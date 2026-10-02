@@ -14,6 +14,12 @@
 - Policy cards can correlate exact group names to Native runtime group snapshots and display current TCP/UDP selections and member counts read-only.
 - Added a dedicated hidden retained-flow detail route (`flow-detail?id=...`) so flow traces can be reopened or shared within the LuCI session without depending on an open modal.
 - Native Flows and Native Connections now expose Open page links for backend-provided flow IDs while retaining the existing Timeline modal; the detail page uses the same generation-safe traffic/DNS rule association logic.
+- Version Manager now accepts a trusted local dae executable through a fixed `/tmp/dae-ui-dae-upload.bin` upload path; backend import rejects symlinks/non-regular files, enforces a 1 KiB–128 MiB size bound, calculates SHA256, executes a version smoke test and validates the active service configuration before creating an immutable custom slot.
+- Installed version rows now report source metadata so package/system, official release and custom-upload slots are distinguishable without inspecting the filesystem.
+- GeoData pin metadata can now be refreshed from the fixed dae upstream `main/scripts/fetch-geo-data.sh` source. Only numeric release versions and 64-hex SHA256 values are accepted and persisted under `/etc/dae-ui/geodata-pins`; downloads still use fixed v2fly release repositories and SHA256 verification.
+- Added protocol-aware staged node/subscription forms. Complex protocols validate their URI scheme, while the simple builder can generate documented HTTP(S), SOCKS4 and SOCKS5 URIs; staged writes keep the existing diff/validate/apply safety model.
+- Node and subscription summary cards now redact URI credentials, opaque VMess/SS/SSR payloads and subscription path/query secrets while leaving the user-owned source configuration unchanged.
+- CI now checks the write-ACL/frontend/backend contract for custom binary import and GeoData pin refresh, enforces the fixed custom-upload path and verifies the hidden retained-flow route contract.
 
 ## 0.13.0 - 2026-09-29
 
