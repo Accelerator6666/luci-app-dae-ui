@@ -6,6 +6,12 @@
 - Added inline validation diagnostics in the configuration editor gutter and automatic navigation to the first validation error in the active file while retaining the existing full diagnostics modal.
 - Added a read-only Native generation-consistency panel on Runtime. It compares generation IDs reported by available config, traffic-rule and DNS-rule dictionaries and explicitly avoids inferring desired-vs-active state when the backend does not report it.
 - DaedNext is now documented as a product-UX and RoutingA language-tooling reference; its application code and runtime are not bundled.
+- Added local 60-second and 5-minute dae0 traffic trend charts calculated from 2-second sysfs counter deltas; chart history exists only while the Runtime page remains open.
+- Added a recent-log health summary that counts explicit WARN/WARNING and ERROR/FATAL/PANIC markers in the latest 250 dae log lines without replacing the full Logs page.
+- Overview now shows Native API availability and a compact runtime generation snapshot, refreshed independently from local service status.
+- Source node/subscription cards can correlate exact tags with the current Native node inventory, expose backend latency observations and expand subscription runtime members when a safe exact provider/subscription tag match exists.
+- Policy Groups now includes a visual staged group builder with exact source node tags, optional subscription tags, valid fixed(0)/min/min_moving_avg/min_avg10/random policy syntax and the existing diff-preview safety gate.
+- Policy cards can correlate exact group names to Native runtime group snapshots and display current TCP/UDP selections and member counts read-only.
 
 ## 0.13.0 - 2026-09-29
 
