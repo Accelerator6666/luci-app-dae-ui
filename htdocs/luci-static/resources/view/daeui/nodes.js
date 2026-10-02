@@ -5,30 +5,120 @@
 'require daeui.cards as cards';
 'require daeui.native as native';
 
+function safeTag(value) {
+	return !value || /^[A-Za-z0-9_.-]+$/.test(value);
+}
+
+function schemeOf(value) {
+	var m=String(value||'').match(/^([A-Za-z][A-Za-z0-9+.-]*):\/\//);
+	return m?m[1].toLowerCase():'';
+}
+
+function simpleUri(scheme,host,port,user,password) {
+	host=(host||'').trim();
+	if(!host) return '';
+	if(host.indexOf(':')>=0 && host.charAt(0)!=='[') host='['+host+']';
+	var auth='';
+	if(user||password) {
+		if(!user && password) return '';
+		auth=encodeURIComponent(user||'');
+		if(password) auth+=':'+encodeURIComponent(password);
+		auth+='@';
+	}
+	return scheme+'://'+auth+host+':'+port+'/';
+}
+
 function nodeQuick(id) {
-	var tag = E('input', { 'class':'cbi-input-text','placeholder':_('optional tag'),'style':'min-width:140px' });
+	var tag = E('input', { 'class':'cbi-input-text','placeholder':_('optional tag'),'style':'min-width:150px' });
+	var protocol = E('select',{'class':'cbi-input-select'},[
+		'auto','socks4','socks5','http','https','ss','ssr','vmess','vless','trojan','tuic','juicity','hysteria2','anytls','shadowtls'
+	].map(function(p){return E('option',{'value':p},p);}));
 	var url = E('input', { 'class':'cbi-input-text','placeholder':'vless://… / ss://… / socks5://…','style':'min-width:360px;flex:1' });
-	return E('div', { 'style':'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0' }, [
-		tag, url,
-		E('button', { 'class':'btn cbi-button','click':function() {
-			var u=(url.value||'').trim(); if(!u) return;
-			var t=(tag.value||'').trim();
-			managed.appendLine(id,(t ? t+': ' : '')+"'" + u.replace(/'/g,"\\'") + "'");
-			url.value='';
-		}}, _('Stage node'))
+
+	var simpleScheme=E('select',{'class':'cbi-input-select'},['socks4','socks5','http','https'].map(function(p){
+		return E('option',{'value':p},p);
+	}));
+	var host=E('input',{'class':'cbi-input-text','placeholder':_('host or IP'),'style':'min-width:180px'});
+	var port=E('input',{'class':'cbi-input-text','type':'number','min':'1','max':'65535','placeholder':_('port'),'style':'width:100px'});
+	var user=E('input',{'class':'cbi-input-text','placeholder':_('username (optional)'),'autocomplete':'off'});
+	var password=E('input',{'class':'cbi-input-text','type':'password','placeholder':_('password (optional)'),'autocomplete':'new-password'});
+
+	var buildSimple=function(){
+		var p=Number(port.value||0);
+		if(!host.value||p<1||p>65535) {
+			dae.notify(_('Host and a valid port are required.'),'warning');
+			return;
+		}
+		if(password.value&&!user.value) {
+			dae.notify(_('Enter a username when a password is used in the simple proxy builder.'),'warning');
+			return;
+		}
+		var built=simpleUri(simpleScheme.value,host.value,p,user.value,password.value);
+		if(!built) return;
+		url.value=built;
+		protocol.value=simpleScheme.value;
+	};
+
+	var stage=function(){
+		var u=(url.value||'').trim();
+		if(!u) return;
+		var t=(tag.value||'').trim();
+		if(!safeTag(t)) {
+			dae.notify(_('Node tag may contain only letters, numbers, dot, underscore and hyphen.'),'error');
+			return;
+		}
+		var scheme=schemeOf(u);
+		if(!scheme) {
+			dae.notify(_('Node link must contain a URI scheme such as vless:// or ss://.'),'error');
+			return;
+		}
+		if(protocol.value!=='auto' && scheme!==protocol.value) {
+			dae.notify(_('Selected protocol does not match the node URI scheme.'),'error');
+			return;
+		}
+		managed.appendLine(id,(t ? t+': ' : '')+"'" + u.replace(/'/g,"\\'") + "'");
+		url.value='';
+	};
+
+	return E('div', { 'class':'cbi-section','style':'margin:10px 0' }, [
+		E('h4',{},_('Protocol-aware node staging')),
+		E('div',{'class':'cbi-map-descr'},_('Complex protocols keep their standard share-link syntax. The protocol selector validates the URI scheme before staging; the simple builder below can generate HTTP(S) and SOCKS links. Nothing is written until the managed-section save/apply controls are used.')),
+		E('div', { 'style':'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0' }, [
+			tag, protocol, url,
+			E('button', { 'class':'btn cbi-button','click':stage }, _('Stage node'))
+		]),
+		E('details',{},[
+			E('summary',{},_('Simple HTTP / SOCKS URI builder')),
+			E('div',{'style':'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px'},[
+				simpleScheme,host,port,user,password,
+				E('button',{'class':'btn cbi-button','click':buildSimple},_('Build URI'))
+			])
+		])
 	]);
 }
 
 function subQuick(id) {
 	var tag = E('input', { 'class':'cbi-input-text','placeholder':_('subscription tag'),'style':'min-width:160px' });
 	var url = E('input', { 'class':'cbi-input-text','placeholder':'https://…','style':'min-width:360px;flex:1' });
-	return E('div', { 'style':'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0' }, [
-		tag,url,
-		E('button', { 'class':'btn cbi-button','click':function() {
-			var t=(tag.value||'').trim(),u=(url.value||'').trim(); if(!t||!u) return;
-			managed.appendLine(id,t+": '"+u.replace(/'/g,"\\'")+"'");
-			url.value='';
-		}}, _('Stage subscription'))
+	return E('div', { 'class':'cbi-section','style':'margin:10px 0' }, [
+		E('h4',{},_('Subscription staging')),
+		E('div',{'class':'cbi-map-descr'},_('A tagged subscription remains a normal DAE subscription URI. The form validates the tag and requires an explicit URI scheme before staging.')),
+		E('div', { 'style':'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px' }, [
+			tag,url,
+			E('button', { 'class':'btn cbi-button','click':function() {
+				var t=(tag.value||'').trim(),u=(url.value||'').trim(); if(!t||!u) return;
+				if(!safeTag(t)) {
+					dae.notify(_('Subscription tag may contain only letters, numbers, dot, underscore and hyphen.'),'error');
+					return;
+				}
+				if(!schemeOf(u)) {
+					dae.notify(_('Subscription URL must contain an explicit URI scheme.'),'error');
+					return;
+				}
+				managed.appendLine(id,t+": '"+u.replace(/'/g,"\\'")+"'");
+				url.value='';
+			}}, _('Stage subscription'))
+		])
 	]);
 }
 
