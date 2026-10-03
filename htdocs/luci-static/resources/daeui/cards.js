@@ -1,5 +1,6 @@
 'use strict';
 'require baseclass';
+'require daeui.configparse as configparse';
 
 function protocolOf(url) {
 	var m = String(url || '').match(/^([a-zA-Z0-9+.-]+):\/\//);
@@ -41,7 +42,7 @@ function redactedSubscription(url) {
 function parseEntries(block, kind) {
 	var out = [];
 	String(block || '').split(/\n/).forEach(function(line) {
-		var s = line.replace(/#.*$/, '').trim();
+		var s = configparse.splitComment(line).code.trim();
 		if (!s) return;
 		var m = s.match(/^([A-Za-z0-9_.-]+)\s*:\s*['"]([^'"]+)['"]\s*$/);
 		if (m) {
@@ -65,17 +66,21 @@ function subscriptionCards(sectionContent) {
 }
 
 function groupCards(sectionContent) {
-	var out = [];
 	var text = String(sectionContent || '');
-	var re = /(^|\n)\s*([A-Za-z0-9_.-]+)\s*\{([\s\S]*?)\n\s*\}/g;
-	var m;
-	while ((m = re.exec(text)) !== null) {
-		var body = m[3] || '';
-		var pm = body.match(/\bpolicy\s*:\s*([^\n#]+)/);
-		var fm = body.match(/\bfilter\s*:\s*([^\n#]+)/);
-		out.push({ name:m[2], policy:pm ? pm[1].trim() : '-', filter:fm ? fm[1].trim() : '-' });
+	var wrapper = text.match(/^\s*group\s*\{/);
+	if (wrapper) {
+		var open = text.indexOf('{', wrapper.index || 0);
+		var close = text.lastIndexOf('}');
+		if (open >= 0 && close > open) text = text.slice(open + 1, close);
 	}
-	return out;
+	return configparse.parseGroups(text).map(function(group) {
+		return {
+			name:group.name,
+			policy:group.policyValue || '-',
+			filter:group.filterValues.length ? group.filterValues.join(' OR ') : '-',
+			filters:group.filterValues.slice()
+		};
+	});
 }
 
 function routingRows(sectionContent) {

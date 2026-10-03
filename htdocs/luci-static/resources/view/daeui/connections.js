@@ -177,7 +177,7 @@ return view.extend({
 		}
 
 		this.grid = buildGrid(flatten(data.resource.data),this.canOpenFlow,this.viewConnectionFlow.bind(this));
-		poll.add(L.bind(this.refresh, this), 3);
+		poll.add(dae.visiblePoll(L.bind(this.refresh, this)), 3);
 
 		return E([], [
 			E('h2', {}, _('Native Connections')),

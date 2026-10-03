@@ -82,7 +82,7 @@ function callNativeApiGet(resource, opts) {
 }
 var callIncludeStatus = rpc.declare({ object: 'luci.daeui', method: 'include_status', expect: {} });
 var callGetManagedSection = rpc.declare({ object: 'luci.daeui', method: 'get_managed_section', params: [ 'kind' ], expect: {} });
-var callSaveManagedSection = rpc.declare({ object: 'luci.daeui', method: 'save_managed_section', params: [ 'kind', 'body', 'apply' ], expect: {} });
+var callSaveManagedSection = rpc.declare({ object: 'luci.daeui', method: 'save_managed_section', params: [ 'kind', 'body', 'apply', 'revision' ], expect: {} });
 var callGeodataStatus = rpc.declare({ object: 'luci.daeui', method: 'geodata_status', expect: {} });
 var callUpdateGeodata = rpc.declare({ object: 'luci.daeui', method: 'update_geodata', expect: {} });
 var callRefreshGeodataPins = rpc.declare({ object: 'luci.daeui', method: 'refresh_geodata_pins', expect: {} });
@@ -125,14 +125,156 @@ function localizeBackendResult(res) {
 	return res;
 }
 
-function localizedCall(fn) {
+var errorStorageKey = 'luci-dae-ui-error-history-v1';
+
+function sanitizeErrorText(value) {
+	var text = localizeBackendText(String(value || ''));
+	text = text.replace(/\bBearer\s+[A-Za-z0-9._~+\/=:-]+/gi, 'Bearer [redacted]');
+	text = text.replace(/([A-Za-z][A-Za-z0-9+.-]*:\/\/)[^@\s/]+@/g, '$1[redacted]@');
+	if (text.length > 1000) text = text.slice(0, 1000) + '…';
+	return text;
+}
+
+function loadErrorHistory() {
+	try {
+		if (typeof window === 'undefined' || !window.sessionStorage) return [];
+		var parsed = JSON.parse(window.sessionStorage.getItem(errorStorageKey) || '[]');
+		return Array.isArray(parsed) ? parsed.slice(-20) : [];
+	} catch (e) {
+		return [];
+	}
+}
+
+function persistErrorHistory() {
+	try {
+		if (typeof window !== 'undefined' && window.sessionStorage)
+			window.sessionStorage.setItem(errorStorageKey, JSON.stringify(errorHistory.slice(-20)));
+	} catch (e) {
+		/* Session storage may be unavailable; keep the in-memory copy. */
+	}
+}
+
+var errorHistory = loadErrorHistory();
+
+function rememberError(record) {
+	record = record || {};
+	var entry = {
+		time: new Date().toISOString(),
+		operation: String(record.operation || 'unknown').slice(0, 120),
+		status: Number(record.status || 0),
+		request_id: String(record.request_id || record.requestId || '').slice(0, 160),
+		error: sanitizeErrorText(record.error || ''),
+		message: sanitizeErrorText(record.message || '')
+	};
+	var previous = errorHistory.length ? errorHistory[errorHistory.length - 1] : null;
+	if (previous && previous.operation === entry.operation && previous.status === entry.status &&
+		previous.request_id === entry.request_id && previous.error === entry.error && previous.message === entry.message)
+		return previous;
+	errorHistory.push(entry);
+	if (errorHistory.length > 20) errorHistory.splice(0, errorHistory.length - 20);
+	persistErrorHistory();
+	return entry;
+}
+
+function errorText(entry) {
+	entry = entry || {};
+	var lines = [];
+	if (entry.time) lines.push('time: ' + entry.time);
+	if (entry.operation) lines.push('operation: ' + entry.operation);
+	if (entry.status) lines.push('status: ' + entry.status);
+	if (entry.request_id) lines.push('request_id: ' + entry.request_id);
+	if (entry.error) lines.push('error: ' + entry.error);
+	if (entry.message) lines.push('message: ' + entry.message);
+	return lines.join('\n');
+}
+
+function copyText(text) {
+	text = String(text || '');
+	if (navigator.clipboard && window.isSecureContext)
+		return navigator.clipboard.writeText(text);
+	return new Promise(function(resolve, reject) {
+		try {
+			var ta = E('textarea', {
+				'style':'position:fixed;left:-9999px;top:-9999px',
+				'readonly':''
+			}, text);
+			document.body.appendChild(ta);
+			ta.select();
+			var ok = document.execCommand('copy');
+			document.body.removeChild(ta);
+			if (!ok) throw new Error('copy failed');
+			resolve();
+		} catch (e) {
+			reject(e);
+		}
+	});
+}
+
+function localizedCall(name, fn) {
 	return function() {
-		return fn.apply(null, arguments).then(localizeBackendResult);
+		return fn.apply(null, arguments).then(function(res) {
+			res = localizeBackendResult(res);
+			if (res && (res.ok === false || res.error))
+				rememberError({
+					operation:name,
+					status:res.status,
+					request_id:res.request_id,
+					error:res.error,
+					message:res.message
+				});
+			return res;
+		}).catch(function(err) {
+			rememberError({ operation:name, error:err && err.message ? err.message : String(err || '') });
+			throw err;
+		});
 	};
 }
 
 function notify(msg, type) {
-	ui.addNotification(null, E('p', {}, localizeBackendText(msg) || _('Operation completed.')), type || 'info');
+	var text = localizeBackendText(msg) || _('Operation completed.');
+	if (type === 'error') {
+		var latest = errorHistory.length ? errorHistory[errorHistory.length - 1] : null;
+		if (!latest || (latest.error !== text && latest.message !== text))
+			latest = rememberError({ operation:'notification', error:String(text || '').split('\n')[0] });
+		ui.addNotification(null, E('div', {}, [
+			E('p', {}, text),
+			E('button', {
+				'class':'btn cbi-button',
+				'click':function() {
+					return copyText(errorText(latest)).then(function() {
+						ui.addNotification(null, E('p', {}, _('Copied error details to clipboard.')), 'info');
+					}).catch(function() {
+						ui.addNotification(null, E('p', {}, _('Unable to copy error details.')), 'error');
+					});
+				}
+			}, _('Copy error'))
+		]), type);
+		return;
+	}
+	ui.addNotification(null, E('p', {}, text), type || 'info');
+}
+
+function visiblePoll(fn) {
+	return function() {
+		if (typeof document !== 'undefined' && (document.hidden || document.visibilityState === 'hidden'))
+			return Promise.resolve();
+		return fn.apply(this, arguments);
+	};
+}
+
+function recentErrors() {
+	return errorHistory.slice();
+}
+
+function clearRecentErrors() {
+	errorHistory.splice(0, errorHistory.length);
+	persistErrorHistory();
+}
+
+function copyRecentErrors() {
+	var entries = recentErrors();
+	if (!entries.length) return Promise.reject(new Error(_('No recent errors.')));
+	return copyText(entries.map(errorText).join('\n\n---\n\n'));
 }
 
 function badge(text, state) {
@@ -172,53 +314,60 @@ function diagnosticsNode(items) {
 }
 
 return baseclass.extend({
-	callStatus: localizedCall(callStatus),
-	callRuntimeStats: localizedCall(callRuntimeStats),
-	callService: localizedCall(callService),
-	callGetConfig: localizedCall(callGetConfig),
-	callSaveConfig: localizedCall(callSaveConfig),
-	callApplyConfig: localizedCall(callApplyConfig),
-	callRestoreLast: localizedCall(callRestoreLast),
-	callGetSections: localizedCall(callGetSections),
-	callListConfigFiles: localizedCall(callListConfigFiles),
-	callGetConfigFile: localizedCall(callGetConfigFile),
-	callSaveConfigFile: localizedCall(callSaveConfigFile),
-	callCreateConfigFile: localizedCall(callCreateConfigFile),
-	callListBackups: localizedCall(callListBackups),
-	callDiffBackup: localizedCall(callDiffBackup),
-	callRestoreBackup: localizedCall(callRestoreBackup),
-	callGetLog: localizedCall(callGetLog),
-	callClearLog: localizedCall(callClearLog),
-	callDiagnose: localizedCall(callDiagnose),
-	callNativeApiStatus: localizedCall(callNativeApiStatus),
-	callNativeApiGet: localizedCall(callNativeApiGet),
-	callNativeAuthStatus: localizedCall(callNativeAuthStatus),
-	callSetNativeToken: localizedCall(callSetNativeToken),
-	callClearNativeToken: localizedCall(callClearNativeToken),
-	callNativeDnsQuery: localizedCall(callNativeDnsQuery),
-	callNativeRoutingTrace: localizedCall(callNativeRoutingTrace),
-	callVersionStatus: localizedCall(callVersionStatus),
-	callVersionReleases: localizedCall(callVersionReleases),
-	callVersionDownload: localizedCall(callVersionDownload),
-	callVersionImport: localizedCall(callVersionImport),
-	callVersionSwitch: localizedCall(callVersionSwitch),
-	callVersionDelete: localizedCall(callVersionDelete),
-	callNativeProbeStart: localizedCall(callNativeProbeStart),
-	callNativeOperationGet: localizedCall(callNativeOperationGet),
-	callNativeGroupGet: localizedCall(callNativeGroupGet),
-	callNativeFlowGet: localizedCall(callNativeFlowGet),
-	callIncludeStatus: localizedCall(callIncludeStatus),
-	callGetManagedSection: localizedCall(callGetManagedSection),
-	callSaveManagedSection: localizedCall(callSaveManagedSection),
-	callGeodataStatus: localizedCall(callGeodataStatus),
-	callUpdateGeodata: localizedCall(callUpdateGeodata),
-	callRefreshGeodataPins: localizedCall(callRefreshGeodataPins),
-	callPreviewManagedSection: localizedCall(callPreviewManagedSection),
+	callStatus: localizedCall('status', callStatus),
+	callRuntimeStats: localizedCall('runtime_stats', callRuntimeStats),
+	callService: localizedCall('service', callService),
+	callGetConfig: localizedCall('get_config', callGetConfig),
+	callSaveConfig: localizedCall('save_config', callSaveConfig),
+	callApplyConfig: localizedCall('apply_config', callApplyConfig),
+	callRestoreLast: localizedCall('restore_last', callRestoreLast),
+	callGetSections: localizedCall('get_sections', callGetSections),
+	callListConfigFiles: localizedCall('list_config_files', callListConfigFiles),
+	callGetConfigFile: localizedCall('get_config_file', callGetConfigFile),
+	callSaveConfigFile: localizedCall('save_config_file', callSaveConfigFile),
+	callCreateConfigFile: localizedCall('create_config_file', callCreateConfigFile),
+	callListBackups: localizedCall('list_backups', callListBackups),
+	callDiffBackup: localizedCall('diff_backup', callDiffBackup),
+	callRestoreBackup: localizedCall('restore_backup', callRestoreBackup),
+	callGetLog: localizedCall('get_log', callGetLog),
+	callClearLog: localizedCall('clear_log', callClearLog),
+	callDiagnose: localizedCall('diagnose', callDiagnose),
+	callNativeApiStatus: localizedCall('native_api_status', callNativeApiStatus),
+	callNativeApiGet: localizedCall('native_api_get', callNativeApiGet),
+	callNativeAuthStatus: localizedCall('native_auth_status', callNativeAuthStatus),
+	callSetNativeToken: localizedCall('set_native_token', callSetNativeToken),
+	callClearNativeToken: localizedCall('clear_native_token', callClearNativeToken),
+	callNativeDnsQuery: localizedCall('native_dns_query', callNativeDnsQuery),
+	callNativeRoutingTrace: localizedCall('native_routing_trace', callNativeRoutingTrace),
+	callVersionStatus: localizedCall('version_status', callVersionStatus),
+	callVersionReleases: localizedCall('version_releases', callVersionReleases),
+	callVersionDownload: localizedCall('version_download', callVersionDownload),
+	callVersionImport: localizedCall('version_import', callVersionImport),
+	callVersionSwitch: localizedCall('version_switch', callVersionSwitch),
+	callVersionDelete: localizedCall('version_delete', callVersionDelete),
+	callNativeProbeStart: localizedCall('native_probe_start', callNativeProbeStart),
+	callNativeOperationGet: localizedCall('native_operation_get', callNativeOperationGet),
+	callNativeGroupGet: localizedCall('native_group_get', callNativeGroupGet),
+	callNativeFlowGet: localizedCall('native_flow_get', callNativeFlowGet),
+	callIncludeStatus: localizedCall('include_status', callIncludeStatus),
+	callGetManagedSection: localizedCall('get_managed_section', callGetManagedSection),
+	callSaveManagedSection: localizedCall('save_managed_section', callSaveManagedSection),
+	callGeodataStatus: localizedCall('geodata_status', callGeodataStatus),
+	callUpdateGeodata: localizedCall('update_geodata', callUpdateGeodata),
+	callRefreshGeodataPins: localizedCall('refresh_geodata_pins', callRefreshGeodataPins),
+	callPreviewManagedSection: localizedCall('preview_managed_section', callPreviewManagedSection),
 	localizeBackendText: localizeBackendText,
 	localizeBackendResult: localizeBackendResult,
 	notify: notify,
 	badge: badge,
 	bytesFromKiB: bytesFromKiB,
 	configUrl: configUrl,
-	diagnosticsNode: diagnosticsNode
+	diagnosticsNode: diagnosticsNode,
+	visiblePoll: visiblePoll,
+	recentErrors: recentErrors,
+	clearRecentErrors: clearRecentErrors,
+	copyRecentErrors: copyRecentErrors,
+	copyText: copyText,
+	errorText: errorText,
+	sanitizeErrorText: sanitizeErrorText
 });

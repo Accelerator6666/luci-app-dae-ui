@@ -279,7 +279,7 @@ return view.extend({
 			onData:function(page,rows){info.textContent=meta(page,rows.length);}
 		});
 
-		poll.add(L.bind(this.refresh,this),5);
+		poll.add(dae.visiblePoll(L.bind(this.refresh,this)), 5);
 
 		return E([],[
 			E('h2',{},_('Native Flows')),

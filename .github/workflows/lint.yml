@@ -118,6 +118,98 @@ jobs:
           print('OK feature contracts')
           PY
 
+      - name: v0.14.3 stability and editing contracts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          common = Path('htdocs/luci-static/resources/daeui/common.js').read_text()
+          managed = Path('htdocs/luci-static/resources/daeui/managed.js').read_text()
+          parser = Path('htdocs/luci-static/resources/daeui/configparse.js').read_text()
+          backend = Path('root/usr/share/rpcd/ucode/daeui.uc').read_text()
+          settings = Path('htdocs/luci-static/resources/view/daeui/settings.js').read_text()
+
+          assert 'function visiblePoll' in common
+          assert "params: [ 'kind', 'body', 'apply', 'revision' ]" in common
+          assert 'function rememberError' in common
+          assert 'copyRecentErrors' in common
+
+          for rel in [
+              'overview.js', 'runtime.js', 'logs.js', 'connections.js',
+              'flows.js', 'native-nodes.js', 'runtime-policies.js', 'dns-runtime.js'
+          ]:
+              text = Path('htdocs/luci-static/resources/view/daeui', rel).read_text()
+              assert 'poll.add' in text and 'dae.visiblePoll' in text, f'visibility-aware polling missing from {rel}'
+
+          for symbol in ['splitComment', 'parseTaggedEntries', 'replaceTaggedValue', 'parseGroups', 'replaceGroupFields']:
+              assert f'{symbol}:' in parser, f'missing config parser export {symbol}'
+
+          assert 'taggedFieldEditor' in managed
+          assert 'groupFieldEditor' in managed
+          assert 'revision:(managed && managed.revision)' in managed
+
+          assert 'function file_revision(path)' in backend
+          assert 'revision: file_revision(path)' in backend
+          assert 'current_revision = file_revision(path)' in backend
+          assert 'staged changes were not written' in backend
+          assert "revision: 'string'" in backend
+
+          assert 'Recent error diagnostics' in settings
+          assert 'RPC arguments, secrets and request bodies are not recorded.' in settings
+          assert 'window.sessionStorage' in common
+          assert 'sanitizeErrorText' in common
+
+          print('OK v0.14.3 stability/editor contracts')
+          PY
+
+          node <<'NODE'
+          const fs = require('fs');
+          const source = fs.readFileSync('htdocs/luci-static/resources/daeui/configparse.js', 'utf8');
+          const parser = Function('baseclass', source)({ extend: value => value });
+
+          const tagged = "# keep\nnode1: 'vless://example/#frag' # inline\nnode2: \"https://example/old\"\n";
+          const entries = parser.parseTaggedEntries(tagged);
+          if (entries.length !== 2 || entries[0].value !== 'vless://example/#frag')
+            throw new Error('quoted # parsing regression');
+
+          const patched = parser.replaceTaggedValue(tagged, 'node1', "vless://example/O'Reilly");
+          if (!patched.ok || !patched.text.includes("# inline") || !patched.text.includes("node2: \"https://example/old\""))
+            throw new Error('tagged field splice did not preserve unrelated text');
+
+          const groups = [
+            "edge {",
+            "  filter: name(keyword: 'O\\'Reilly#HK')",
+            "  filter: name(regex: '\\\\p{Han}')",
+            "  policy: min",
+            "  # keep this comment",
+            "}",
+            "other {",
+            "  filter: subtag(foo)",
+            "  policy: random",
+            "}"
+          ].join('\n');
+
+          const parsed = parser.parseGroups(groups);
+          if (parsed.length !== 2 || parsed[0].filterValues.length !== 2 || parsed[0].policyValue !== 'min')
+            throw new Error('group parser regression');
+
+          const changed = parser.replaceGroupFields(groups, 'edge', {
+            policy: 'min_avg10',
+            filters: parsed[0].filterValues
+          });
+          if (!changed.ok || !changed.text.includes('policy: min_avg10') ||
+              !changed.text.includes('# keep this comment') || !changed.text.includes('other {'))
+            throw new Error('group field splice did not preserve unrelated syntax');
+
+          const refused = parser.replaceGroupFields(groups, 'edge', {
+            filters: [ parsed[0].filterValues[0] ]
+          });
+          if (refused.ok || refused.code !== 'filter-count')
+            throw new Error('field mode must refuse structural filter-count changes');
+
+          console.log('OK configparse behavior');
+          NODE
+
       - name: Ucode structural sanity
         run: |
           python3 - <<'PY'

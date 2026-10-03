@@ -125,8 +125,8 @@ return view.extend({
 		data=data||[];
 		var status=data[0]||{};
 		var native=data[1]||{};
-		poll.add(L.bind(function(){return dae.callStatus().then(this.update.bind(this));},this),5);
-		poll.add(L.bind(function(){return nativeSnapshot().then(this.updateNative.bind(this));},this),15);
+		poll.add(dae.visiblePoll(L.bind(function(){return dae.callStatus().then(this.update.bind(this));},this)), 5);
+		poll.add(dae.visiblePoll(L.bind(function(){return nativeSnapshot().then(this.updateNative.bind(this));},this)), 15);
 		return E([],[
 			E('h2',{},_('DAE Overview')),
 			E('div',{'class':'cbi-map-descr'},_('Live process, configuration and network state. Refreshes automatically every 5 seconds.')),

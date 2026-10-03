@@ -238,6 +238,7 @@ return view.extend({
 			renderCards(data[0],runtimeGroups),
 			E('h3',{},_('Source configuration')),
 			managed.existingSections(data[0],['group']),
+			managed.groupFieldEditor(data[1]),
 			managed.editor(
 				'groups',
 				data[1],

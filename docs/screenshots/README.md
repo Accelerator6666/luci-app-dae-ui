@@ -3,7 +3,7 @@
 This directory contains one explicitly labeled UI design preview plus reserved filenames for **real OpenWrt router screenshots**.
 
 - `overview-preview.svg` is a synthetic layout preview with sample data. It may be shown in the public README only when clearly labeled as a preview.
-- `overview-zh-cn.png`, `runtime-zh-cn.png`, `versions-zh-cn.png`, and `configuration-zh-cn.png` remain reserved for real v0.14.2 router captures.
+- `overview-zh-cn.png`, `runtime-zh-cn.png`, `versions-zh-cn.png`, and `configuration-zh-cn.png` remain reserved for real v0.14.3 router captures.
 - Never present generated/sample data as live router telemetry.
 
 ## Required captures
@@ -34,7 +34,7 @@ This directory contains one explicitly labeled UI design preview plus reserved f
 
 ## Capture rules
 
-- Use real router output from the v0.14.2 build.
+- Use real router output from the v0.14.3 build.
 - Prefer 16:9 or a wide desktop browser viewport.
 - Keep the LuCI theme consistent across screenshots.
 - Avoid browser extensions or unrelated UI overlays.

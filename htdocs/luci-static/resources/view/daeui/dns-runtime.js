@@ -163,7 +163,7 @@ return view.extend({
 			logNode=native.unavailable(status,'dns_log');
 		}
 
-		if(this.hasCache||this.hasLog) poll.add(L.bind(this.refresh,this),10);
+		if(this.hasCache||this.hasLog) poll.add(dae.visiblePoll(L.bind(this.refresh,this)), 10);
 
 		return E([],[
 			E('h2',{},_('DNS Runtime')),
